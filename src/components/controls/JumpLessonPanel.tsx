@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { LECTURES, lecturePath } from '../../data/course';
+import { lecturePath } from '../../data/course';
+import { LECTURES } from '../../data/lessons';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { TeacherPanel } from './TeacherPanel';
 

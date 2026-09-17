@@ -19,11 +19,21 @@ import { HistoryDialogueStage } from './HistoryDialogueStage';
 import { MachineLangStage } from './MachineLangStage';
 import { AssemblyLangStage } from './AssemblyLangStage';
 import { HighLevelCompareStage } from './HighLevelCompareStage';
+import { DigestPipelineStage } from './DigestPipelineStage';
+import { TiobeRankStage } from './TiobeRankStage';
 import { LanguageTimelineStage } from './LanguageTimelineStage';
 import { WhyPythonCompareStage } from './WhyPythonCompareStage';
 import { BigDataPathStage } from './BigDataPathStage';
 import { PythonProsStage } from './PythonProsStage';
+import { PythonFatherStage } from './PythonFatherStage';
+import { PythonDesignStage } from './PythonDesignStage';
+import { PythonBriefHistoryStage } from './PythonBriefHistoryStage';
 import { RuntimeModelStage } from './RuntimeModelStage';
+import { PythonEnvStage } from './PythonEnvStage';
+import { CompileVsInterpretStage } from './CompileVsInterpretStage';
+import { PythonVersionStage } from './PythonVersionStage';
+import { PythonInstallStage } from './PythonInstallStage';
+import { PythonVerifyStage } from './PythonVerifyStage';
 import { ReplDemoStage } from './ReplDemoStage';
 import { StepExecStage } from './StepExecStage';
 import { TypedDemoStage } from './TypedDemoStage';
@@ -43,7 +53,7 @@ import { WhyLearnWrapStage } from './WhyLearnWrapStage';
 import { FinalVerdictStage } from './FinalVerdictStage';
 
 export function TeachingStage() {
-  const { scene } = useSceneEngine();
+  const { scene, lesson, dispatch } = useSceneEngine();
   const { content } = scene;
   const isFullscreen = scene.layout === 'fullscreen';
   const dense = Boolean(
@@ -57,11 +67,21 @@ export function TeachingStage() {
       content.machineLang ||
       content.assemblyLang ||
       content.highLevelCompare ||
+      content.digestPipeline ||
+      content.tiobeRank ||
       content.languageTimeline ||
       content.whyPythonCompare ||
       content.bigDataPath ||
       content.pythonPros ||
+      content.pythonFather ||
+      content.pythonDesign ||
+      content.pythonBriefHistory ||
       content.runtimeModel ||
+      content.pythonEnv ||
+      content.compileVsInterpret ||
+      content.pythonVersion ||
+      content.pythonInstall ||
+      content.pythonVerify ||
       content.replDemo ||
       content.stepExec ||
       content.typedDemo ||
@@ -168,7 +188,15 @@ export function TeachingStage() {
               </div>
             )}
 
-            {content.catalog && <CatalogList items={content.catalog} />}
+            {content.catalog && (
+              <CatalogList
+                items={content.catalog}
+                onSelect={(item) => {
+                  const target = lesson.scenes.findIndex((s) => s.partId === item.index);
+                  if (target >= 0) dispatch({ type: 'GOTO_SCENE', index: target });
+                }}
+              />
+            )}
             {content.schedule && <ScheduleList blocks={content.schedule} />}
             {content.infoCards && <InfoCardGrid cards={content.infoCards} />}
             {content.gradeItems && <GradeTable items={content.gradeItems} />}
@@ -187,6 +215,12 @@ export function TeachingStage() {
             {content.highLevelCompare && (
               <HighLevelCompareStage content={content.highLevelCompare} sceneId={scene.id} />
             )}
+            {content.digestPipeline && (
+              <DigestPipelineStage content={content.digestPipeline} sceneId={scene.id} />
+            )}
+            {content.tiobeRank && (
+              <TiobeRankStage content={content.tiobeRank} sceneId={scene.id} />
+            )}
             {content.languageTimeline && (
               <LanguageTimelineStage content={content.languageTimeline} sceneId={scene.id} />
             )}
@@ -199,8 +233,32 @@ export function TeachingStage() {
             {content.pythonPros && (
               <PythonProsStage content={content.pythonPros} sceneId={scene.id} />
             )}
+            {content.pythonFather && (
+              <PythonFatherStage content={content.pythonFather} sceneId={scene.id} />
+            )}
+            {content.pythonDesign && (
+              <PythonDesignStage content={content.pythonDesign} sceneId={scene.id} />
+            )}
+            {content.pythonBriefHistory && (
+              <PythonBriefHistoryStage content={content.pythonBriefHistory} sceneId={scene.id} />
+            )}
             {content.runtimeModel && (
               <RuntimeModelStage content={content.runtimeModel} sceneId={scene.id} />
+            )}
+            {content.pythonEnv && (
+              <PythonEnvStage content={content.pythonEnv} sceneId={scene.id} />
+            )}
+            {content.compileVsInterpret && (
+              <CompileVsInterpretStage content={content.compileVsInterpret} sceneId={scene.id} />
+            )}
+            {content.pythonVersion && (
+              <PythonVersionStage content={content.pythonVersion} sceneId={scene.id} />
+            )}
+            {content.pythonInstall && (
+              <PythonInstallStage content={content.pythonInstall} sceneId={scene.id} />
+            )}
+            {content.pythonVerify && (
+              <PythonVerifyStage content={content.pythonVerify} sceneId={scene.id} />
             )}
             {content.replDemo && <ReplDemoStage content={content.replDemo} sceneId={scene.id} />}
             {content.stepExec && <StepExecStage content={content.stepExec} sceneId={scene.id} />}

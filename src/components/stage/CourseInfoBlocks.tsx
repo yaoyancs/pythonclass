@@ -103,15 +103,40 @@ export function GradeTable({ items }: { items: GradeItem[] }) {
   );
 }
 
-export function CatalogList({ items }: { items: CatalogItem[] }) {
+export function CatalogList({
+  items,
+  onSelect,
+}: {
+  items: CatalogItem[];
+  /** 点击某一目录项时回调（如跳到该知识块首页） */
+  onSelect?: (item: CatalogItem) => void;
+}) {
   return (
     <ol className="mt-12 space-y-6">
-      {items.map((item) => (
-        <li key={item.index} className="flex items-baseline gap-8">
-          <span className="text-accent text-2xl tabular-nums tracking-widest">{item.index}</span>
-          <span className="title-stage text-stage-body">{item.title}</span>
-        </li>
-      ))}
+      {items.map((item) => {
+        const clickable = Boolean(onSelect);
+        const inner = (
+          <>
+            <span className="text-accent text-2xl tabular-nums tracking-widest">{item.index}</span>
+            <span className="title-stage text-stage-body">{item.title}</span>
+          </>
+        );
+        return (
+          <li key={item.index}>
+            {clickable ? (
+              <button
+                type="button"
+                onClick={() => onSelect?.(item)}
+                className="flex w-full items-baseline gap-8 text-left rounded-2xl px-3 py-2 -mx-3 transition-colors hover:bg-classroom-stage/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                {inner}
+              </button>
+            ) : (
+              <div className="flex items-baseline gap-8">{inner}</div>
+            )}
+          </li>
+        );
+      })}
     </ol>
   );
 }

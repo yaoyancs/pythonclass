@@ -1,10 +1,6 @@
 import type { Lesson } from '../../types/scene';
-import type { LectureMeta } from '../course';
-import { lectureMetaFromSpec } from '../course';
-import {
-  buildAllLessons,
-  CURRENT_OFFERING,
-} from '../offerings';
+import { lectureMetaFromSpec, type LectureMeta } from '../course';
+import { buildAllLessons, CURRENT_OFFERING } from '../offerings';
 
 /** 首页与跳转讲次列表（来自当前学期开课表） */
 export const LECTURES: LectureMeta[] = CURRENT_OFFERING.lectures.map(lectureMetaFromSpec);

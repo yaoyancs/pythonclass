@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { COURSE, LECTURES, lecturePath } from '../data/course';
+import { COURSE, lecturePath } from '../data/course';
+import { LECTURES } from '../data/lessons';
 
 export function HomePage() {
   const [logoAvailable, setLogoAvailable] = useState(true);

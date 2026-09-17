@@ -128,6 +128,34 @@ export interface HighLevelCompareContent {
   conclusion: string;
 }
 
+/** 高级语言如何被计算机「吃下」：源码→翻译→指令→CPU→结果 */
+export interface DigestPipelineContent {
+  sourceCode: string;
+  sourceLabel: string;
+  translatorLabel: string;
+  /** 短标签，如「编译器 / 解释器」 */
+  translatorHint: string;
+  machineLines: string[];
+  machineLabel: string;
+  cpuLabel: string;
+  result: string;
+  resultLabel: string;
+  /** 收束一句 */
+  conclusion: string;
+}
+
+/** TIOBE 等流行度排行：分步揭示柱状图 */
+export interface TiobeRankContent {
+  /** 开场说明（文中「TIOBE」会渲染为可点击链接） */
+  lead: string;
+  /** 数据来源标注，如「TIOBE Index · 2026 年 9 月」 */
+  sourceLabel: string;
+  /** rating 为百分比数值，如 17.76 表示 17.76% */
+  rows: { rank: number; language: string; rating: number }[];
+  /** 点击 TIOBE 跳转的官网 */
+  href: string;
+}
+
 /** 完整时间轴 + Prompt 认知冲突 + 语言用途表 */
 export interface LanguageTimelineContent {
   eras: string[];
@@ -164,11 +192,100 @@ export interface PythonProsContent {
   boundary: string;
 }
 
+/** Python 之父：肖像 + 分步趣事 */
+export interface PythonFatherContent {
+  portrait: SceneImage;
+  anecdotes: { title: string; body: string; takeaway: string }[];
+  /** 名称读音（可点击播放） */
+  pronunciations?: {
+    label: string;
+    /** 如 /ˈpaɪθɑːn/ 或「派森」 */
+    phonetic: string;
+    src: string;
+    note?: string;
+  }[];
+  pronunciationsHint?: string;
+  /** 全部趣事揭开后的结语（可选） */
+  closing?: string;
+}
+
+/** Python 设计取向：原则 + 可选短代码对照 */
+export interface PythonDesignContent {
+  principles: { line: string; gloss: string }[];
+  compare?: {
+    left: { label: string; code: string };
+    right: { label: string; code: string };
+  };
+  conclusion?: string;
+}
+
+/** Python 简史节点（轻量） */
+export interface PythonBriefHistoryContent {
+  nodes: { year: string; title: string; note: string }[];
+  bridge?: string;
+}
+
 /** 语言 / 解释器 / IDE 三者辨析 */
 export interface RuntimeModelContent {
   items: { title: string; body: string }[];
   analogies: { label: string; value: string }[];
   caveat: string;
+}
+
+/** Python 专用环境插画：.py → 编辑器 → 解释器 → 输出 */
+export interface PythonEnvContent {
+  filename: string;
+  sampleCode: string;
+  fileLabel: string;
+  fileHint: string;
+  editorLabel: string;
+  editorHint: string;
+  interpreterLabel: string;
+  interpreterHint: string;
+  consoleLabel: string;
+  consoleOutput: string;
+  /** 收束：环境关系 */
+  conclusion: string;
+}
+
+/** 编译型 vs 解释型：双轨插画对比（强调整份先译 vs 读一行执行一行） */
+export interface CompileVsInterpretContent {
+  /** 多行源码，用于演示「整份」与「逐行」 */
+  lines: string[];
+  /** 与 lines 一一对应的输出 */
+  outputs: string[];
+  compiledTitle: string;
+  interpretedTitle: string;
+  compiledTag: string;
+  interpretedTag: string;
+  conclusion: string;
+}
+
+/** Python 版本说明 + 官网下载 */
+export interface PythonVersionContent {
+  courseVersion: string;
+  lead: string;
+  /** 如 3 / 12 / x 的分段释义 */
+  versionParts: { label: string; meaning: string }[];
+  notes: string[];
+  linkLabel: string;
+  href: string;
+}
+
+/** 安装顺序插画 + 编辑器外链 */
+export interface PythonInstallContent {
+  lead: string;
+  orderNote: string;
+  steps: { title: string; body: string }[];
+  pythonLink: { label: string; href: string };
+  editors: { name: string; role: string; href: string; primary?: boolean }[];
+}
+
+/** 环境验收清单 + 常见坑 */
+export interface PythonVerifyContent {
+  checks: { label: string; detail: string }[];
+  pitfalls: string[];
+  successLine: string;
 }
 
 /** 交互式 REPL 演示 */
@@ -354,11 +471,21 @@ export interface SceneContent {
   machineLang?: MachineLangContent;
   assemblyLang?: AssemblyLangContent;
   highLevelCompare?: HighLevelCompareContent;
+  digestPipeline?: DigestPipelineContent;
+  tiobeRank?: TiobeRankContent;
   languageTimeline?: LanguageTimelineContent;
   whyPythonCompare?: WhyPythonCompareContent;
   bigDataPath?: BigDataPathContent;
   pythonPros?: PythonProsContent;
+  pythonFather?: PythonFatherContent;
+  pythonDesign?: PythonDesignContent;
+  pythonBriefHistory?: PythonBriefHistoryContent;
   runtimeModel?: RuntimeModelContent;
+  pythonEnv?: PythonEnvContent;
+  compileVsInterpret?: CompileVsInterpretContent;
+  pythonVersion?: PythonVersionContent;
+  pythonInstall?: PythonInstallContent;
+  pythonVerify?: PythonVerifyContent;
   replDemo?: ReplDemoContent;
   stepExec?: StepExecContent;
   typedDemo?: TypedDemoContent;
