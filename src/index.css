@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply h-full w-full m-0 p-0;
+  }
+
+  body {
+    @apply text-text-primary font-sans font-medium;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer utilities {
+  .classroom-grid {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 100%;
+    /* 近白纯色，白天投影对比度优先于装饰渐变 */
+    background: #f4f7f5;
+  }
+
+  /* 大标题：无衬线加粗，投影后排更清晰 */
+  .title-stage {
+    font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Microsoft YaHei', system-ui,
+      sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  /* 楷体仅用于金句/引言；macOS 楷体无真加粗，勿强行 bold */
+  .title-kai {
+    font-family: 'Kaiti SC', STKaiti, '华文楷体', KaiTi, '楷体', serif;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  /* 提问/结论强调：左侧色条 + 近黑字，避免大段只用浅 accent 色 */
+  .stage-emphasis {
+    @apply border-l-[6px] border-accent pl-5 text-text-primary font-semibold;
+  }
+
+  @keyframes stage-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .stage-fade-in {
+    animation: stage-fade-in 0.55s ease-out both;
+  }
+
+  @keyframes bit-error-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      text-shadow: 0 0 0 transparent;
+    }
+    50% {
+      opacity: 0.55;
+      text-shadow: 0 0 10px rgba(255, 138, 128, 0.7);
+    }
+  }
+
+  .bit-error-pulse {
+    animation: bit-error-pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes timeline-node-in {
+    from {
+      opacity: 0;
+      transform: translateX(-18px) scale(0.88);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+
+  .timeline-node-in {
+    animation: timeline-node-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes timeline-arrow-in {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .timeline-arrow-in {
+    animation: timeline-arrow-in 0.4s ease-out both;
+  }
+
+  @keyframes timeline-axis-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .timeline-axis-grow {
+    animation: timeline-axis-grow 0.7s ease-out both;
+  }
+}
