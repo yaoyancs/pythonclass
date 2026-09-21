@@ -1,14 +1,37 @@
 import type { DraftScene } from "../../../types/scene";
 
-/** CampusLife 0.1：产品壳 + 输入输出。写死打印 → 变量输出 → input()。不讲类型。 */
+/** CampusLife 0.1：先目标与任务，再用 print / 变量 / input 完成。幻灯片只放课堂概括。 */
 export const scenes: DraftScene[] = [
   {
     id: "scene-cl-43",
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "CampusLife：大学生活数据助手",
-      body: "本课第一个小程序——先输出一天的姓名、星期、学习时长。数据从哪来：先写在程序里，再改为运行时输入。",
+      headline: "CampusLife 要做什么",
+      body: "大学生活数据助手：用程序记录一天的生活，并输出报告。",
+      codeComparison: {
+        left: {
+          label: "整体目标",
+          code: "记录一天的生活数据\n输出今日报告\n以后：能计算、能判断、能保存",
+        },
+        right: {
+          label: "本节完成 0.1",
+          code: "姓名\n星期\n学习时长\n打印这三项",
+        },
+      },
+    },
+  },
+  {
+    id: "scene-cl-req",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      headline: "0.1 任务要求",
+      bulletPoints: [
+        "打印：姓名、星期、学习时长",
+        "三项数据放进变量",
+        "姓名在运行时输入",
+      ],
     },
   },
   {
@@ -16,9 +39,8 @@ export const scenes: DraftScene[] = [
     type: "run",
     layout: "split",
     content: {
-      headline: "先只会输出",
-      question: "这四行都是在输出。换你的名字和学习时长，要改哪几行？",
-      body: "print 负责把结果送到屏幕。",
+      headline: "先打印报告",
+      question: "运行后应看到哪四行？",
     },
     code: {
       initial:
@@ -34,9 +56,8 @@ export const scenes: DraftScene[] = [
     type: "run",
     layout: "split",
     content: {
-      headline: "输出用变量",
-      body: "只改三个变量，不要改 print。print 输出的是变量当前的值；逗号是把几段内容挨着打印。",
-      question: "数据仍写在源代码里。每次换人，是不是还得改程序？",
+      headline: "数据放进变量",
+      question: "把张明改成你的名字，应改哪一处？",
     },
     code: {
       initial:
@@ -52,13 +73,8 @@ export const scenes: DraftScene[] = [
     type: "run",
     layout: "split",
     content: {
-      headline: "输入 + 输出",
-      question: "执行到 input() 时，程序会怎样？",
-      body: "跑一遍，输入自己的姓名。",
-      bulletPoints: [
-        "input()：停下来，把键盘内容放进变量（输入）",
-        "print()：把变量里的内容送到屏幕（输出）",
-      ],
+      headline: "姓名改为输入",
+      question: "运行后，程序会在哪一步停下来等你？",
     },
     code: {
       initial:
