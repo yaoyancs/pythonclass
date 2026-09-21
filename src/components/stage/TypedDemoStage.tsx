@@ -1,10 +1,12 @@
 import type { TypedDemoContent } from '../../types/scene';
 import { useStageAdvance } from '../../hooks/useStageAdvance';
+import { TypeBadge } from '../ui/TypeBadge';
 
 const toneClass: Record<string, string> = {
   int: 'text-sky-600',
   float: 'text-violet-600',
   str: 'text-emerald-600',
+  bool: 'text-amber-700',
   plain: 'text-text-primary',
 };
 
@@ -41,7 +43,10 @@ export function TypedDemoStage({ content, sceneId }: Props) {
 
       <div className="rounded-3xl bg-classroom-stage shadow-card px-6 py-5 space-y-2 font-mono text-xl">
         {content.lines.slice(0, linesVisible).map((line, i) => (
-          <div key={`${line.code}-${i}`} className="timeline-node-in">
+          <div
+            key={`${line.code}-${i}`}
+            className="timeline-node-in flex items-center justify-between gap-4"
+          >
             {line.tokens ? (
               <span>
                 {line.tokens.map((t, j) => (
@@ -53,6 +58,7 @@ export function TypedDemoStage({ content, sceneId }: Props) {
             ) : (
               <span className="text-text-primary">{line.code}</span>
             )}
+            {line.kind && <TypeBadge kind={line.kind} />}
           </div>
         ))}
       </div>

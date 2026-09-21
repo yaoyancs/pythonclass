@@ -1,5 +1,6 @@
 import type { VarPredictContent } from '../../types/scene';
 import { useStageAdvance } from '../../hooks/useStageAdvance';
+import { TypeBadge } from '../ui/TypeBadge';
 
 interface Props {
   content: VarPredictContent;
@@ -46,13 +47,33 @@ export function VarPredictStage({ content, sceneId }: Props) {
       )}
 
       {phase >= (content.compareCode ? 4 : 2) && (
-        <ul className="mt-5 space-y-2 timeline-node-in">
-          {content.takeaway.map((t) => (
-            <li key={t} className="title-kai text-xl text-text-primary">
-              {t}
-            </li>
-          ))}
-        </ul>
+        <div className="mt-5 timeline-node-in">
+          {content.cards && content.cards.length > 0 && (
+            <div className="mb-5 flex flex-wrap justify-center gap-6">
+              {content.cards.map((card) => (
+                <div
+                  key={card.caption}
+                  className="rounded-3xl bg-classroom-stage shadow-card px-6 py-4 text-center min-w-[9rem]"
+                >
+                  <p className="font-mono text-sm text-text-secondary mb-2">{card.caption}</p>
+                  <p className="font-mono text-3xl text-text-primary">{card.value}</p>
+                  {card.kind && (
+                    <div className="mt-3">
+                      <TypeBadge kind={card.kind} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          <ul className="space-y-2">
+            {content.takeaway.map((t) => (
+              <li key={t} className="title-kai text-xl text-text-primary">
+                {t}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {!done && <p className="mt-5 text-base text-accent/80">先预测，再点击继续</p>}

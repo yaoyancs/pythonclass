@@ -1,3 +1,4 @@
+import { trackRun } from '../../analytics/client';
 import { useCallback, useEffect, useState } from 'react';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { canRun } from '../../engine/sceneTransitions';
@@ -21,6 +22,7 @@ export function PythonPlayground() {
   const handleRun = useCallback(async () => {
     if (!runEnabled) return;
     dispatch({ type: 'RUN_START' });
+    trackRun(state.lessonId, state.currentSceneIndex);
 
     const onInput = (prompt: string): Promise<string> => {
       return new Promise((resolve) => {

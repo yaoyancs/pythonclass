@@ -1,8 +1,12 @@
+import type { D1Database } from '../analytics/_db';
+
 /** Cloudflare Pages Functions 环境绑定 */
 export interface TeacherEnv {
   TEACHER_KV: KVNamespace;
   /** 教师 PIN（Pages 环境变量 / secret） */
   TEACHER_PIN: string;
+  /** 访问统计（D1）；未绑定时写入接口返回 503，课堂端忽略失败 */
+  ANALYTICS_DB?: D1Database;
 }
 
 export const PACK_KEY = 'pyclass:teacher:pack:v1';

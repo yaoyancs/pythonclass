@@ -1,0 +1,131 @@
+import type { StoredHit } from './_logic';
+
+export interface D1PreparedStatement {
+  bind(...values: unknown[]): D1PreparedStatement;
+  run(): Promise<unknown>;
+  all<T = Record<string, unknown>>(): Promise<{ results: T[] }>;
+}
+
+export interface D1Database {
+  prepare(query: string): D1PreparedStatement;
+  exec(query: string): Promise<unknown>;
+}
+
+const CREATE_SQL = `
+CREATE TABLE IF NOT EXISTS hits (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts TEXT NOT NULL,
+  type TEXT NOT NULL,
+  session_id TEXT NOT NULL,
+  path TEXT,
+  referrer TEXT,
+  lesson_id TEXT,
+  scene_index INTEGER,
+  scene_id TEXT,
+  part_id TEXT,
+  dwell_seconds INTEGER,
+  ip TEXT,
+  device TEXT,
+  teacher INTEGER NOT NULL DEFAULT 0,
+  source TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_hits_ts ON hits(ts);
+CREATE INDEX IF NOT EXISTS idx_hits_lesson ON hits(lesson_id);
+`;
+
+let ensured = false;
+
+export async function ensureHitsTable(db: D1Database): Promise<void> {
+  if (ensured) return;
+  await db.exec(CREATE_SQL);
+  try {
+    await db.exec('ALTER TABLE hits ADD COLUMN teacher INTEGER NOT NULL DEFAULT 0;');
+  } catch {
+    // already exists
+  }
+  try {
+    await db.exec('ALTER TABLE hits ADD COLUMN source TEXT;');
+  } catch {
+    // already exists
+  }
+  ensured = true;
+}
+
+export async function insertHit(db: D1Database, hit: StoredHit): Promise<void> {
+  await ensureHitsTable(db);
+  await db
+    .prepare(
+      `INSERT INTO hits (ts, type, session_id, path, referrer, lesson_id, scene_index, scene_id, part_id, dwell_seconds, ip, device, teacher, source)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(
+      hit.ts,
+      hit.type,
+      hit.sessionId,
+      hit.path,
+      hit.referrer,
+      hit.lessonId,
+      hit.sceneIndex,
+      hit.sceneId,
+      hit.partId,
+      hit.dwellSeconds,
+      hit.ip,
+      hit.device,
+      hit.teacher ? 1 : 0,
+      hit.source,
+    )
+    .run();
+}
+
+interface HitRow {
+  ts: string;
+  type: StoredHit['type'];
+  session_id: string;
+  path: string | null;
+  referrer: string | null;
+  lesson_id: string | null;
+  scene_index: number | null;
+  scene_id: string | null;
+  part_id: string | null;
+  dwell_seconds: number | null;
+  ip: string;
+  device: StoredHit['device'];
+  teacher?: number | null;
+  source?: string | null;
+}
+
+function rowToHit(row: HitRow): StoredHit {
+  return {
+    ts: row.ts,
+    type: row.type,
+    sessionId: row.session_id,
+    path: row.path,
+    referrer: row.referrer,
+    lessonId: row.lesson_id,
+    sceneIndex: row.scene_index,
+    sceneId: row.scene_id,
+    partId: row.part_id,
+    dwellSeconds: row.dwell_seconds,
+    ip: row.ip,
+    device: row.device,
+    teacher: row.teacher === 1,
+    source: row.source === 'homework' ? 'homework' : 'other',
+  };
+}
+
+export async function loadHitsInRange(
+  db: D1Database,
+  startIso: string,
+  endIso: string,
+  limit = 5000,
+): Promise<StoredHit[]> {
+  await ensureHitsTable(db);
+  const { results } = await db
+    .prepare(
+      `SELECT ts, type, session_id, path, referrer, lesson_id, scene_index, scene_id, part_id, dwell_seconds, ip, device, teacher, source
+       FROM hits WHERE ts >= ? AND ts < ? ORDER BY ts ASC LIMIT ?`,
+    )
+    .bind(startIso, endIso, limit)
+    .all<HitRow>();
+  return (results ?? []).map(rowToHit);
+}

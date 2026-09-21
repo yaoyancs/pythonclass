@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { useRosterSession } from '../../hooks/useRosterSession';
+import { AnalyticsPanel } from './AnalyticsPanel';
 import { useTeacherAuth } from '../../hooks/useTeacherAuth';
 import { getClassLabel, rosterSummary } from '../../utils/rosterStorage';
 import { Button } from '../ui/Button';
@@ -13,7 +14,7 @@ import { PickStudentOverlay } from './PickStudentOverlay';
 import { RosterManagePanel } from './RosterManagePanel';
 import { TeacherUnlockPanel } from './TeacherUnlockPanel';
 
-type Panel = 'none' | 'lesson' | 'page' | 'pick' | 'attendance' | 'performance' | 'roster';
+type Panel = 'none' | 'lesson' | 'page' | 'pick' | 'attendance' | 'performance' | 'roster' | 'analytics';
 
 function syncLabel(status: ReturnType<typeof useTeacherAuth>['syncStatus']): string {
   if (status === 'syncing') return '同步中…';
@@ -104,6 +105,10 @@ function TeacherControlsUnlocked({
     {
       label: '课堂表现',
       action: () => setPanel('performance'),
+    },
+    {
+      label: '访问统计',
+      action: () => setPanel('analytics'),
     },
     {
       label: '班级名单',
@@ -204,6 +209,7 @@ function TeacherControlsUnlocked({
           onClose={closePanel}
         />
       )}
+      {panel === 'analytics' && <AnalyticsPanel onClose={closePanel} />}
       {panel === 'pick' && (
         <PickStudentOverlay
           pool={getPickPool()}

@@ -8,5 +8,10 @@
     "strict": true,
     "noEmit": true
   },
-  "include": ["vite.config.ts", "vite.teacherApiMock.ts", "functions/api/teacher/lockout.ts"]
+  "include": [
+    "vite.config.ts",
+    "vite.teacherApiMock.ts",
+    "functions/api/teacher/lockout.ts",
+    "functions/api/analytics/_logic.ts"
+  ]
 }

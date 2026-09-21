@@ -14,6 +14,7 @@ export const scenes: DraftScene[] = [
         lines: [
           {
             code: 'name = "张明"',
+            kind: "str",
             tokens: [
               { text: "name = ", tone: "plain" },
               { text: '"张明"', tone: "str" },
@@ -21,6 +22,7 @@ export const scenes: DraftScene[] = [
           },
           {
             code: 'weekday = "周一"',
+            kind: "str",
             tokens: [
               { text: "weekday = ", tone: "plain" },
               { text: '"周一"', tone: "str" },

@@ -1,9 +1,11 @@
-import type { Lesson, LectureSpec } from '../types/scene';
+import type { LectureHomework, Lesson, LectureSpec } from '../types/scene';
 
 /** 整门课统一元信息 */
 export const COURSE = {
   id: 'python-programming',
   title: 'Python 程序设计',
+  role: '理论课堂',
+  practiceNote: '实践在 PTA 完成',
   department: '计算机学院',
   teacher: '姚艳',
   university: '曲阜师范大学',
@@ -21,10 +23,20 @@ export interface LectureMeta {
   hours: number;
   /** 是否已有可上课内容；false 时进入占位页 */
   ready: boolean;
+  homework?: LectureHomework;
 }
 
 export function lecturePath(id: string): string {
   return `/lesson/${id}`;
+}
+
+/** 封面「作业」链：打开该讲课后作业页 */
+export function lectureHomeworkPath(id: string): string {
+  return `/lesson/${id}?page=homework`;
+}
+
+export function findHomeworkSceneIndex(lesson: Lesson): number {
+  return lesson.scenes.findIndex((scene) => scene.content.headline === '课后作业');
 }
 
 export function displaySubtitle(meta: Pick<LectureMeta, 'number' | 'title'>): string {
@@ -39,6 +51,7 @@ export function lectureMetaFromSpec(spec: LectureSpec): LectureMeta {
     blurb: spec.blurb,
     hours: spec.hours,
     ready: spec.ready,
+    homework: spec.homework,
   };
 }
 

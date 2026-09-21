@@ -1,8 +1,9 @@
 import type { Offering } from "../../types/scene";
 
-/** 2026 春：约 11 讲 × 3 课时。跨学期改课时/目录时复制本文件再改组装即可。 */
+/** 2026 秋：约 11 讲 × 3 课时。跨学期改课时/目录时复制本文件再改组装即可。 */
 export const offering2026S: Offering = {
   id: "2026S",
+  term: "2026 秋",
   lectures: [
     {
       id: "lesson01",
@@ -11,6 +12,15 @@ export const offering2026S: Offering = {
       blurb: "运行第一个程序",
       hours: 3,
       ready: true,
+      homework: {
+        title: "第一次课后作业",
+        items: [
+          "在自己电脑上搭建好 Python 编程环境。",
+          "本地编写三个程序：（1）键盘输入 name，输出「大家好，我的名字叫XXX。」（2）定义单价、重量、总价，计算并输出总价。（3）用变量和 input() 打印校园卡：姓名、学号、专业、学院。",
+          "完成 PTA 的 Lab 1。",
+          "复习本讲课件与课本，预习第 2 讲。",
+        ],
+      },
       prelude: ["course-prelude"],
       parts: [
         { id: "01", title: "AI 时代为什么学编程", ref: "ai-why-learn" },
@@ -20,7 +30,7 @@ export const offering2026S: Offering = {
         { id: "05", title: "Python编程环境", ref: "python-runtime" },
         { id: "06", title: "执行Python程序", ref: "execute-python" },
         { id: "07", title: "变量", ref: "first-program" },
-        { id: "08", title: "CampusLife 0.1", ref: "campus-life-01" },
+        { id: "08", title: "飞花令", ref: "campus-life-01" },
         { id: "09", title: "课堂小结", ref: "wrap-up" },
       ],
     },
@@ -31,6 +41,15 @@ export const offering2026S: Offering = {
       blurb: "表示和处理数据",
       hours: 3,
       ready: true,
+      homework: {
+        title: "第二次课后作业",
+        items: [
+          "复习：用 type() 区分 2、2.0、\"2\"、True",
+          "改写开场年龄程序：必须先转换再 +1，并自测两组输入",
+          "扩展 CampusLife 0.2：再增加一个比较（如睡眠 ≥ 7）并打印布尔结果",
+          "完成 PTA 中本讲对应练习",
+        ],
+      },
       parts: [
         { id: "01", title: "为什么输入2不能直接加1", ref: "type-why" },
         { id: "02", title: "值、类型、字面量与type()", ref: "type-inspect" },

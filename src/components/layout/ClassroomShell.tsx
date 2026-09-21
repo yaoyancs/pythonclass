@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import { useLessonAnalytics } from '../../analytics/useLessonAnalytics';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { ClassroomHeader } from './ClassroomHeader';
 import { ClassroomFooter } from './ClassroomFooter';
@@ -11,6 +12,7 @@ const MIN_RIGHT_PCT = 28;
 const MAX_RIGHT_PCT = 72;
 
 export function ClassroomShell() {
+  useLessonAnalytics();
   const { dispatch, scene } = useSceneEngine();
   const isFullscreenLayout = scene.layout === 'fullscreen';
   const mainRef = useRef<HTMLElement>(null);

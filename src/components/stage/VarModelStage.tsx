@@ -1,5 +1,6 @@
 import type { VarModelContent } from '../../types/scene';
 import { useStageAdvance } from '../../hooks/useStageAdvance';
+import { TypeBadge } from '../ui/TypeBadge';
 
 interface Props {
   content: VarModelContent;
@@ -9,6 +10,10 @@ interface Props {
 export function VarModelStage({ content, sceneId }: Props) {
   const maxPhase = 4;
   const { phase, advance, done } = useStageAdvance(sceneId, maxPhase);
+  const name = content.name ?? 'score';
+  const value = content.value ?? (content.mode === 'update' ? '90' : '92');
+  const nextValue = content.nextValue ?? '95';
+  const kind = content.valueKind;
 
   return (
     <div
@@ -41,9 +46,21 @@ export function VarModelStage({ content, sceneId }: Props) {
       </div>
 
       <div className="rounded-3xl bg-classroom-stage shadow-card px-6 py-8 min-h-[15rem] relative overflow-hidden">
-        {content.mode === 'label' && <LabelFrames phase={phase} />}
-        {content.mode === 'rebind' && <RebindFrames phase={phase} />}
-        {content.mode === 'update' && <UpdateFrames phase={phase} />}
+        {content.mode === 'label' && (
+          <LabelFrames phase={phase} name={name} value={value} kind={kind} />
+        )}
+        {content.mode === 'rebind' && (
+          <RebindFrames
+            phase={phase}
+            name={name}
+            value={value}
+            nextValue={nextValue}
+            kind={kind}
+          />
+        )}
+        {content.mode === 'update' && (
+          <UpdateFrames phase={phase} name={name} value={value} nextValue={nextValue} kind={kind} />
+        )}
       </div>
 
       {phase >= 1 && (
@@ -68,7 +85,50 @@ export function VarModelStage({ content, sceneId }: Props) {
   );
 }
 
-function LabelFrames({ phase }: { phase: number }) {
+function ValueCard({
+  value,
+  kind,
+  showKind,
+  faded,
+  active,
+}: {
+  value: string;
+  kind?: string;
+  showKind?: boolean;
+  faded?: boolean;
+  active?: boolean;
+}) {
+  return (
+    <div
+      className={`relative rounded-2xl border-2 border-dashed px-8 py-6 text-3xl font-mono transition-all duration-700 ${
+        faded
+          ? 'opacity-25 border-classroom-border'
+          : active
+            ? 'opacity-100 scale-100 border-accent bg-accent-muted'
+            : 'opacity-100 scale-100 border-accent'
+      }`}
+    >
+      {value}
+      {kind && showKind && (
+        <span className="absolute -top-2 -right-2 timeline-node-in">
+          <TypeBadge kind={kind} />
+        </span>
+      )}
+    </div>
+  );
+}
+
+function LabelFrames({
+  phase,
+  name,
+  value,
+  kind,
+}: {
+  phase: number;
+  name: string;
+  value: string;
+  kind?: string;
+}) {
   return (
     <div className="flex items-center justify-center gap-6 h-44">
       <div
@@ -76,7 +136,7 @@ function LabelFrames({ phase }: { phase: number }) {
           phase >= 2 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
         }`}
       >
-        score
+        {name}
       </div>
       <div
         className={`h-0.5 bg-accent transition-all duration-700 ${
@@ -84,40 +144,48 @@ function LabelFrames({ phase }: { phase: number }) {
         }`}
       />
       <div
-        className={`rounded-2xl border-2 border-dashed border-accent px-8 py-6 text-3xl font-mono transition-all duration-700 ${
+        className={`transition-all duration-700 ${
           phase >= 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
         }`}
       >
-        92
+        <ValueCard value={value} kind={kind} showKind={phase >= 3} />
       </div>
       {phase >= 4 && (
         <p className="absolute bottom-4 right-6 text-sm text-accent timeline-node-in">已执行 ✓</p>
       )}
       {phase >= 3 && (
-        <p className="absolute bottom-4 left-6 text-base text-text-secondary">score ─────→ 92</p>
+        <p className="absolute bottom-4 left-6 text-base text-text-secondary">
+          {name} ─────→ {value}
+        </p>
       )}
     </div>
   );
 }
 
-function RebindFrames({ phase }: { phase: number }) {
+function RebindFrames({
+  phase,
+  name,
+  value,
+  nextValue,
+  kind,
+}: {
+  phase: number;
+  name: string;
+  value: string;
+  nextValue: string;
+  kind?: string;
+}) {
   const moved = phase >= 3;
   return (
     <div className="relative h-44 flex items-center justify-center">
       <div className="flex items-center gap-10">
+        <ValueCard value={value} kind={kind} showKind={phase >= 1} faded={moved} />
         <div
-          className={`rounded-2xl border-2 border-dashed px-6 py-4 text-2xl font-mono transition-all duration-700 ${
-            moved ? 'opacity-25 border-classroom-border' : 'opacity-100 border-accent'
+          className={`transition-all duration-700 ${
+            moved ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
           }`}
         >
-          92
-        </div>
-        <div
-          className={`rounded-2xl border-2 border-dashed border-accent px-6 py-4 text-2xl font-mono transition-all duration-700 ${
-            moved ? 'opacity-100 scale-100 bg-accent-muted' : 'opacity-0 scale-90'
-          }`}
-        >
-          95
+          <ValueCard value={nextValue} kind={kind} showKind={moved} active />
         </div>
       </div>
       <div
@@ -125,26 +193,41 @@ function RebindFrames({ phase }: { phase: number }) {
           phase >= 1 ? 'opacity-100' : 'opacity-0'
         } ${moved ? 'translate-x-10' : '-translate-x-16'}`}
       >
-        score
+        {name}
       </div>
       {phase >= 1 && phase < 3 && (
         <p className="absolute bottom-4 text-base text-text-secondary">
-          第二次赋值：不是把 92 改成 95，而是改指向
+          第二次赋值：不是把 {value} 改成 {nextValue}，而是改指向
         </p>
       )}
       {phase >= 4 && (
-        <p className="absolute bottom-4 title-kai text-lg text-accent">print(score) → 95</p>
+        <p className="absolute bottom-4 title-kai text-lg text-accent">
+          print({name}) → {nextValue}
+        </p>
       )}
     </div>
   );
 }
 
-function UpdateFrames({ phase }: { phase: number }) {
+function UpdateFrames({
+  phase,
+  name,
+  value,
+  nextValue,
+  kind,
+}: {
+  phase: number;
+  name: string;
+  value: string;
+  nextValue: string;
+  kind?: string;
+}) {
+  const sticker = kind ? `  ·  ${kind}` : '';
   const frames = [
-    { t: '读取右边当前的 score', d: 'score ─────→ 90' },
-    { t: '计算右边的表达式', d: '90 + 5 → 95' },
-    { t: '重新赋值', d: 'score ─────→ 95' },
-    { t: '输出', d: '95' },
+    { t: `读取右边当前的 ${name}`, d: `${name} ─────→ ${value}${sticker}` },
+    { t: '计算右边的表达式', d: `${value} + 5 → ${nextValue}` },
+    { t: '重新赋值', d: `${name} ─────→ ${nextValue}${sticker}` },
+    { t: '输出', d: nextValue },
   ];
   const n = Math.min(phase + 1, 4);
   return (

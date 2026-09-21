@@ -8,6 +8,18 @@ import {
   recordFailure,
   retryAfterSec,
 } from './functions/api/teacher/lockout';
+import {
+  allowRate,
+  buildLessonHeat,
+  buildSummary,
+  classifyDevice,
+  isValidDateYmd,
+  parseIncomingHit,
+  shanghaiDate,
+  shanghaiDayUtcRange,
+  type IncomingHit,
+  type StoredHit,
+} from './functions/api/analytics/_logic';
 
 type Pack = Record<string, unknown> | null;
 
@@ -37,28 +49,97 @@ function safeEqual(a: string, b: string): boolean {
 /** 仅本地默认，生产必须用 Cloudflare Secret 另设 ≥8 位 PIN */
 const LOCAL_DEV_PIN = '24681357';
 
+function resolveLocalPin(): string {
+  const fromEnv = process.env.TEACHER_PIN?.trim() ?? '';
+  if (fromEnv.length >= MIN_PIN_LENGTH) return fromEnv;
+  if (fromEnv.length > 0) {
+    console.warn(
+      `[teacher-api-mock] 忽略过短的 TEACHER_PIN（${fromEnv.length} 位，需要 ≥${MIN_PIN_LENGTH}），改用本地默认 PIN`,
+    );
+  }
+  return LOCAL_DEV_PIN;
+}
+
 /**
- * 本地开发：模拟 /api/teacher/*（内存 KV）
- * PIN 来自环境变量 TEACHER_PIN，默认 24681357
+ * 本地开发：模拟 /api/teacher/* 与 /api/analytics/*（内存）
+ * PIN 来自环境变量 TEACHER_PIN；过短或未设则用 24681357
  */
 export function teacherApiMockPlugin(): Plugin {
-  const pin = (process.env.TEACHER_PIN || LOCAL_DEV_PIN).trim();
   const tokens = new Set<string>();
   const lockouts = new Map<string, string>();
   let pack: Pack = null;
+  const hits: StoredHit[] = [];
+  const analyticsRate = new Map<string, number[]>();
 
   return {
     name: 'teacher-api-mock',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        const url = req.url?.split('?')[0] ?? '';
+        const full = req.url ?? '';
+        const url = full.split('?')[0] ?? '';
+        const query = new URLSearchParams(full.split('?')[1] ?? '');
+
+        if (url.startsWith('/api/analytics/')) {
+          try {
+            if (url === '/api/analytics/hit' && req.method === 'POST') {
+              const ip = req.socket.remoteAddress || 'local';
+              const gated = allowRate(analyticsRate.get(ip) ?? [], Date.now());
+              analyticsRate.set(ip, gated.next);
+              if (!gated.ok) {
+                return json(res, 429, { error: '请求过于频繁' });
+              }
+              const raw = await readBody(req);
+              const body = JSON.parse(raw || '{}') as IncomingHit;
+              const ua = String(req.headers['user-agent'] || '');
+              const ch = String(req.headers['sec-ch-ua-mobile'] || '');
+              const parsed = parseIncomingHit(body, { ip, device: classifyDevice(ua, ch) });
+              if (!parsed.ok) {
+                if (parsed.drop) {
+                  res.statusCode = 204;
+                  res.end();
+                  return;
+                }
+                return json(res, 400, { error: parsed.error });
+              }
+              hits.push(parsed.hit);
+              res.statusCode = 204;
+              res.end();
+              return;
+            }
+
+            const auth = req.headers.authorization || '';
+            const m = /^Bearer\s+(.+)$/i.exec(auth.trim());
+            const token = m?.[1]?.trim();
+            if (!token || !tokens.has(token)) {
+              return json(res, 401, { error: '未登录教师台' });
+            }
+
+            const dateParam = query.get('date')?.trim() || shanghaiDate(new Date());
+            if (!isValidDateYmd(dateParam)) {
+              return json(res, 400, { error: '日期格式无效' });
+            }
+            const { startIso, endIso } = shanghaiDayUtcRange(dateParam);
+            const dayHits = hits.filter((h) => h.ts >= startIso && h.ts < endIso);
+            const excludeTeacher = query.get('includeTeacher') !== '1';
+
+            if (url === '/api/analytics/summary' && req.method === 'GET') {
+              return json(res, 200, buildSummary(dateParam, dayHits, excludeTeacher));
+            }
+            if (url === '/api/analytics/lessons' && req.method === 'GET') {
+              return json(res, 200, { date: dateParam, lessons: buildLessonHeat(dayHits, excludeTeacher) });
+            }
+            return json(res, 404, { error: 'Not found' });
+          } catch (err) {
+            const message = err instanceof Error ? err.message : 'mock api error';
+            return json(res, 500, { error: message });
+          }
+        }
+
         if (!url.startsWith('/api/teacher/')) return next();
 
         try {
           if (url === '/api/teacher/session' && req.method === 'POST') {
-            if (pin.length < MIN_PIN_LENGTH) {
-              return json(res, 500, { error: `服务端 TEACHER_PIN 至少 ${MIN_PIN_LENGTH} 位` });
-            }
+            const pin = resolveLocalPin();
             const raw = await readBody(req);
             const body = JSON.parse(raw || '{}') as { pin?: string };
             const got = typeof body.pin === 'string' ? body.pin.trim() : '';

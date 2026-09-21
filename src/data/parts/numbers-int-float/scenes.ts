@@ -54,9 +54,9 @@ export const scenes: DraftScene[] = [
       typedDemo: {
         lead: "三行分别得到什么？先写再对照。",
         lines: [
-          { code: "print(7 / 2)", tokens: [{ text: "print(7 / 2)", tone: "float" }] },
-          { code: "print(7 // 2)", tokens: [{ text: "print(7 // 2)", tone: "int" }] },
-          { code: "print(7 % 2)", tokens: [{ text: "print(7 % 2)", tone: "int" }] },
+          { code: "print(7 / 2)", kind: "float", tokens: [{ text: "print(7 / 2)", tone: "float" }] },
+          { code: "print(7 // 2)", kind: "int", tokens: [{ text: "print(7 // 2)", tone: "int" }] },
+          { code: "print(7 % 2)", kind: "int", tokens: [{ text: "print(7 % 2)", tone: "int" }] },
         ],
         predict: {
           question: "输出分别是？",

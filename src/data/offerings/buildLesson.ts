@@ -20,6 +20,23 @@ function finalizeScene(
   };
 }
 
+function applyHomework(scenes: Scene[], spec: LectureSpec): void {
+  const homework = spec.homework;
+  if (!homework) return;
+  for (let i = 0; i < scenes.length; i++) {
+    const scene = scenes[i]!;
+    if (scene.content.headline !== "课后作业") continue;
+    scenes[i] = {
+      ...scene,
+      content: {
+        ...scene.content,
+        body: homework.title,
+        bulletPoints: homework.items,
+      },
+    };
+  }
+}
+
 function catalogScene(spec: LectureSpec): DraftScene {
   return {
     id: `${spec.id}-catalog`,
@@ -60,6 +77,8 @@ export function buildLesson(spec: LectureSpec): Lesson {
       index += 1;
     }
   }
+
+  applyHomework(scenes, spec);
 
   return {
     id: spec.id,

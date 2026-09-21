@@ -10,7 +10,7 @@ export const scenes: DraftScene[] = [
       headline: "课堂小结",
       finalVerdict: {
         lines: [
-          "本讲我们把程序跑了起来，用变量给数据起了名字，并做出了 CampusLife 小程序。",
+          "本讲我们把程序跑了起来，用变量给数据起了名字，并做出了诗卡和飞花令开场。",
           "编程是把想法变成可执行、可验证、可重复的步骤。",
           "接下来要弄清：数据在程序里究竟有哪些类型。",
         ],
@@ -20,7 +20,7 @@ export const scenes: DraftScene[] = [
           "区分数字、文字和表达式",
           "解释变量和赋值",
           "使用 input() 接收姓名",
-          "在 CampusLife 里改数据、跑通输出",
+          "做出诗卡，并用多个变量做出飞花令开场",
         ],
         teaserCode:
           'age = input("请输入年龄：")\nnext_year = age + 1\n\nprint("明年你", next_year, "岁")',
@@ -38,8 +38,10 @@ export const scenes: DraftScene[] = [
       headline: "课后作业",
       body: "第一次课后作业",
       bulletPoints: [
-        "确认编程环境验收仍可通过（版本 / 解释器 / Hello）",
-        "完成 PTA 中的编程练习",
+        "在自己电脑上搭建好 Python 编程环境。",
+        "本地编写三个程序：（1）键盘输入 name，输出「大家好，我的名字叫XXX。」（2）定义单价、重量、总价，计算并输出总价。（3）用变量和 input() 打印校园卡：姓名、学号、专业、学院。",
+        "完成 PTA 的 Lab 1。",
+        "复习本讲课件与课本，预习第 2 讲。",
       ],
     },
   },

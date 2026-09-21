@@ -44,6 +44,23 @@ npx wrangler kv namespace create TEACHER_KV --preview
 
 5. 推送 `main` 触发 GitHub Actions 部署；`functions/` 会随 `wrangler pages deploy` 一起发布。
 
+## 访问统计（D1，不写 TEACHER_KV）
+
+打点失败会被课堂端直接丢弃，不影响翻页与运行代码。本地 `npm run dev` 用内存 mock，刷新进程即清空。
+
+生产 D1 已创建并写入 `wrangler.toml`（绑定名 `ANALYTICS_DB`）：
+
+- 库：`pyclass-analytics`（`bc4b11ac-fa51-4aa7-b684-2ae7f1cbda6f`）
+- 预览库：`pyclass-analytics-preview`
+
+若 Dashboard 里 Functions 尚未出现 D1，到 Pages → qfnupy → Settings → Functions → D1 bindings 确认绑定名为 `ANALYTICS_DB`。改表结构时：
+
+```bash
+npx wrangler d1 execute pyclass-analytics --file=./migrations/0002_analytics_teacher_source.sql --remote
+```
+
+看板默认排除已解锁教师台的会话；突出「课后作业打开数」（封面作业链接 `?page=homework`）。
+
 ## API
 
 | 方法 | 路径 | 说明 |
@@ -52,5 +69,8 @@ npx wrangler kv namespace create TEACHER_KV --preview
 | DELETE | `/api/teacher/session` | Bearer 注销 |
 | GET | `/api/teacher/pack` | Bearer 读取整包 |
 | PUT | `/api/teacher/pack` | Bearer 写入整包 |
+| POST | `/api/analytics/hit` | 公开写入打点；过密 429 |
+| GET | `/api/analytics/summary` | Bearer；默认排除教师；`includeTeacher=1` 含演示；含课后作业打开数 |
+| GET | `/api/analytics/lessons` | Bearer；按讲次与幕聚合（同上） |
 
 整包含：班级列表、名单、学期小红花、考勤档案、本堂会话。

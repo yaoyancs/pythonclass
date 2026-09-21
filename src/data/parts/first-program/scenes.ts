@@ -1,6 +1,6 @@
 import type { DraftScene } from "../../../types/scene";
 
-/** 本 part：只讲变量——起名、赋值、改变。输入与完整小程序放在 CampusLife。 */
+/** 本 part：只讲变量——起名、赋值、改变。输入与诗卡放在飞花令。 */
 export const scenes: DraftScene[] = [
   {
     id: "scene-fp-16",
@@ -40,6 +40,9 @@ export const scenes: DraftScene[] = [
       question: "这一行是在说「score 等于 92」吗？",
       varModel: {
         mode: "label",
+        name: "score",
+        value: "92",
+        valueKind: "int",
         codeLines: ["score = 92"],
         boardNote: "赋值",
         teacherLine:
@@ -61,6 +64,10 @@ export const scenes: DraftScene[] = [
         revealOutputs: ["92"],
         compareCode: 'print(score)\nprint("score")',
         compareOutputs: ["92", "score"],
+        cards: [
+          { caption: "score", value: "92", kind: "int" },
+          { caption: '"score"', value: "score", kind: "str" },
+        ],
         takeaway: [
           "score → 变量名，找到它当前对应的值",
           '"score" → 字符串，就是文字 score',
@@ -77,6 +84,10 @@ export const scenes: DraftScene[] = [
       question: "最后输出 92 还是 95？请说出理由。",
       varModel: {
         mode: "rebind",
+        name: "score",
+        value: "92",
+        nextValue: "95",
+        valueKind: "int",
         codeLines: ["score = 92", "score = 95", "print(score)"],
         teacherLine:
           "第二次赋值不是让 92 变成 95，而是让名字 score 改为指向新的值 95。",
@@ -92,6 +103,10 @@ export const scenes: DraftScene[] = [
       question: "数学里 score = score + 5 好像不成立。Python 为什么允许？",
       varModel: {
         mode: "update",
+        name: "score",
+        value: "90",
+        nextValue: "95",
+        valueKind: "int",
         codeLines: ["score = 90", "score = score + 5", "print(score)"],
         teacherLine:
           "左边的 score 表示要更新谁；右边的 score 表示取出它当前的值。",

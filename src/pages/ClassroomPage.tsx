@@ -1,10 +1,12 @@
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { ClassroomShell } from '../components/layout/ClassroomShell';
 import { SceneEngineProvider } from '../engine/SceneEngine';
+import { findHomeworkSceneIndex } from '../data/course';
 import { getLessonById } from '../data/lessons';
 
 export function ClassroomPage() {
   const { lessonId = '' } = useParams();
+  const [params] = useSearchParams();
   const lesson = getLessonById(lessonId);
 
   if (!lesson) {
@@ -23,8 +25,16 @@ export function ClassroomPage() {
     );
   }
 
+  const openHomework = params.get('page') === 'homework';
+  const homeworkIndex = openHomework ? findHomeworkSceneIndex(lesson) : -1;
+  const startIndex = homeworkIndex >= 0 ? homeworkIndex : undefined;
+
   return (
-    <SceneEngineProvider key={lesson.id} lesson={lesson}>
+    <SceneEngineProvider
+      key={`${lesson.id}-${openHomework ? 'hw' : 'saved'}`}
+      lesson={lesson}
+      initialSceneIndex={startIndex}
+    >
       <ClassroomShell />
     </SceneEngineProvider>
   );

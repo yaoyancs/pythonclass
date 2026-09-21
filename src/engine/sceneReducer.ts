@@ -30,8 +30,10 @@ function initSceneState(lesson: Lesson, index: number): ClassroomState {
   };
 }
 
-export function createInitialState(lesson: Lesson): ClassroomState {
-  return initSceneState(lesson, 0);
+export function createInitialState(lesson: Lesson, sceneIndex = 0): ClassroomState {
+  const max = lesson.scenes.length - 1;
+  const index = Math.min(Math.max(sceneIndex, 0), Math.max(0, max));
+  return initSceneState(lesson, index);
 }
 
 function withScene(lesson: Lesson, index: number, prev: ClassroomState): ClassroomState {

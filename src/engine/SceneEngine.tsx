@@ -23,14 +23,20 @@ const SceneEngineContext = createContext<SceneEngineContextValue | null>(null);
 export function SceneEngineProvider({
   lesson,
   children,
+  initialSceneIndex,
 }: {
   lesson: Lesson;
   children: ReactNode;
+  /** 指定则从该页开始（封面作业链），忽略本讲已保存进度的页码 */
+  initialSceneIndex?: number;
 }) {
   const [state, dispatch] = useReducer(
     (prev: ClassroomState, action: ClassroomAction) => sceneReducer(lesson, prev, action),
     undefined,
     () => {
+      if (initialSceneIndex != null) {
+        return createInitialState(lesson, initialSceneIndex);
+      }
       const saved = loadClassroomState(lesson.id);
       if (saved && saved.lessonId === lesson.id) {
         const maxIndex = lesson.scenes.length - 1;

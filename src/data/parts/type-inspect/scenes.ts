@@ -27,19 +27,23 @@ export const scenes: DraftScene[] = [
         lines: [
           {
             code: "2",
+            kind: "int",
             tokens: [{ text: "2", tone: "int" }],
           },
           {
             code: "2.0",
+            kind: "float",
             tokens: [{ text: "2.0", tone: "float" }],
           },
           {
             code: '"2"',
+            kind: "str",
             tokens: [{ text: '"2"', tone: "str" }],
           },
           {
             code: "True",
-            tokens: [{ text: "True", tone: "plain" }],
+            kind: "bool",
+            tokens: [{ text: "True", tone: "bool" }],
           },
         ],
         takeaway:
@@ -61,6 +65,12 @@ export const scenes: DraftScene[] = [
           "<class 'float'>",
           "<class 'str'>",
           "<class 'bool'>",
+        ],
+        cards: [
+          { caption: "2", value: "2", kind: "int" },
+          { caption: "2.0", value: "2.0", kind: "float" },
+          { caption: '"2"', value: '"2"', kind: "str" },
+          { caption: "True", value: "True", kind: "bool" },
         ],
         takeaway: [
           "type(值) 用来查证，不靠猜",

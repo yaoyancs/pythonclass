@@ -319,7 +319,12 @@ export interface StepExecContent {
 /** 带着色 token 的代码演示 */
 export interface TypedDemoContent {
   lead?: string;
-  lines: { code: string; tokens?: { text: string; tone: 'int' | 'float' | 'str' | 'plain' }[] }[];
+  lines: {
+    code: string;
+    tokens?: { text: string; tone: 'int' | 'float' | 'str' | 'bool' | 'plain' }[];
+    /** 行右侧浅色类型标，如 int / str */
+    kind?: string;
+  }[];
   predict?: { question: string; codes: string[]; answers: string[] };
   takeaway: string;
 }
@@ -361,6 +366,14 @@ export interface VarModelContent {
   /** 板书补充，如「赋值」 */
   boardNote?: string;
   humanTranslation?: string;
+  /** 名字胶囊，默认 score */
+  name?: string;
+  /** 起始值，默认 92；update 模式默认 90 */
+  value?: string;
+  /** 重绑定 / 自增后的新值，默认 95 */
+  nextValue?: string;
+  /** 值卡片上的浅色类型标（如 int），不展开讲堆/对象 */
+  valueKind?: string;
 }
 
 /** 输入→处理→输出 */
@@ -389,6 +402,8 @@ export interface VarPredictContent {
   compareCode?: string;
   compareOutputs?: string[];
   takeaway: string[];
+  /** 收束时并排的值卡片（名字/字面量 + 值 + 可选类型标） */
+  cards?: { caption: string; value: string; kind?: string }[];
 }
 
 /** input / float 流程动画 */
@@ -581,6 +596,13 @@ export interface LecturePartRef {
   ref: string;
 }
 
+/** 封面与课堂「课后作业」页共用 */
+export interface LectureHomework {
+  /** 如「第一次课后作业」 */
+  title: string;
+  items: string[];
+}
+
 /** 某一学期开课表中的一讲 */
 export interface LectureSpec {
   id: string;
@@ -592,10 +614,13 @@ export interface LectureSpec {
   /** 开场导读 part id 列表（不含目录页；目录由 buildLesson 自动插入） */
   prelude?: string[];
   parts: LecturePartRef[];
+  homework?: LectureHomework;
 }
 
 export interface Offering {
   id: string;
+  /** 封面学期，如「2026 秋」 */
+  term: string;
   lectures: LectureSpec[];
 }
 
