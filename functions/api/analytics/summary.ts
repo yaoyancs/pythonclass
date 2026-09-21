@@ -27,7 +27,8 @@ export const onRequestGet = async (context: PagesContext): Promise<Response> => 
   try {
     const hits = await loadHitsInRange(env.ANALYTICS_DB, startIso, endIso);
     return json(buildSummary(dateParam, hits, excludeTeacher));
-  } catch {
+  } catch (err) {
+    console.error('analytics summary', err);
     return json({ error: '读取失败' }, 503);
   }
 };

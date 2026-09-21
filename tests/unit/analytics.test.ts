@@ -157,3 +157,52 @@ describe('track is non-blocking', () => {
     expect(result).toBeUndefined();
   });
 });
+
+describe('analytics D1 reads', () => {
+  it('loads hits without calling exec', async () => {
+    const { loadHitsInRange } = await import('../../functions/api/analytics/_db');
+    let execCalls = 0;
+    const db = {
+      exec: async () => {
+        execCalls += 1;
+        throw new Error('exec cannot run multiple statements');
+      },
+      prepare: (sql: string) => ({
+        bind: (..._values: unknown[]) => ({
+          run: async () => ({}),
+          all: async () => {
+            if (sql.includes('SELECT')) {
+              return {
+                results: [
+                  {
+                    ts: '2026-09-21T01:00:00.000Z',
+                    type: 'session_start',
+                    session_id: 'abcdefghij',
+                    path: '/',
+                    referrer: null,
+                    lesson_id: null,
+                    scene_index: null,
+                    scene_id: null,
+                    part_id: null,
+                    dwell_seconds: null,
+                    ip: '1.1.1.1',
+                    device: 'desktop',
+                    teacher: 0,
+                    source: null,
+                  },
+                ],
+              };
+            }
+            return { results: [] };
+          },
+        }),
+        run: async () => ({}),
+        all: async () => ({ results: [] }),
+      }),
+    };
+    const hits = await loadHitsInRange(db, '2026-09-20T16:00:00.000Z', '2026-09-21T16:00:00.000Z');
+    expect(execCalls).toBe(0);
+    expect(hits).toHaveLength(1);
+    expect(hits[0]?.sessionId).toBe('abcdefghij');
+  });
+});

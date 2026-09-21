@@ -8,11 +8,10 @@ export interface D1PreparedStatement {
 
 export interface D1Database {
   prepare(query: string): D1PreparedStatement;
-  exec(query: string): Promise<unknown>;
+  exec?(query: string): Promise<unknown>;
 }
 
-const CREATE_SQL = `
-CREATE TABLE IF NOT EXISTS hits (
+const CREATE_TABLE_SQL = `CREATE TABLE IF NOT EXISTS hits (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   ts TEXT NOT NULL,
   type TEXT NOT NULL,
@@ -28,27 +27,43 @@ CREATE TABLE IF NOT EXISTS hits (
   device TEXT,
   teacher INTEGER NOT NULL DEFAULT 0,
   source TEXT
-);
-CREATE INDEX IF NOT EXISTS idx_hits_ts ON hits(ts);
-CREATE INDEX IF NOT EXISTS idx_hits_lesson ON hits(lesson_id);
-`;
+)`;
+
+const SCHEMA_SQL = [
+  CREATE_TABLE_SQL,
+  'CREATE INDEX IF NOT EXISTS idx_hits_ts ON hits(ts)',
+  'CREATE INDEX IF NOT EXISTS idx_hits_lesson ON hits(lesson_id)',
+];
+
+const ALTER_SQL = [
+  'ALTER TABLE hits ADD COLUMN teacher INTEGER NOT NULL DEFAULT 0',
+  'ALTER TABLE hits ADD COLUMN source TEXT',
+];
 
 let ensured = false;
 
+/** D1 的 exec 往往只接受单条语句；Pages 上用 prepare().run() 更稳。 */
+async function runSql(db: D1Database, sql: string): Promise<void> {
+  await db.prepare(sql).run();
+}
+
 export async function ensureHitsTable(db: D1Database): Promise<void> {
   if (ensured) return;
-  await db.exec(CREATE_SQL);
-  try {
-    await db.exec('ALTER TABLE hits ADD COLUMN teacher INTEGER NOT NULL DEFAULT 0;');
-  } catch {
-    // already exists
+  for (const sql of SCHEMA_SQL) {
+    await runSql(db, sql);
   }
-  try {
-    await db.exec('ALTER TABLE hits ADD COLUMN source TEXT;');
-  } catch {
-    // already exists
+  for (const sql of ALTER_SQL) {
+    try {
+      await runSql(db, sql);
+    } catch {
+      // column already exists
+    }
   }
   ensured = true;
+}
+
+export function resetHitsTableCache(): void {
+  ensured = false;
 }
 
 export async function insertHit(db: D1Database, hit: StoredHit): Promise<void> {
@@ -113,19 +128,29 @@ function rowToHit(row: HitRow): StoredHit {
   };
 }
 
+const SELECT_HITS_SQL = `SELECT ts, type, session_id, path, referrer, lesson_id, scene_index, scene_id, part_id, dwell_seconds, ip, device, teacher, source
+       FROM hits WHERE ts >= ? AND ts < ? ORDER BY ts ASC LIMIT ?`;
+
+async function selectHitsInRange(
+  db: D1Database,
+  startIso: string,
+  endIso: string,
+  limit: number,
+): Promise<StoredHit[]> {
+  const { results } = await db.prepare(SELECT_HITS_SQL).bind(startIso, endIso, limit).all<HitRow>();
+  return (results ?? []).map(rowToHit);
+}
+
 export async function loadHitsInRange(
   db: D1Database,
   startIso: string,
   endIso: string,
   limit = 5000,
 ): Promise<StoredHit[]> {
-  await ensureHitsTable(db);
-  const { results } = await db
-    .prepare(
-      `SELECT ts, type, session_id, path, referrer, lesson_id, scene_index, scene_id, part_id, dwell_seconds, ip, device, teacher, source
-       FROM hits WHERE ts >= ? AND ts < ? ORDER BY ts ASC LIMIT ?`,
-    )
-    .bind(startIso, endIso, limit)
-    .all<HitRow>();
-  return (results ?? []).map(rowToHit);
+  try {
+    return await selectHitsInRange(db, startIso, endIso, limit);
+  } catch {
+    await ensureHitsTable(db);
+    return await selectHitsInRange(db, startIso, endIso, limit);
+  }
 }
