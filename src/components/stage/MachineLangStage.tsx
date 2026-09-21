@@ -1,5 +1,6 @@
 import type { MachineLangContent } from '../../types/scene';
 import { useStageAdvance } from '../../hooks/useStageAdvance';
+import { MemoryCpuDiagram, PunchCardSketch } from './MachineDiagram';
 
 interface MachineLangStageProps {
   content: MachineLangContent;
@@ -24,10 +25,12 @@ export function MachineLangStage({ content, sceneId }: MachineLangStageProps) {
   // 0 示意二进制 → 1 提问 → 2 痛点 → 3 找错动画
   const { phase, advance, done } = useStageAdvance(sceneId, 3);
   const wall = buildBinaryWall(content.binaryLines);
+  const mappedSteps = Math.min(content.binaryLines.length, 2);
+  const showBug = phase >= 3;
 
   return (
     <div
-      className="mt-4 cursor-pointer select-none"
+      className="mt-2 cursor-pointer select-none"
       onClick={() => advance()}
       role="button"
       tabIndex={0}
@@ -46,29 +49,94 @@ export function MachineLangStage({ content, sceneId }: MachineLangStageProps) {
         )}
       </div>
 
-      <div className="mt-4 rounded-3xl bg-code-bg shadow-card px-7 py-4 relative">
-        <p className="absolute top-3 right-5 text-sm tracking-[0.18em] text-code-muted">
-          {content.disclaimer ?? '示意'}
-        </p>
-        <div className="font-mono text-lg text-code-text space-y-1 tracking-wider pt-1">
-          {content.binaryLines.map((line) => (
-            <div key={line}>{line}</div>
-          ))}
+      <div className="mt-4 grid grid-cols-[minmax(18rem,22rem)_max-content] gap-8 items-start">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-4">
+            <PunchCardSketch />
+            <p className="title-kai text-lg text-text-primary leading-snug">
+              打孔卡
+              <span className="block text-base text-text-secondary font-sans">
+                有孔 / 无孔 ≈ 1 / 0
+              </span>
+            </p>
+          </div>
+          <div className="flex flex-col items-start gap-1">
+            <MemoryCpuDiagram lit />
+            <p className="title-kai text-lg text-text-primary leading-snug">
+              内存里的位 → 送进 CPU
+              <span className="block text-base text-text-secondary font-sans">
+                存的是 0 和 1，不是「12+8」这句话
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div
+          className={`rounded-3xl bg-code-bg shadow-card ${
+            showBug ? 'px-6 py-4 w-[min(36rem,100%)]' : 'px-7 py-5 w-max'
+          }`}
+        >
+          <p className="text-sm tracking-[0.18em] text-code-muted mb-3">
+            {showBug ? '找错 · 示意' : `${content.disclaimer ?? '示意'} · CPU 真正执行的指令`}
+          </p>
+          {showBug ? (
+            <div className="stage-fade-in">
+              <p className="text-base text-code-muted mb-2 leading-snug">
+                {content.bugHint}
+                <span className="ml-2 text-code-error">一位错了，结果可能全错。</span>
+              </p>
+              <div className="font-mono text-sm text-code-muted leading-relaxed tracking-widest">
+                {wall.map((line, li) => (
+                  <div key={`${line}-${li}`} className="whitespace-pre">
+                    {line.split('').map((ch, ci) => {
+                      const isBug = li === BUG_LINE && ci === BUG_COL && ch !== ' ';
+                      return (
+                        <span
+                          key={`${li}-${ci}`}
+                          className={
+                            isBug
+                              ? 'text-code-error bit-error-pulse font-bold inline-block scale-125 origin-center outline outline-1 outline-code-error rounded-sm'
+                              : undefined
+                          }
+                        >
+                          {ch}
+                        </span>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="font-mono text-2xl text-code-text space-y-2 tracking-wider whitespace-nowrap">
+              {content.binaryLines.map((line, i) => {
+                const mapped = i < mappedSteps && phase >= 1;
+                return (
+                  <div
+                    key={line}
+                    className={`transition-colors duration-500 ${mapped ? 'text-accent' : ''}`}
+                  >
+                    {line}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
       {phase >= 1 && (
-        <p className="mt-5 stage-emphasis text-xl leading-relaxed stage-fade-in">
+        <p className="mt-4 stage-emphasis text-[clamp(1rem,1.6vw,1.2rem)] leading-snug stage-fade-in">
           {content.question}
         </p>
       )}
 
       {phase >= 2 && (
-        <ul className="mt-4 grid grid-cols-4 gap-3 stage-fade-in">
+        <ul className="mt-3 grid grid-cols-4 gap-2.5 stage-fade-in">
           {content.painPoints.map((point) => (
             <li
               key={point}
-              className="rounded-2xl bg-classroom-stage shadow-card px-4 py-2.5 text-center text-lg text-text-primary"
+              className="rounded-2xl bg-classroom-stage shadow-card px-3 py-1.5 text-center text-[clamp(0.95rem,1.4vw,1.1rem)] text-text-primary"
             >
               {point}
             </li>
@@ -76,33 +144,8 @@ export function MachineLangStage({ content, sceneId }: MachineLangStageProps) {
         </ul>
       )}
 
-      {phase >= 3 && (
-        <div className="mt-4 stage-fade-in">
-          <p className="text-base text-text-secondary mb-2">{content.bugHint}</p>
-          <div className="rounded-3xl bg-code-bg shadow-card px-5 py-3">
-            <div className="font-mono text-xs md:text-sm text-code-muted leading-relaxed tracking-widest">
-              {wall.map((line, li) => (
-                <div key={`${line}-${li}`} className="whitespace-pre">
-                  {line.split('').map((ch, ci) => {
-                    const isBug = li === BUG_LINE && ci === BUG_COL && ch !== ' ';
-                    return (
-                      <span
-                        key={`${li}-${ci}`}
-                        className={isBug ? 'text-code-error bit-error-pulse font-bold' : undefined}
-                      >
-                        {ch}
-                      </span>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {!done && (
-        <p className="mt-5 text-base text-accent/80">点击继续 · 或按空格 / →</p>
+        <p className="mt-3 text-base text-accent/80">点击继续 · 或按空格 / →</p>
       )}
     </div>
   );

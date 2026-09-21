@@ -10,7 +10,7 @@ export const scenes: DraftScene[] = [
       headline: "课堂小结",
       finalVerdict: {
         lines: [
-          "本讲我们把程序跑了起来，也写出了第一个完整小程序。",
+          "本讲我们把程序跑了起来，用变量给数据起了名字，并做出了 CampusLife 小程序。",
           "编程是把想法变成可执行、可验证、可重复的步骤。",
           "接下来要弄清：数据在程序里究竟有哪些类型。",
         ],
@@ -19,9 +19,8 @@ export const scenes: DraftScene[] = [
           "预测简单程序的输出",
           "区分数字、文字和表达式",
           "解释变量和赋值",
-          "使用 input() 接收数据",
-          "完成输入—处理—输出程序",
-          "根据需求变化修改程序规则",
+          "使用 input() 接收姓名",
+          "在 CampusLife 里改数据、跑通输出",
         ],
         teaserCode:
           'age = input("请输入年龄：")\nnext_year = age + 1\n\nprint("明年你", next_year, "岁")',

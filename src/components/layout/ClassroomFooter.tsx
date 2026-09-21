@@ -8,11 +8,12 @@ export function ClassroomFooter() {
   const atEnd = state.currentSceneIndex >= lesson.sceneCount - 1;
 
   return (
-    <footer className="bg-classroom-stage border-t border-classroom-border px-10 py-4">
-      <div className="flex items-center justify-between gap-4">
+    <footer className="bg-classroom-stage border-t border-classroom-border px-8 py-1.5">
+      <div className="flex items-end justify-between gap-4">
         <Button
           variant="secondary"
-          size="lg"
+          size="md"
+          className="shrink-0 whitespace-nowrap"
           disabled={atStart}
           onClick={() => dispatch({ type: 'PREV_SCENE' })}
         >
@@ -23,7 +24,8 @@ export function ClassroomFooter() {
 
         <Button
           variant="primary"
-          size="lg"
+          size="md"
+          className="shrink-0 whitespace-nowrap"
           disabled={atEnd}
           onClick={() => dispatch({ type: 'NEXT_SCENE' })}
         >

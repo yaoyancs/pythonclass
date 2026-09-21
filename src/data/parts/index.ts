@@ -9,6 +9,14 @@ import { scenes as executePython } from "./execute-python/scenes";
 import { scenes as firstProgram } from "./first-program/scenes";
 import { scenes as campusLife01 } from "./campus-life-01/scenes";
 import { scenes as wrapUp } from "./wrap-up/scenes";
+import { scenes as typeWhy } from "./type-why/scenes";
+import { scenes as typeInspect } from "./type-inspect/scenes";
+import { scenes as numbersIntFloat } from "./numbers-int-float/scenes";
+import { scenes as strings } from "./strings/scenes";
+import { scenes as typeCast } from "./type-cast/scenes";
+import { scenes as boolCompare } from "./bool-compare/scenes";
+import { scenes as campusLife02 } from "./campus-life-02/scenes";
+import { scenes as conclusionHomework } from "./conclusion-homework/scenes";
 
 /** 全课知识块仓库：开课表通过 ref 引用 */
 export const PARTS: Record<string, ContentPart> = {
@@ -22,6 +30,14 @@ export const PARTS: Record<string, ContentPart> = {
   "first-program": { id: "first-program", scenes: firstProgram },
   "campus-life-01": { id: "campus-life-01", scenes: campusLife01 },
   "wrap-up": { id: "wrap-up", scenes: wrapUp },
+  "type-why": { id: "type-why", scenes: typeWhy },
+  "type-inspect": { id: "type-inspect", scenes: typeInspect },
+  "numbers-int-float": { id: "numbers-int-float", scenes: numbersIntFloat },
+  strings: { id: "strings", scenes: strings },
+  "type-cast": { id: "type-cast", scenes: typeCast },
+  "bool-compare": { id: "bool-compare", scenes: boolCompare },
+  "campus-life-02": { id: "campus-life-02", scenes: campusLife02 },
+  "conclusion-homework": { id: "conclusion-homework", scenes: conclusionHomework },
 };
 
 export function getPart(ref: string): ContentPart {

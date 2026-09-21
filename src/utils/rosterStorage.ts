@@ -10,12 +10,16 @@ import type {
   SessionLedger,
   Student,
 } from '../types/roster';
+import { emptyTeacherPack, type TeacherCloudPack } from '../types/teacherPack';
 
 const REGISTRY_KEY = 'pyclass-class-registry-v1';
 const ROSTERS_KEY = 'pyclass-rosters-v2';
 const ACTIVE_CLASS_KEY = 'pyclass-active-class';
 const LEGACY_ROSTER_KEY = 'pyclass-roster';
 const LEGACY_SEMESTER_KEY = 'pyclass-semester-flowers';
+
+/** 本堂 / 学期小红花下限（可为负） */
+export const FLOWER_MIN = -50;
 
 function emptyClassRoster(): ClassRoster {
   return { students: [], updatedAt: '', source: undefined };
@@ -468,9 +472,9 @@ export function adjustFlowers(
   const semester = loadSemester(session.classId);
   const prevSession = session.flowers[studentId] ?? 0;
   const prevSemester = semester.flowers[studentId] ?? 0;
-  const sessionCount = Math.max(0, prevSession + delta);
+  const sessionCount = Math.max(FLOWER_MIN, prevSession + delta);
   const applied = sessionCount - prevSession;
-  const semesterCount = Math.max(0, prevSemester + applied);
+  const semesterCount = Math.max(FLOWER_MIN, prevSemester + applied);
 
   const nextSession: SessionLedger = {
     ...session,
@@ -524,3 +528,146 @@ export function rosterSummary(): { id: ClassId; label: string; count: number }[]
     count: store.classes[c.id]?.students.length ?? 0,
   }));
 }
+
+function collectSessions(): Record<string, SessionLedger> {
+  const sessions: Record<string, SessionLedger> = {};
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith('pyclass-session-')) continue;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      try {
+        const session = JSON.parse(raw) as SessionLedger;
+        if (session?.sessionId) sessions[session.sessionId] = session;
+      } catch {
+        // skip bad entry
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return sessions;
+}
+
+function collectSemesters(classIds: ClassId[]): Record<string, SemesterLedger> {
+  const out: Record<string, SemesterLedger> = {};
+  for (const id of classIds) {
+    const ledger = loadSemester(id);
+    if (ledger.updatedAt || Object.keys(ledger.flowers).length) {
+      out[id] = ledger;
+    }
+  }
+  return out;
+}
+
+function collectAttendanceLogs(classIds: ClassId[]): Record<string, AttendanceLog> {
+  const out: Record<string, AttendanceLog> = {};
+  for (const id of classIds) {
+    const log = loadAttendanceLog(id);
+    if (log.updatedAt || log.entries.length) {
+      out[id] = log;
+    }
+  }
+  return out;
+}
+
+/** 将本机教师数据打包，供上传 KV */
+export function exportTeacherPack(): TeacherCloudPack {
+  ensureRegistry();
+  const classes = loadClasses();
+  const classIds = classes.map((c) => c.id);
+  return {
+    version: 1,
+    updatedAt: new Date().toISOString(),
+    classes,
+    rosters: loadRosters(),
+    activeClassId: loadActiveClassId(),
+    semesters: collectSemesters(classIds),
+    attendanceLogs: collectAttendanceLogs(classIds),
+    sessions: collectSessions(),
+  };
+}
+
+function clearTeacherLocalKeys(): void {
+  const toRemove: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key) continue;
+    if (
+      key === REGISTRY_KEY ||
+      key === ROSTERS_KEY ||
+      key === ACTIVE_CLASS_KEY ||
+      key === LEGACY_ROSTER_KEY ||
+      key === LEGACY_SEMESTER_KEY ||
+      key.startsWith('pyclass-session-') ||
+      key.startsWith('pyclass-semester-flowers-') ||
+      key.startsWith('pyclass-attendance-log-')
+    ) {
+      toRemove.push(key);
+    }
+  }
+  for (const key of toRemove) localStorage.removeItem(key);
+}
+
+/** 用云端整包覆盖本机教师数据（解锁后 hydrate） */
+export function importTeacherPack(pack: TeacherCloudPack): void {
+  clearTeacherLocalKeys();
+
+  const classes = Array.isArray(pack.classes) ? pack.classes : [];
+  writeJson(REGISTRY_KEY, classes);
+
+  const rosters = pack.rosters ?? emptyStore();
+  writeJson(ROSTERS_KEY, {
+    classes: rosters.classes ?? {},
+    updatedAt: rosters.updatedAt ?? new Date().toISOString(),
+  });
+
+  const active =
+    pack.activeClassId && classes.some((c) => c.id === pack.activeClassId)
+      ? pack.activeClassId
+      : classes[0]?.id ?? '';
+  if (active) localStorage.setItem(ACTIVE_CLASS_KEY, active);
+  else localStorage.removeItem(ACTIVE_CLASS_KEY);
+
+  for (const [classId, semester] of Object.entries(pack.semesters ?? {})) {
+    if (!semester) continue;
+    writeJson(semesterKey(classId), {
+      classId,
+      flowers: semester.flowers ?? {},
+      updatedAt: semester.updatedAt ?? '',
+    });
+  }
+
+  for (const [classId, log] of Object.entries(pack.attendanceLogs ?? {})) {
+    if (!log) continue;
+    writeJson(attendanceLogKey(classId), {
+      classId,
+      entries: Array.isArray(log.entries) ? log.entries : [],
+      updatedAt: log.updatedAt ?? '',
+    });
+  }
+
+  for (const session of Object.values(pack.sessions ?? {})) {
+    if (!session?.sessionId || !session.classId) continue;
+    writeJson(sessionStorageKey(session.sessionId), session);
+  }
+}
+
+export function packHasTeachingData(pack: TeacherCloudPack | null | undefined): boolean {
+  if (!pack) return false;
+  if (pack.classes?.length) return true;
+  if (Object.keys(pack.rosters?.classes ?? {}).length) return true;
+  if (Object.keys(pack.semesters ?? {}).length) return true;
+  if (Object.keys(pack.attendanceLogs ?? {}).length) return true;
+  if (Object.keys(pack.sessions ?? {}).length) return true;
+  return false;
+}
+
+export function isValidTeacherPack(value: unknown): value is TeacherCloudPack {
+  if (!value || typeof value !== 'object') return false;
+  const pack = value as TeacherCloudPack;
+  return pack.version === 1 && Array.isArray(pack.classes) && !!pack.rosters;
+}
+
+export { emptyTeacherPack };

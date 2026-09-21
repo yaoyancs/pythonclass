@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { teacherApiMockPlugin } from './vite.teacherApiMock';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), teacherApiMockPlugin()],
   optimizeDeps: {
     exclude: ['pyodide'],
   },

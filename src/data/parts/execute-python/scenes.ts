@@ -122,18 +122,4 @@ export const scenes: DraftScene[] = [
       },
     },
   },
-  {
-    id: "scene-run-hello",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "本机跑通 Hello",
-      body: "接上一部分的验收：解释器选对之后，用同一种方式把 hello.py 真正跑起来。",
-      bulletPoints: [
-        "编辑器里写好 print(\"Hello\")，点击 Run / 运行",
-        "或在终端进入文件所在目录，执行：python hello.py",
-        "控制台出现 Hello，说明「文件 → 解释器 → 输出」这条链路已通",
-      ],
-    },
-  },
 ];

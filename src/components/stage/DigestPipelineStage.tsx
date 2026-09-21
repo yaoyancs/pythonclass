@@ -1,9 +1,170 @@
 import type { DigestPipelineContent } from '../../types/scene';
 import { useStageAdvance } from '../../hooks/useStageAdvance';
 
+/** 沿传送带移动的数据包位置：0 源码 … 4 结果 */
+const PACKET_LEFT = ['6%', '26%', '46%', '66%', '86%'] as const;
+
 interface DigestPipelineStageProps {
   content: DigestPipelineContent;
-  sceneId: string;
+  sceneId?: string;
+  /** 由外层统一推进时传入，不再自己注册点击 */
+  playbackPhase?: number;
+}
+
+function DigestPipelineView({
+  content,
+  phase,
+}: {
+  content: DigestPipelineContent;
+  phase: number;
+}) {
+  const intoTranslator = phase >= 1;
+  const showMachine = phase >= 2;
+  const cpuLit = phase >= 3;
+  const showResult = phase >= 4;
+  const packetAt = Math.min(phase, 4);
+  const packetVisible = phase >= 1 || phase === 0;
+
+  return (
+    <>
+      <div className="rounded-3xl bg-classroom-stage shadow-card px-5 py-4 md:px-7 md:py-5 relative overflow-hidden">
+        <div className="absolute left-8 right-8 top-[6.5rem] h-3 rounded-full bg-classroom-playground border border-classroom-border/60" />
+        <div className="absolute left-8 right-8 top-[6.5rem] h-3 rounded-full overflow-hidden pointer-events-none">
+          <div
+            className="h-full bg-accent/25 origin-left transition-transform duration-700 ease-out"
+            style={{ transform: `scaleX(${(packetAt + 1) / 5})` }}
+          />
+        </div>
+
+        {packetVisible && (
+          <div
+            className="absolute top-[5.6rem] z-10 -translate-x-1/2 transition-all duration-700 ease-out"
+            style={{ left: PACKET_LEFT[packetAt] }}
+            aria-hidden
+          >
+            <div
+              className={`rounded-xl px-2.5 py-1 shadow-card border border-accent/30 font-mono text-[0.65rem] leading-none whitespace-nowrap ${
+                showMachine && packetAt >= 2
+                  ? 'bg-code-bg text-code-text'
+                  : 'bg-white text-accent'
+              } ${phase === 1 ? 'digest-packet-bounce' : ''}`}
+            >
+              {packetAt < 2 ? content.sourceCode : content.machineLines[0] ?? '1011…'}
+            </div>
+          </div>
+        )}
+
+        <div className="relative grid grid-cols-5 gap-2 md:gap-4 items-start pt-1 pb-2">
+          <div
+            className={`flex flex-col items-center text-center transition-all duration-700 ${
+              intoTranslator ? 'opacity-55' : 'opacity-100 digest-station-in'
+            }`}
+          >
+            <FileIcon active={!intoTranslator} />
+            <p className="mt-2 text-xs tracking-[0.16em] text-accent">{content.sourceLabel}</p>
+            <div
+              className={`mt-8 w-full max-w-[10rem] rounded-2xl bg-code-bg px-3 py-2 shadow-card transition-all duration-700 ${
+                intoTranslator ? 'opacity-30 scale-90' : 'opacity-100'
+              }`}
+            >
+              <pre className="font-mono text-[0.7rem] md:text-xs text-code-text leading-relaxed whitespace-pre-wrap text-left">
+                {content.sourceCode}
+              </pre>
+            </div>
+            <p className="mt-2 text-sm text-text-secondary">给人看</p>
+          </div>
+
+          <div
+            className={`flex flex-col items-center text-center transition-all duration-700 ${
+              intoTranslator ? 'scale-105' : 'opacity-45 scale-95'
+            }`}
+          >
+            <TranslatorMachine active={intoTranslator} spinning={intoTranslator && !showResult} />
+            <p className="mt-1 text-xs tracking-[0.16em] text-accent">{content.translatorLabel}</p>
+            <p className="mt-1 text-sm text-text-secondary leading-snug">{content.translatorHint}</p>
+            <p className="mt-8 text-sm text-text-secondary">中间翻译</p>
+          </div>
+
+          <div
+            className={`flex flex-col items-center text-center transition-all duration-700 ${
+              showMachine ? 'opacity-100' : 'opacity-35'
+            }`}
+          >
+            <MachineStrip lines={content.machineLines} active={showMachine} />
+            <p className="mt-2 text-xs tracking-[0.16em] text-accent">{content.machineLabel}</p>
+            <p className="mt-8 text-sm text-text-secondary">机器能读</p>
+          </div>
+
+          <div
+            className={`flex flex-col items-center text-center transition-all duration-700 ${
+              cpuLit ? 'scale-110' : 'opacity-35 scale-95'
+            }`}
+          >
+            <CpuIcon lit={cpuLit} />
+            <p className="mt-2 text-xs tracking-[0.16em] text-accent">{content.cpuLabel}</p>
+            <p className="mt-8 text-sm text-text-secondary">真正干活</p>
+          </div>
+
+          <div
+            className={`flex flex-col items-center text-center transition-all duration-700 ${
+              showResult ? 'opacity-100' : 'opacity-30'
+            }`}
+          >
+            <ResultBadge value={content.result} active={showResult} />
+            <p className="mt-2 text-xs tracking-[0.16em] text-accent">{content.resultLabel}</p>
+            <p className="mt-8 text-sm text-text-secondary">算出答案</p>
+          </div>
+        </div>
+      </div>
+
+      {showResult && (
+        <p className="mt-3 title-kai text-xl text-text-primary text-center leading-relaxed digest-station-in">
+          {content.conclusion}
+        </p>
+      )}
+    </>
+  );
+}
+
+/**
+ * 横向流水线插画：源码 → 翻译器 → 机器指令 → CPU → 结果。
+ */
+export function DigestPipelineStage({ content, sceneId, playbackPhase }: DigestPipelineStageProps) {
+  const owned = useStageAdvance(sceneId ?? 'digest-pipeline', 4, playbackPhase == null);
+  const phase = playbackPhase ?? owned.phase;
+  const done = playbackPhase != null ? playbackPhase >= 4 : owned.done;
+  const advance = owned.advance;
+  const nested = playbackPhase != null;
+
+  return (
+    <div
+      className={nested ? 'mt-4' : 'mt-3 cursor-pointer select-none'}
+      onClick={nested ? undefined : () => advance()}
+      role={nested ? undefined : 'button'}
+      tabIndex={nested ? undefined : 0}
+      onKeyDown={
+        nested
+          ? undefined
+          : (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                advance();
+              }
+            }
+      }
+    >
+      <DigestPipelineView content={content} phase={phase} />
+
+      {!nested && !done && (
+        <p className="mt-4 text-base text-accent/80">
+          {phase === 0 && '点击继续 · 源码送进翻译器'}
+          {phase === 1 && '点击继续 · 吐出机器指令'}
+          {phase === 2 && '点击继续 · 指令进入 CPU'}
+          {phase === 3 && '点击继续 · 亮起结果'}
+        </p>
+      )}
+    </div>
+  );
 }
 
 function FileIcon({ active }: { active: boolean }) {
@@ -167,176 +328,5 @@ function ResultBadge({ value, active }: { value: string; active: boolean }) {
         {active ? value : '?'}
       </text>
     </svg>
-  );
-}
-
-/** 沿传送带移动的数据包位置：0 源码 … 4 结果 */
-const PACKET_LEFT = ['6%', '26%', '46%', '66%', '86%'] as const;
-
-/**
- * 横向流水线插画：源码 → 翻译器 → 机器指令 → CPU → 结果。
- * 数据包沿传送带迁移；旁注仅短标签。
- */
-export function DigestPipelineStage({ content, sceneId }: DigestPipelineStageProps) {
-  // 0 源码就绪 → 1 进入翻译器 → 2 吐出指令 → 3 CPU → 4 结果
-  const { phase, advance, done } = useStageAdvance(sceneId, 4);
-
-  const intoTranslator = phase >= 1;
-  const showMachine = phase >= 2;
-  const cpuLit = phase >= 3;
-  const showResult = phase >= 4;
-
-  const packetAt = Math.min(phase, 4);
-  const packetVisible = phase >= 1 || phase === 0;
-
-  return (
-    <div
-      className="mt-3 cursor-pointer select-none"
-      onClick={() => advance()}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          advance();
-        }
-      }}
-    >
-      <div className="rounded-3xl bg-classroom-stage shadow-card px-5 py-5 md:px-8 md:py-7 relative overflow-hidden">
-        {/* 背景轨道 */}
-        <div className="absolute left-8 right-8 top-[7.25rem] h-3 rounded-full bg-classroom-playground border border-classroom-border/60" />
-        <div className="absolute left-8 right-8 top-[7.25rem] h-3 rounded-full overflow-hidden pointer-events-none">
-          <div
-            className={`h-full bg-accent/25 origin-left transition-transform duration-700 ease-out ${
-              showResult ? 'scale-x-100' : ''
-            }`}
-            style={{ transform: `scaleX(${(packetAt + 1) / 5})` }}
-          />
-        </div>
-
-        {/* 移动中的数据包 */}
-        {packetVisible && (
-          <div
-            className="absolute top-[6.35rem] z-10 -translate-x-1/2 transition-all duration-700 ease-out"
-            style={{ left: PACKET_LEFT[packetAt] }}
-            aria-hidden
-          >
-            <div
-              className={`rounded-xl px-2.5 py-1 shadow-card border border-accent/30 font-mono text-[0.65rem] leading-none whitespace-nowrap ${
-                showMachine && packetAt >= 2
-                  ? 'bg-code-bg text-code-text'
-                  : 'bg-white text-accent'
-              } ${phase === 1 ? 'digest-packet-bounce' : ''}`}
-            >
-              {packetAt < 2 ? content.sourceCode : content.machineLines[0] ?? '1011…'}
-            </div>
-          </div>
-        )}
-
-        <div className="relative grid grid-cols-5 gap-2 md:gap-4 items-start pt-1 pb-2">
-          {/* 源码 */}
-          <div
-            className={`flex flex-col items-center text-center transition-all duration-700 ${
-              intoTranslator ? 'opacity-55' : 'opacity-100 digest-station-in'
-            }`}
-          >
-            <FileIcon active={!intoTranslator} />
-            <p className="mt-2 text-xs tracking-[0.16em] text-accent">{content.sourceLabel}</p>
-            <div
-              className={`mt-10 w-full max-w-[10rem] rounded-2xl bg-code-bg px-3 py-2.5 shadow-card transition-all duration-700 ${
-                intoTranslator ? 'opacity-30 scale-90' : 'opacity-100'
-              }`}
-            >
-              <pre className="font-mono text-[0.7rem] md:text-xs text-code-text leading-relaxed whitespace-pre-wrap text-left">
-                {content.sourceCode}
-              </pre>
-            </div>
-            <p className="mt-2 text-sm text-text-secondary">给人看</p>
-          </div>
-
-          {/* 翻译器 */}
-          <div
-            className={`flex flex-col items-center text-center transition-all duration-700 ${
-              intoTranslator ? 'scale-105' : 'opacity-45 scale-95'
-            }`}
-          >
-            <TranslatorMachine active={intoTranslator} spinning={intoTranslator && !showResult} />
-            <p className="mt-1 text-xs tracking-[0.16em] text-accent">{content.translatorLabel}</p>
-            <p className="mt-1 text-sm text-text-secondary leading-snug">{content.translatorHint}</p>
-            <div className="mt-8 h-10" />
-            <p className="text-sm text-text-secondary">中间翻译</p>
-          </div>
-
-          {/* 机器指令 */}
-          <div
-            className={`flex flex-col items-center text-center transition-all duration-700 ${
-              showMachine ? 'opacity-100' : 'opacity-35'
-            }`}
-          >
-            <MachineStrip lines={content.machineLines} active={showMachine} />
-            <p className="mt-2 text-xs tracking-[0.16em] text-accent">{content.machineLabel}</p>
-            <div className="mt-10 flex gap-1 justify-center min-h-[1.25rem]" aria-hidden>
-              {showMachine &&
-                Array.from({ length: 10 }).map((_, i) => (
-                  <span
-                    key={i}
-                    className="w-2.5 h-4 rounded-sm bg-accent digest-bits-in"
-                    style={{
-                      opacity: 0.3 + (i % 4) * 0.18,
-                      animationDelay: `${i * 50}ms`,
-                    }}
-                  />
-                ))}
-            </div>
-            <p className="mt-2 text-sm text-text-secondary">机器能读</p>
-          </div>
-
-          {/* CPU */}
-          <div
-            className={`flex flex-col items-center text-center transition-all duration-700 ${
-              cpuLit ? 'scale-110' : 'opacity-35 scale-95'
-            }`}
-          >
-            <CpuIcon lit={cpuLit} />
-            <p className="mt-2 text-xs tracking-[0.16em] text-accent">{content.cpuLabel}</p>
-            <div className="mt-10 min-h-[1.25rem]">
-              {cpuLit && !showResult && (
-                <span className="inline-block rounded-full bg-accent text-white text-sm px-3 py-0.5 digest-station-in">
-                  执行
-                </span>
-              )}
-            </div>
-            <p className="mt-2 text-sm text-text-secondary">真正干活</p>
-          </div>
-
-          {/* 结果 */}
-          <div
-            className={`flex flex-col items-center text-center transition-all duration-700 ${
-              showResult ? 'opacity-100' : 'opacity-30'
-            }`}
-          >
-            <ResultBadge value={content.result} active={showResult} />
-            <p className="mt-2 text-xs tracking-[0.16em] text-accent">{content.resultLabel}</p>
-            <div className="mt-10 min-h-[1.25rem]" />
-            <p className="text-sm text-text-secondary">算出答案</p>
-          </div>
-        </div>
-      </div>
-
-      {showResult && (
-        <p className="mt-5 title-kai text-xl md:text-2xl text-text-primary text-center leading-relaxed digest-station-in">
-          {content.conclusion}
-        </p>
-      )}
-
-      {!done && (
-        <p className="mt-4 text-base text-accent/80">
-          {phase === 0 && '点击继续 · 源码送进翻译器'}
-          {phase === 1 && '点击继续 · 吐出机器指令'}
-          {phase === 2 && '点击继续 · 指令进入 CPU'}
-          {phase === 3 && '点击继续 · 亮起结果'}
-        </p>
-      )}
-    </div>
   );
 }

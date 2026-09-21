@@ -17,3 +17,4 @@ export function getAllLessons(): Lesson[] {
 }
 
 export const lesson01 = LESSONS.lesson01!;
+export const lesson02 = LESSONS.lesson02!;

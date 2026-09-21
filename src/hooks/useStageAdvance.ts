@@ -7,7 +7,7 @@ declare global {
 }
 
 /** 课堂分步动画：注册点击/空格/→ 推进，切场景时重置。 */
-export function useStageAdvance(sceneId: string, maxPhase: number) {
+export function useStageAdvance(sceneId: string, maxPhase: number, enabled = true) {
   const [phase, setPhase] = useState(0);
   const phaseRef = useRef(0);
   const maxRef = useRef(maxPhase);
@@ -26,11 +26,12 @@ export function useStageAdvance(sceneId: string, maxPhase: number) {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     window.__pyclassStageAdvance = () => advance();
     return () => {
       delete window.__pyclassStageAdvance;
     };
-  }, [advance]);
+  }, [advance, enabled]);
 
   return { phase, advance, done: phase >= maxPhase };
 }

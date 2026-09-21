@@ -27,7 +27,19 @@ import {
   upsertAttendanceLog,
 } from '../utils/rosterStorage';
 
-export function useRosterSession(lessonId: string) {
+interface UseRosterSessionOptions {
+  /** 本机持久化变更后回调（用于云端同步） */
+  onPersist?: () => void;
+}
+
+export function useRosterSession(lessonId: string, options: UseRosterSessionOptions = {}) {
+  const onPersistRef = useRef(options.onPersist);
+  onPersistRef.current = options.onPersist;
+
+  const notifyPersist = useCallback(() => {
+    onPersistRef.current?.();
+  }, []);
+
   const [classListVersion, setClassListVersion] = useState(0);
   const [classId, setClassIdState] = useState<ClassId>(() => loadActiveClassId());
   const [rosterVersion, setRosterVersion] = useState(0);
@@ -57,39 +69,58 @@ export function useRosterSession(lessonId: string) {
       if (first) {
         saveActiveClassId(first);
         setClassIdState(first);
+        notifyPersist();
       }
       return;
     }
     const nextSession = loadOrCreateSession(classId, lessonId);
     setSession(nextSession);
     setSemester(loadSemester(classId));
-    setAttendanceLog(loadAttendanceLog(classId));
+    let nextLog = loadAttendanceLog(classId);
     if (Object.keys(nextSession.attendance).length > 0) {
-      setAttendanceLog(upsertAttendanceLog(nextSession));
+      nextLog = upsertAttendanceLog(nextSession);
     }
-  }, [classId, lessonId]);
+    setAttendanceLog(nextLog);
+    notifyPersist();
+  }, [classId, lessonId, notifyPersist]);
 
   const students = useMemo(() => {
     void rosterVersion;
     return getClassStudents(classId);
   }, [classId, rosterVersion]);
 
-  const setClassId = useCallback((id: ClassId) => {
-    saveActiveClassId(id);
-    setClassIdState(id);
-  }, []);
+  const setClassId = useCallback(
+    (id: ClassId) => {
+      saveActiveClassId(id);
+      setClassIdState(id);
+      notifyPersist();
+    },
+    [notifyPersist],
+  );
 
   const replaceRoster = useCallback(
     (targetClass: ClassId, list: Student[], source: 'local' | 'static' = 'local') => {
       saveClassRoster(targetClass, list, source);
       setRosterVersion((t) => t + 1);
+      notifyPersist();
     },
-    [],
+    [notifyPersist],
   );
 
   const refreshRosters = useCallback(() => {
     setRosterVersion((t) => t + 1);
   }, []);
+
+  /** 云端 hydrate 后强制从 localStorage 重读 */
+  const reloadFromStorage = useCallback(() => {
+    const active = loadActiveClassId();
+    setClassIdState(active);
+    setClassListVersion((v) => v + 1);
+    setRosterVersion((t) => t + 1);
+    setSession(loadOrCreateSession(active, lessonId));
+    setSemester(loadSemester(active));
+    setAttendanceLog(loadAttendanceLog(active));
+  }, [lessonId]);
 
   const createClass = useCallback(
     (name: string, note?: string): TeachingClass => {
@@ -97,15 +128,20 @@ export function useRosterSession(lessonId: string) {
       setClassListVersion((v) => v + 1);
       setRosterVersion((t) => t + 1);
       setClassId(created.id);
+      notifyPersist();
       return created;
     },
-    [setClassId],
+    [notifyPersist, setClassId],
   );
 
-  const updateClass = useCallback((id: ClassId, name: string, note?: string) => {
-    renameClass(id, name, note);
-    setClassListVersion((v) => v + 1);
-  }, []);
+  const updateClass = useCallback(
+    (id: ClassId, name: string, note?: string) => {
+      renameClass(id, name, note);
+      setClassListVersion((v) => v + 1);
+      notifyPersist();
+    },
+    [notifyPersist],
+  );
 
   const removeClass = useCallback(
     (id: ClassId) => {
@@ -121,16 +157,21 @@ export function useRosterSession(lessonId: string) {
         setSemester(loadSemester(''));
         setAttendanceLog(loadAttendanceLog(''));
       }
+      notifyPersist();
     },
-    [lessonId, setClassId],
+    [lessonId, notifyPersist, setClassId],
   );
 
-  const updateAttendance = useCallback((studentId: string, status: AttendanceStatus) => {
-    const next = setAttendance(sessionRef.current, studentId, status);
-    sessionRef.current = next;
-    setSession(next);
-    setAttendanceLog(loadAttendanceLog(next.classId));
-  }, []);
+  const updateAttendance = useCallback(
+    (studentId: string, status: AttendanceStatus) => {
+      const next = setAttendance(sessionRef.current, studentId, status);
+      sessionRef.current = next;
+      setSession(next);
+      setAttendanceLog(loadAttendanceLog(next.classId));
+      notifyPersist();
+    },
+    [notifyPersist],
+  );
 
   const markAllPresent = useCallback(() => {
     const ids = getClassStudents(sessionRef.current.classId).map((s) => s.id);
@@ -138,25 +179,34 @@ export function useRosterSession(lessonId: string) {
     sessionRef.current = next;
     setSession(next);
     setAttendanceLog(loadAttendanceLog(next.classId));
-  }, []);
+    notifyPersist();
+  }, [notifyPersist]);
 
-  const changeFlowers = useCallback((studentId: string, delta: number) => {
-    const { session: nextSession, semester: nextSemester } = adjustFlowers(
-      sessionRef.current,
-      studentId,
-      delta,
-    );
-    sessionRef.current = nextSession;
-    semesterRef.current = nextSemester;
-    setSession(nextSession);
-    setSemester(nextSemester);
-  }, []);
+  const changeFlowers = useCallback(
+    (studentId: string, delta: number) => {
+      const { session: nextSession, semester: nextSemester } = adjustFlowers(
+        sessionRef.current,
+        studentId,
+        delta,
+      );
+      sessionRef.current = nextSession;
+      semesterRef.current = nextSemester;
+      setSession(nextSession);
+      setSemester(nextSemester);
+      notifyPersist();
+    },
+    [notifyPersist],
+  );
 
-  const commitPick = useCallback((studentId: string) => {
-    const next = recordPick(sessionRef.current, studentId);
-    sessionRef.current = next;
-    setSession(next);
-  }, []);
+  const commitPick = useCallback(
+    (studentId: string) => {
+      const next = recordPick(sessionRef.current, studentId);
+      sessionRef.current = next;
+      setSession(next);
+      notifyPersist();
+    },
+    [notifyPersist],
+  );
 
   const getPickPool = useCallback(() => pickPool(students, session), [students, session]);
 
@@ -171,6 +221,7 @@ export function useRosterSession(lessonId: string) {
     rosterVersion,
     replaceRoster,
     refreshRosters,
+    reloadFromStorage,
     createClass,
     updateClass,
     removeClass,

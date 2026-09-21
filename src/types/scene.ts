@@ -81,11 +81,6 @@ export interface LearningFlowContent {
     title: string;
     body: string;
   };
-  /** 全课程固定原则 */
-  principle: {
-    label: string;
-    steps: string[];
-  };
 }
 
 export interface HistoryDialogueContent {
@@ -125,6 +120,18 @@ export interface AssemblyLangContent {
 export interface HighLevelCompareContent {
   columns: { label: string; code: string }[];
   question: string;
+  conclusion: string;
+}
+
+/** 帽子页：人话 → 高级语言 → 汇编 → 机器指令 → CPU，同一任务逐层点亮 */
+export interface TranslateStackContent {
+  lead: string;
+  task: string;
+  layers: {
+    label: string;
+    note: string;
+    body: string;
+  }[];
   conclusion: string;
 }
 
@@ -327,6 +334,17 @@ export interface ExprOrderContent {
   conclusion: string;
 }
 
+/** 标识符定义、命名规则、Python 保留字 */
+export interface IdentifiersContent {
+  definition: string;
+  examples: string;
+  rules: string[];
+  keywordLead: string;
+  keywords: string[];
+  keywordNote?: string;
+  close?: string;
+}
+
 /** 最小语法规则 + 故意错误 */
 export interface SyntaxRulesContent {
   rules: string[];
@@ -468,6 +486,7 @@ export interface SceneContent {
   catalog?: CatalogItem[];
   learningFlow?: LearningFlowContent;
   historyDialogue?: HistoryDialogueContent;
+  translateStack?: TranslateStackContent;
   machineLang?: MachineLangContent;
   assemblyLang?: AssemblyLangContent;
   highLevelCompare?: HighLevelCompareContent;
@@ -491,6 +510,7 @@ export interface SceneContent {
   typedDemo?: TypedDemoContent;
   exprOrder?: ExprOrderContent;
   syntaxRules?: SyntaxRulesContent;
+  identifiers?: IdentifiersContent;
   varModel?: VarModelContent;
   ipo?: IpoContent;
   whyNeedVar?: WhyNeedVarContent;

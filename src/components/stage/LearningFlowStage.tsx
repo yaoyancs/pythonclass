@@ -14,11 +14,11 @@ interface LearningFlowStageProps {
 
 /**
  * 课堂分步动画：点击或空格/右键逐步揭示。
- * 步骤：开场 → 流程节点依次出现 → AI 说明 → 课程原则。
+ * 步骤：开场 → 流程节点依次出现 → AI 说明。
  */
 export function LearningFlowStage({ flow, sceneId }: LearningFlowStageProps) {
-  // phase: 0=仅 lead，1..n=steps，n+1=ai，n+2=principle（完成）
-  const maxPhase = flow.steps.length + 2;
+  // phase: 0=仅 lead，1..n=steps，n+1=ai（完成）
+  const maxPhase = flow.steps.length + 1;
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
@@ -40,7 +40,6 @@ export function LearningFlowStage({ flow, sceneId }: LearningFlowStageProps) {
 
   const stepsVisible = Math.min(phase, flow.steps.length);
   const showAi = phase > flow.steps.length;
-  const showPrinciple = phase > flow.steps.length + 1;
   const done = phase >= maxPhase;
 
   return (
@@ -92,25 +91,6 @@ export function LearningFlowStage({ flow, sceneId }: LearningFlowStageProps) {
           </div>
         </div>
       </div>
-
-      {showPrinciple && (
-        <div className="mt-7 stage-fade-in">
-          <p className="text-sm tracking-[0.18em] text-accent mb-2">{flow.principle.label}</p>
-          <div className="flex flex-wrap items-center gap-2.5 rounded-3xl bg-classroom-stage shadow-card px-6 py-4">
-            {flow.principle.steps.map((s, i) => (
-              <div key={s} className="flex items-center gap-2.5">
-                <span className="title-kai text-xl text-text-primary">{s}</span>
-                {i < flow.principle.steps.length - 1 && (
-                  <span className="text-accent text-lg">→</span>
-                )}
-              </div>
-            ))}
-          </div>
-          <p className="mt-3 text-base text-text-secondary">
-            第一次课后面所有代码，都按这个流程来。
-          </p>
-        </div>
-      )}
 
       {!done && (
         <p className="mt-6 text-base text-accent/80">点击继续 · 或按空格 / →</p>

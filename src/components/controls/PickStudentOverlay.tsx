@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SemesterLedger, SessionLedger, Student } from '../../types/roster';
-import { getClassLabel, pickRandomStudent } from '../../utils/rosterStorage';
+import { FLOWER_MIN, getClassLabel, pickRandomStudent } from '../../utils/rosterStorage';
 import { FlowerCount } from '../ui/FlowerIcon';
 import { Button } from '../ui/Button';
 import { TeacherPanel } from './TeacherPanel';
@@ -174,7 +174,7 @@ export function PickStudentOverlay({
               size="lg"
               type="button"
               className="text-white hover:bg-white/10"
-              disabled={sessionF <= 0 && semesterF <= 0}
+              disabled={sessionF <= FLOWER_MIN}
               onClick={() => onChangeFlowers(picked.id, -1)}
             >
               − 小红花

@@ -1,7 +1,7 @@
 import type { ClassId, TeachingClass } from '../../data/classes';
 import type { SemesterLedger, SessionLedger, Student } from '../../types/roster';
 import { downloadTextFile } from '../../utils/csv';
-import { getClassLabel } from '../../utils/rosterStorage';
+import { FLOWER_MIN, getClassLabel } from '../../utils/rosterStorage';
 import { FlowerCount } from '../ui/FlowerIcon';
 import { Button } from '../ui/Button';
 import { ClassSwitcher } from './ClassSwitcher';
@@ -109,7 +109,7 @@ export function PerformancePanel({
                     variant="ghost"
                     size="md"
                     type="button"
-                    disabled={sessionF <= 0 && semesterF <= 0}
+                    disabled={sessionF <= FLOWER_MIN}
                     onClick={() => onChangeFlowers(s.id, -1)}
                   >
                     −花

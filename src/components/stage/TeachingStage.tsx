@@ -16,6 +16,8 @@ import {
 } from './CourseInfoBlocks';
 import { LearningFlowStage } from './LearningFlowStage';
 import { HistoryDialogueStage } from './HistoryDialogueStage';
+import { DialoguePipelineStage } from './DialoguePipelineStage';
+import { TranslateStackStage } from './TranslateStackStage';
 import { MachineLangStage } from './MachineLangStage';
 import { AssemblyLangStage } from './AssemblyLangStage';
 import { HighLevelCompareStage } from './HighLevelCompareStage';
@@ -39,6 +41,7 @@ import { StepExecStage } from './StepExecStage';
 import { TypedDemoStage } from './TypedDemoStage';
 import { ExprOrderStage } from './ExprOrderStage';
 import { SyntaxRulesStage } from './SyntaxRulesStage';
+import { IdentifiersStage } from './IdentifiersStage';
 import { VarModelStage } from './VarModelStage';
 import { IpoStage } from './IpoStage';
 import { WhyNeedVarStage } from './WhyNeedVarStage';
@@ -64,6 +67,7 @@ export function TeachingStage() {
       content.catalog ||
       content.learningFlow ||
       content.historyDialogue ||
+      content.translateStack ||
       content.machineLang ||
       content.assemblyLang ||
       content.highLevelCompare ||
@@ -87,6 +91,7 @@ export function TeachingStage() {
       content.typedDemo ||
       content.exprOrder ||
       content.syntaxRules ||
+      content.identifiers ||
       content.varModel ||
       content.ipo ||
       content.whyNeedVar ||
@@ -101,26 +106,38 @@ export function TeachingStage() {
       content.finalVerdict,
   );
   const hasSideImage = Boolean(content.image);
+  const pinTop = Boolean(
+    content.machineLang || content.translateStack || (content.historyDialogue && content.digestPipeline),
+  );
 
   return (
     <section
-      className={`grid h-full place-items-center overflow-hidden ${
-        isFullscreen ? 'px-24 py-14' : 'px-14 py-10'
-      }`}
+      className={`grid h-full overflow-hidden ${
+        pinTop ? 'place-items-start' : 'place-items-center'
+      } ${isFullscreen ? (pinTop ? 'px-10 pt-4 pb-5' : 'px-10 py-8') : 'px-14 py-10'}`}
     >
-      <div className={`w-full max-h-full overflow-y-auto ${isFullscreen ? 'max-w-6xl' : ''}`}>
-        <div className={hasSideImage ? 'grid grid-cols-[1.15fr_0.85fr] gap-12 items-center' : ''}>
+      <div className="w-full max-h-full overflow-y-auto">
+        {content.headline && (
+          <h2
+            className={`title-stage text-text-primary ${
+              hasSideImage
+                ? 'whitespace-nowrap text-[clamp(1.75rem,4.6vw,3.75rem)] leading-[1.2]'
+                : isFullscreen && !dense
+                  ? 'text-stage-hero'
+                  : 'text-stage-headline'
+            }`}
+          >
+            {content.headline}
+          </h2>
+        )}
+        <div
+          className={
+            hasSideImage
+              ? `grid grid-cols-[1.15fr_0.85fr] gap-12 items-start ${content.headline ? 'mt-8' : ''}`
+              : ''
+          }
+        >
           <div>
-            {content.headline && (
-              <h2
-                className={`title-stage text-text-primary ${
-                  isFullscreen && !dense ? 'text-stage-hero' : 'text-stage-headline'
-                }`}
-              >
-                {content.headline}
-              </h2>
-            )}
-
             {content.promptQuote && (
               <blockquote className="mt-12 rounded-3xl bg-classroom-stage shadow-card border border-classroom-border px-8 py-7">
                 <p className="text-sm uppercase tracking-[0.2em] font-semibold text-accent mb-3">
@@ -203,8 +220,24 @@ export function TeachingStage() {
             {content.learningFlow && (
               <LearningFlowStage flow={content.learningFlow} sceneId={scene.id} />
             )}
-            {content.historyDialogue && (
-              <HistoryDialogueStage dialogue={content.historyDialogue} sceneId={scene.id} />
+            {content.historyDialogue && content.digestPipeline ? (
+              <DialoguePipelineStage
+                dialogue={content.historyDialogue}
+                pipeline={content.digestPipeline}
+                sceneId={scene.id}
+              />
+            ) : (
+              <>
+                {content.historyDialogue && (
+                  <HistoryDialogueStage dialogue={content.historyDialogue} sceneId={scene.id} />
+                )}
+                {content.digestPipeline && (
+                  <DigestPipelineStage content={content.digestPipeline} sceneId={scene.id} />
+                )}
+              </>
+            )}
+            {content.translateStack && (
+              <TranslateStackStage stack={content.translateStack} sceneId={scene.id} />
             )}
             {content.machineLang && (
               <MachineLangStage content={content.machineLang} sceneId={scene.id} />
@@ -214,9 +247,6 @@ export function TeachingStage() {
             )}
             {content.highLevelCompare && (
               <HighLevelCompareStage content={content.highLevelCompare} sceneId={scene.id} />
-            )}
-            {content.digestPipeline && (
-              <DigestPipelineStage content={content.digestPipeline} sceneId={scene.id} />
             )}
             {content.tiobeRank && (
               <TiobeRankStage content={content.tiobeRank} sceneId={scene.id} />
@@ -266,6 +296,9 @@ export function TeachingStage() {
             {content.exprOrder && <ExprOrderStage content={content.exprOrder} sceneId={scene.id} />}
             {content.syntaxRules && (
               <SyntaxRulesStage content={content.syntaxRules} sceneId={scene.id} />
+            )}
+            {content.identifiers && (
+              <IdentifiersStage content={content.identifiers} sceneId={scene.id} />
             )}
             {content.varModel && <VarModelStage content={content.varModel} sceneId={scene.id} />}
             {content.ipo && <IpoStage content={content.ipo} sceneId={scene.id} />}

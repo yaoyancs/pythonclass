@@ -40,25 +40,25 @@ export function ClassroomHeader({ onToggleFullscreen }: ClassroomHeaderProps) {
 
   return (
     <header className="bg-classroom-stage border-b border-classroom-border">
-      <div className="px-10 pt-4 pb-3">
-        <div className="flex items-center justify-between gap-8">
-          <div className="flex items-center gap-4 min-w-0">
+      <div className="px-8 pt-1.5 pb-1">
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center gap-3 min-w-0">
             <Link to="/" className="shrink-0" title="返回课程首页">
               {logoAvailable ? (
                 <img
                   src="/logo.png"
                   alt={COURSE.university}
-                  className="h-16 w-auto object-contain"
+                  className="h-9 w-auto object-contain"
                   onError={() => setLogoAvailable(false)}
                 />
               ) : (
-                <span className="title-stage text-lg text-accent">
+                <span className="title-stage text-base text-accent">
                   {COURSE.university}
                 </span>
               )}
             </Link>
             <span
-              className="h-8 w-px bg-classroom-border shrink-0"
+              className="h-5 w-px bg-classroom-border shrink-0"
               aria-hidden
             />
             <p className="text-sm text-text-secondary truncate">
@@ -70,19 +70,19 @@ export function ClassroomHeader({ onToggleFullscreen }: ClassroomHeaderProps) {
             </p>
           </div>
 
-          <div className="flex items-center gap-6 shrink-0">
+          <div className="flex items-center gap-4 shrink-0">
             <div className="text-right">
-              <p className="text-xl font-semibold tabular-nums tracking-tight leading-none">
-                <span className="text-text-secondary text-base font-medium">
+              <p className="text-lg font-semibold tabular-nums tracking-tight leading-none">
+                <span className="text-text-secondary text-sm font-medium">
                   Slide{" "}
                 </span>
                 {scene.index}
-                <span className="text-text-secondary text-base font-medium">
+                <span className="text-text-secondary text-sm font-medium">
                   {" / "}
                   {lesson.sceneCount}
                 </span>
               </p>
-              <p className="text-sm font-semibold text-accent mt-1 leading-none tabular-nums">
+              <p className="text-sm font-semibold text-accent mt-0.5 leading-none tabular-nums">
                 {formatClock(now)}
               </p>
             </div>
@@ -97,10 +97,10 @@ export function ClassroomHeader({ onToggleFullscreen }: ClassroomHeaderProps) {
           </div>
         </div>
 
-        <div className="mt-3 flex items-baseline gap-4 min-w-0">
+        <div className="mt-1 flex items-baseline gap-3 min-w-0">
           <Link
             to="/"
-            className="title-stage text-4xl text-text-primary shrink-0 hover:text-accent transition-colors"
+            className="title-stage text-xl text-accent shrink-0 hover:text-accent-hover transition-colors"
             title="返回课程首页"
           >
             {lesson.subtitle}
@@ -109,7 +109,7 @@ export function ClassroomHeader({ onToggleFullscreen }: ClassroomHeaderProps) {
             className="h-1.5 w-1.5 rounded-full bg-accent shrink-0"
             aria-hidden
           />
-          <p className="text-2xl text-text-secondary truncate min-w-0">
+          <p className="text-lg text-highlight truncate min-w-0">
             {sectionLabel}
           </p>
         </div>

@@ -6,7 +6,7 @@ export const scenes: DraftScene[] = [
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "编程语言发展历史",
+      headline: "为什么需要编程语言？",
       historyDialogue: {
         task: "计算：12 + 8",
         subtitle: "计算机真正听得懂什么？",
@@ -15,6 +15,59 @@ export const scenes: DraftScene[] = [
         cpuBinary: ["10110000 00001100", "00000100 00001000", "11100100", "…"],
         transformHint: "CPU能够直接执行的是机器指令",
       },
+      digestPipeline: {
+        sourceCode: "result = 12 + 8",
+        sourceLabel: "源码",
+        translatorLabel: "翻译器",
+        translatorHint: "编译器 / 解释器",
+        machineLines: ["10110000", "00001100", "00000100", "00001000"],
+        machineLabel: "机器指令",
+        cpuLabel: "CPU",
+        result: "20",
+        resultLabel: "结果",
+        conclusion: "高级语言给人看；机器只执行指令；中间必须有翻译。",
+      },
+    },
+  },
+  {
+    id: "scene-03b",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      headline: "计算机怎样执行人的指令",
+      translateStack: {
+        lead: "人写的是「我想做什么」，CPU 执行的是机器指令；编程语言和翻译程序连接这两端。",
+        task: "计算 12 + 8",
+        layers: [
+          {
+            label: "人",
+            note: "目标",
+            body: "请帮我计算 12 + 8",
+          },
+          {
+            label: "Python",
+            note: "供人编写",
+            body: "result = 12 + 8",
+          },
+          {
+            label: "汇编",
+            note: "需汇编器翻译",
+            body: "MOV A, 12\nADD A, 8",
+          },
+          {
+            label: "机器指令",
+            note: "CPU 直接执行 · 示意",
+            body: "10110000 00001100\n00000100 00001000",
+          },
+          {
+            label: "CPU",
+            note: "取出并执行",
+            body: "20",
+          },
+        ],
+        conclusion:
+          "高级语言不是 CPU 直接执行的。接下来依次看机器语言、汇编语言和高级语言。",
+      },
     },
   },
   {
@@ -22,10 +75,10 @@ export const scenes: DraftScene[] = [
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "第一代——机器语言",
+      headline: "机器语言",
       machineLang: {
-        era: "1940s–1950s",
-        taskNote: "任务：计算 12 + 8",
+        era: "1940s–1950s · 第一代",
+        taskNote: "CPU 直接执行的指令",
         binaryLines: ["10110000 00001100", "00000100 00001000"],
         question:
           "如果一个程序有 10 万条指令，人直接使用 0 和 1 编写，最容易出现什么问题？",
@@ -39,12 +92,12 @@ export const scenes: DraftScene[] = [
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "第二代——汇编语言",
+      headline: "汇编语言",
       assemblyLang: {
         binaryLines: ["10110000 00001100", "00000100 00001000"],
         assemblyLines: ["MOV A, 12", "ADD A, 8"],
         teacherNote:
-          "人们开始用容易记忆的符号表示机器操作。这仍然接近硬件，但人终于不必直接记住大量 0 和 1。",
+          "还是同一层指令，只是换成好记的符号。第一次出现翻译程序：汇编器。",
         assemblerLabel: "汇编器",
         translatorHint: "第一次出现「翻译程序」",
       },
@@ -55,7 +108,7 @@ export const scenes: DraftScene[] = [
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "第三代——高级语言",
+      headline: "高级语言",
       highLevelCompare: {
         columns: [
           { label: "汇编", code: "MOV A, 12\nADD A, 8" },
@@ -64,27 +117,7 @@ export const scenes: DraftScene[] = [
         ],
         question: "哪种写法最接近我们描述问题和书写数学表达式的方式？",
         conclusion:
-          "高级语言让程序员逐渐从寄存器、地址和机器指令中解放出来，用变量、表达式、判断、循环和函数描述问题;编程语言的发展，不只是「越来越先进」，而是不断提高人表达问题的效率,抽象层次更高、离具体硬件更远。",
-      },
-    },
-  },
-  {
-    id: "scene-04c2",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "计算机怎么吃得下高级语言",
-      digestPipeline: {
-        sourceCode: "result = 12 + 8",
-        sourceLabel: "源码",
-        translatorLabel: "翻译器",
-        translatorHint: "编译器 / 解释器",
-        machineLines: ["10110000", "00001100", "00000100", "00001000"],
-        machineLabel: "机器指令",
-        cpuLabel: "CPU",
-        result: "20",
-        resultLabel: "结果",
-        conclusion: "高级语言给人看；机器只执行指令；中间必须有翻译。",
+          "高级语言让人用变量和表达式描述问题，离硬件更远。要运行，仍须翻译成机器指令。",
       },
     },
   },
@@ -118,23 +151,21 @@ export const scenes: DraftScene[] = [
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "从高级语言到Vibe Coding",
+      headline: "自然语言能代替编程语言吗？",
       languageTimeline: {
         eras: [
           "机器语言",
           "汇编语言",
-          "C 等高级语言",
-          "Python",
-          "Vibe Coding",
+          "高级语言",
+          "自然语言编程",
         ],
         axisLeft: "关注机器如何执行",
         axisRight: "关注人想实现什么",
         conflictQuestion:
           "当我们只需要描述目标，AI就能生成代码时，Prompt会成为新的编程入口吗？",
         teacherHold:
-          "Vibe Coding让我们可以使用自然语言描述目标，由AI生成、运行和修改代码。它降低了代码生成的门槛，但没有消除编程语言：AI生成的结果通常仍然是Python、JavaScript等正式代码，最终仍要经过解释器或编译器执行。AI时代真正重要的能力，是把人的模糊想法转化为明确需求、可执行程序和可验证结果。",
-  
-        tableTitle: "不同语言各有用途，Vibe Coding改变的是代码生成方式",
+          "Vibe Coding 用自然语言描述目标，由 AI 生成代码。它没有取消编程语言：生成的通常仍是 Python 等正式代码，还要经过翻译才能被 CPU 执行。人要负责把模糊想法变成明确需求，并验证结果。",
+        tableTitle: "不同语言各有用途，Vibe Coding 改变的是代码怎么写出来",
         tableRows: [
           { language: "C/C++", uses: "操作系统、嵌入式、高性能程序" },
           { language: "Java", uses: "大型应用和企业系统" },

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialState, sceneReducer } from '../../src/engine/sceneReducer';
-import { lesson01 } from '../../src/data/lessons';
+import { lesson01, lesson02 } from '../../src/data/lessons';
 
 describe('sceneReducer', () => {
   it('starts at scene 1', () => {
@@ -22,7 +22,17 @@ describe('sceneReducer', () => {
   });
 
   it('builds catalog from offering parts', () => {
-    expect(lesson01.parts.map((p) => p.index)).toEqual(['01', '02', '03', '04', '05']);
+    expect(lesson01.parts.map((p) => p.index)).toEqual([
+      '01',
+      '02',
+      '03',
+      '04',
+      '05',
+      '06',
+      '07',
+      '08',
+      '09',
+    ]);
     const catalog = lesson01.scenes.find((s) => s.id === 'lesson01-catalog');
     expect(catalog?.content.catalog?.map((c) => c.index)).toEqual([
       '01',
@@ -30,7 +40,29 @@ describe('sceneReducer', () => {
       '03',
       '04',
       '05',
+      '06',
+      '07',
+      '08',
+      '09',
     ]);
+  });
+
+  it('assembles lesson02 from type parts', () => {
+    expect(lesson02.parts.map((p) => p.index)).toEqual([
+      '01',
+      '02',
+      '03',
+      '04',
+      '05',
+      '06',
+      '07',
+      '08',
+    ]);
+    expect(lesson02.scenes.length).toBeGreaterThan(20);
+    expect(lesson02.scenes.some((s) => s.id === 'lesson02-catalog')).toBe(true);
+    expect(lesson02.scenes.filter((s) => s.partId === '01').every((s) => s.title === '为什么输入2不能直接加1')).toBe(
+      true,
+    );
   });
 
   it('persists scene index via hydrate', () => {

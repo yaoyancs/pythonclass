@@ -1,0 +1,12 @@
+# Cloudflare Pages（教师台 API + 静态站）
+name = "qfnupy"
+compatibility_date = "2024-12-01"
+pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "TEACHER_KV"
+id = "5f2c20381d124b4abce58e8487a34699"
+preview_id = "75935c5adecf4347b39b058ba7f577e9"
+
+# PIN（勿写入本文件；至少 8 位，类型必须是 Secret）：
+#   npx wrangler pages secret put TEACHER_PIN --project-name=qfnupy

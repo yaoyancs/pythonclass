@@ -49,7 +49,7 @@ export function HistoryDialogueStage({ dialogue, sceneId }: HistoryDialogueStage
         }
       }}
     >
-      <p className="text-sm uppercase tracking-[0.2em] font-semibold text-accent mb-3">贯穿任务</p>
+      <p className="text-sm uppercase tracking-[0.2em] font-semibold text-accent mb-3">例</p>
       <p className="title-stage text-stage-body text-text-primary">{dialogue.task}</p>
       <p className="text-2xl text-text-secondary mt-4 font-medium">{dialogue.subtitle}</p>
 

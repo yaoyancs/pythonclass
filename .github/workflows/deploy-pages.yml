@@ -28,6 +28,7 @@ jobs:
       - name: Build
         run: npm run build
 
+      # 需已配置：KV 绑定 TEACHER_KV、密钥 TEACHER_PIN（见 docs/teacher-cloud.md）
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
