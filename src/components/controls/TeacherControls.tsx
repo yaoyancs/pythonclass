@@ -10,11 +10,10 @@ import { ClassSwitcher } from './ClassSwitcher';
 import { JumpLessonPanel } from './JumpLessonPanel';
 import { JumpPagePanel } from './JumpPagePanel';
 import { PerformancePanel } from './PerformancePanel';
-import { PickStudentOverlay } from './PickStudentOverlay';
 import { RosterManagePanel } from './RosterManagePanel';
 import { TeacherUnlockPanel } from './TeacherUnlockPanel';
 
-type Panel = 'none' | 'lesson' | 'page' | 'pick' | 'attendance' | 'performance' | 'roster' | 'analytics';
+type Panel = 'none' | 'lesson' | 'page' | 'attendance' | 'performance' | 'roster' | 'analytics';
 
 function syncLabel(status: ReturnType<typeof useTeacherAuth>['syncStatus']): string {
   if (status === 'syncing') return '同步中…';
@@ -58,8 +57,13 @@ function TeacherControlsUnlocked({
     markAllPresent,
     beginNewSession,
     changeFlowers,
+    changeClovers,
     commitPick,
     getPickPool,
+    patchHistoricalAttendance,
+    resumeMeeting,
+    resumePreviousMeeting,
+    previousTodayId,
   } = useRosterSession(lesson.id, { onPersist: scheduleSync });
 
   // 解锁 hydrate 已写入 localStorage；挂载时再读一遍，避免闭包旧状态
@@ -96,15 +100,11 @@ function TeacherControlsUnlocked({
       },
     },
     {
-      label: '抽点学生',
-      action: () => setPanel('pick'),
-    },
-    {
       label: '考勤',
       action: () => setPanel('attendance'),
     },
     {
-      label: '课堂表现',
+      label: '提问与互动',
       action: () => setPanel('performance'),
     },
     {
@@ -141,7 +141,7 @@ function TeacherControlsUnlocked({
           size="md"
           type="button"
           onClick={() => {
-            if (window.confirm('锁定教师台？本页将隐藏抽点与小红花等操作。')) {
+            if (window.confirm('锁定教师台？本页将隐藏提问与互动（抽点/幸运草）等操作。')) {
               onLock();
             }
           }}
@@ -194,6 +194,10 @@ function TeacherControlsUnlocked({
           onUpdate={updateAttendance}
           onMarkAllPresent={markAllPresent}
           onStartNewSession={beginNewSession}
+          onPatchHistorical={patchHistoricalAttendance}
+          onResumeMeeting={resumeMeeting}
+          onResumePrevious={resumePreviousMeeting}
+          canResumePrevious={Boolean(previousTodayId)}
           onClose={closePanel}
         />
       )}
@@ -206,23 +210,18 @@ function TeacherControlsUnlocked({
           students={students}
           session={session}
           semester={semester}
+          attendanceLog={attendanceLog}
+          pool={getPickPool()}
           onManageRoster={() => setPanel('roster')}
+          onChangeClovers={changeClovers}
           onChangeFlowers={changeFlowers}
+          onPicked={commitPick}
+          onMarkEarlyLeave={(id) => updateAttendance(id, 'early_leave')}
+          onNeedRoster={() => setPanel(students.length ? 'attendance' : 'roster')}
           onClose={closePanel}
         />
       )}
       {panel === 'analytics' && <AnalyticsPanel onClose={closePanel} />}
-      {panel === 'pick' && (
-        <PickStudentOverlay
-          pool={getPickPool()}
-          session={session}
-          semester={semester}
-          onPicked={commitPick}
-          onChangeFlowers={changeFlowers}
-          onClose={closePanel}
-          onNeedRoster={() => setPanel(students.length ? 'attendance' : 'roster')}
-        />
-      )}
     </div>
   );
 }

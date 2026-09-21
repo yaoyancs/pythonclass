@@ -29,12 +29,14 @@ describe('teacher pack export/import', () => {
     expect(packHasTeachingData(pack)).toBe(true);
     expect(pack.rosters.classes[classId]?.students).toHaveLength(2);
     expect(pack.semesters[classId]?.flowers.s1).toBe(2);
+    expect(pack.semesters[classId]?.clovers.s1 ?? 0).toBe(0);
 
     localStorage.clear();
     importTeacherPack(pack);
 
     expect(loadClasses().map((c) => c.id)).toContain(classId);
     expect(loadSemester(classId).flowers.s1).toBe(2);
+    expect(loadSemester(classId).clovers).toEqual({});
     const again = exportTeacherPack();
     expect(again.rosters.classes[classId]?.students.map((s) => s.name)).toEqual(['张三', '李四']);
   });

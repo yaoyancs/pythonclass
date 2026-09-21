@@ -73,4 +73,4 @@ npx wrangler d1 execute pyclass-analytics --file=./migrations/0002_analytics_tea
 | GET | `/api/analytics/summary` | Bearer；默认排除教师；`includeTeacher=1` 含演示；含课后作业打开数 |
 | GET | `/api/analytics/lessons` | Bearer；按讲次与幕聚合（同上） |
 
-整包含：班级列表、名单、学期小红花、考勤档案、本堂会话。
+整包含：班级列表、名单、学期小红花（提问）与幸运草（课堂互动）、考勤档案（每堂快照含出勤、花、草、抽点名单）、本堂会话。两项成绩各自按班折算，考勤不算分，只约束期末资格。旧包缺 `clovers` 时按空对象读取，不迁移历史小红花。

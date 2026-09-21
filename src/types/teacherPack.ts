@@ -6,7 +6,7 @@ import type {
   SessionLedger,
 } from './roster';
 
-/** 云端「班级整包」：名单 + 学期小红花 + 考勤 + 本堂会话 */
+/** 云端「班级整包」：名单 + 学期花/草 + 考勤快照 + 本堂会话 */
 export interface TeacherCloudPack {
   version: 1;
   updatedAt: string;

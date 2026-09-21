@@ -10,6 +10,7 @@ import type {
 import {
   addClass,
   adjustFlowers,
+  adjustClovers,
   deleteClass,
   getClassStudents,
   loadActiveClassId,
@@ -24,6 +25,11 @@ import {
   saveClassRoster,
   setAllAttendance,
   setAttendance,
+  loadStoredSession,
+  patchAttendanceBySessionId,
+  previousTodaySessionId,
+  resumePreviousTodaySession,
+  resumeSession,
   startNewSession,
   upsertAttendanceLog,
 } from '../utils/rosterStorage';
@@ -194,6 +200,24 @@ export function useRosterSession(lessonId: string, options: UseRosterSessionOpti
       semesterRef.current = nextSemester;
       setSession(nextSession);
       setSemester(nextSemester);
+      setAttendanceLog(loadAttendanceLog(nextSession.classId));
+      notifyPersist();
+    },
+    [notifyPersist],
+  );
+
+  const changeClovers = useCallback(
+    (studentId: string, delta: number) => {
+      const { session: nextSession, semester: nextSemester } = adjustClovers(
+        sessionRef.current,
+        studentId,
+        delta,
+      );
+      sessionRef.current = nextSession;
+      semesterRef.current = nextSemester;
+      setSession(nextSession);
+      setSemester(nextSemester);
+      setAttendanceLog(loadAttendanceLog(nextSession.classId));
       notifyPersist();
     },
     [notifyPersist],
@@ -204,6 +228,7 @@ export function useRosterSession(lessonId: string, options: UseRosterSessionOpti
       const next = recordPick(sessionRef.current, studentId);
       sessionRef.current = next;
       setSession(next);
+      setAttendanceLog(loadAttendanceLog(next.classId));
       notifyPersist();
     },
     [notifyPersist],
@@ -217,6 +242,50 @@ export function useRosterSession(lessonId: string, options: UseRosterSessionOpti
     setAttendanceLog(loadAttendanceLog(next.classId));
     notifyPersist();
   }, [classId, notifyPersist]);
+
+  const patchHistoricalAttendance = useCallback(
+    (sessionId: string, studentId: string, status: AttendanceStatus) => {
+      const cid = sessionRef.current.classId || classId;
+      const nextLog = patchAttendanceBySessionId(cid, sessionId, studentId, status);
+      setAttendanceLog(nextLog);
+      if (sessionRef.current.sessionId === sessionId) {
+        const stored = loadStoredSession(sessionId);
+        if (stored) {
+          sessionRef.current = stored;
+          setSession(stored);
+        }
+      }
+      notifyPersist();
+    },
+    [classId, notifyPersist],
+  );
+
+  const resumeMeeting = useCallback(
+    (sessionId: string) => {
+      const cid = sessionRef.current.classId || classId;
+      const next = resumeSession(cid, sessionId);
+      if (!next) return false;
+      sessionRef.current = next;
+      setSession(next);
+      setAttendanceLog(loadAttendanceLog(next.classId));
+      notifyPersist();
+      return true;
+    },
+    [classId, notifyPersist],
+  );
+
+  const resumePreviousMeeting = useCallback(() => {
+    const current = sessionRef.current;
+    const next = resumePreviousTodaySession(current.classId || classId, current.sessionId);
+    if (!next) return false;
+    sessionRef.current = next;
+    setSession(next);
+    setAttendanceLog(loadAttendanceLog(next.classId));
+    notifyPersist();
+    return true;
+  }, [classId, notifyPersist]);
+
+  const previousTodayId = previousTodaySessionId(classId, session.sessionId);
 
   const getPickPool = useCallback(() => pickPool(students, session), [students, session]);
 
@@ -238,7 +307,12 @@ export function useRosterSession(lessonId: string, options: UseRosterSessionOpti
     updateAttendance,
     markAllPresent,
     beginNewSession,
+    patchHistoricalAttendance,
+    resumeMeeting,
+    resumePreviousMeeting,
+    previousTodayId,
     changeFlowers,
+    changeClovers,
     commitPick,
     getPickPool,
   };

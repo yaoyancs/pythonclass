@@ -83,7 +83,7 @@ export function RosterManagePanel({
   return (
     <TeacherPanel title="班级名单管理" onClose={onClose} wide initialHeight={640}>
       <p className="text-sm text-text-secondary mb-4 leading-relaxed">
-        可自由增加或删除教学班。每个班的名单、考勤与课堂表现互相独立；删除班级会清空该班全部统计。
+        可自由增加或删除教学班。每个班的名单、考勤与提问/互动记录互相独立；删除班级会清空该班全部统计。
       </p>
 
       <div className="rounded-2xl border border-classroom-border bg-accent-muted/40 px-4 py-4 mb-5">

@@ -1,29 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SemesterLedger, SessionLedger, Student } from '../../types/roster';
-import { FLOWER_MIN, getClassLabel, pickRandomStudent } from '../../utils/rosterStorage';
+import { FLOWER_MIN, pickRandomStudent } from '../../utils/rosterStorage';
 import { FlowerCount } from '../ui/FlowerIcon';
 import { Button } from '../ui/Button';
-import { TeacherPanel } from './TeacherPanel';
 
-interface PickStudentOverlayProps {
+interface PickStudentContentProps {
   pool: Student[];
   session: SessionLedger;
   semester: SemesterLedger;
   onPicked: (studentId: string) => void;
   onChangeFlowers: (studentId: string, delta: number) => void;
-  onClose: () => void;
+  onMarkEarlyLeave: (studentId: string) => void;
   onNeedRoster: () => void;
 }
 
-export function PickStudentOverlay({
+export function PickStudentContent({
   pool,
   session,
   semester,
   onPicked,
   onChangeFlowers,
-  onClose,
+  onMarkEarlyLeave,
   onNeedRoster,
-}: PickStudentOverlayProps) {
+}: PickStudentContentProps) {
   const [phase, setPhase] = useState<'idle' | 'rolling' | 'done'>('idle');
   const [displayName, setDisplayName] = useState('？？？');
   const [picked, setPicked] = useState<Student | null>(null);
@@ -104,53 +103,35 @@ export function PickStudentOverlay({
     settleOn(finalStudent);
   };
 
-  const classLabel = getClassLabel(session.classId);
   const sessionF = picked ? (session.flowers[picked.id] ?? 0) : 0;
   const semesterF = picked ? (semester.flowers[picked.id] ?? 0) : 0;
   const remaining = pool.length;
   const pickedCount = session.pickHistory.length;
+  const isEarlyLeave = picked
+    ? (session.attendance[picked.id] ?? 'unknown') === 'early_leave'
+    : false;
 
   if (!pool.length && phase === 'idle' && pickedCount === 0) {
     return (
-      <TeacherPanel
-        title={`抽点学生 · ${classLabel}`}
-        onClose={onClose}
-        variant="dark"
-        wide
-        initialWidth={720}
-        initialHeight={420}
-      >
+      <div>
         <p className="title-kai text-3xl text-white">请先导入名单并完成考勤</p>
-        <p className="text-lg mt-3 text-white/70">抽点从出席（含未点）同学中随机抽取，缺席/请假不参与</p>
+        <p className="text-lg mt-3 text-white/70">
+          抽点从出席（含未点）同学中随机抽取，缺席 / 请假 / 早退不参与
+        </p>
         <div className="mt-8 flex gap-3">
           <Button variant="secondary" size="lg" type="button" onClick={onNeedRoster}>
             去名单 / 考勤
           </Button>
-          <Button
-            variant="ghost"
-            size="lg"
-            type="button"
-            className="text-white/80 hover:bg-white/10"
-            onClick={onClose}
-          >
-            关闭
-          </Button>
         </div>
-      </TeacherPanel>
+      </div>
     );
   }
 
   return (
-    <TeacherPanel
-      title={`抽点学生 · ${classLabel}`}
-      onClose={onClose}
-      variant="dark"
-      wide
-      initialWidth={820}
-      initialHeight={520}
-    >
+    <div>
       <p className="text-sm text-white/55 mb-2">
-        本堂已抽 {pickedCount} 人 
+        本堂已抽 {pickedCount} 人
+        {session.lessonId ? ` · 绑定讲次 ${session.lessonId}` : ''}
       </p>
       <p
         className={`title-kai text-center transition-all ${
@@ -162,13 +143,19 @@ export function PickStudentOverlay({
 
       {phase === 'done' && picked && (
         <p className="mt-6 text-xl text-white/85 flex flex-wrap justify-center items-center gap-4">
-          <span className="inline-flex items-center gap-2">
-            本堂 <FlowerCount count={sessionF} className="text-white" iconClassName="w-6 h-6" />
-          </span>
-          <span className="opacity-40">·</span>
-          <span className="inline-flex items-center gap-2">
-            学期 <FlowerCount count={semesterF} className="text-white" iconClassName="w-6 h-6" />
-          </span>
+          {isEarlyLeave ? (
+            <span>已记早退，未发小红花</span>
+          ) : (
+            <>
+              <span className="inline-flex items-center gap-2">
+                本堂 <FlowerCount count={sessionF} className="text-white" iconClassName="w-6 h-6" />
+              </span>
+              <span className="opacity-40">·</span>
+              <span className="inline-flex items-center gap-2">
+                学期 <FlowerCount count={semesterF} className="text-white" iconClassName="w-6 h-6" />
+              </span>
+            </>
+          )}
         </p>
       )}
 
@@ -195,6 +182,16 @@ export function PickStudentOverlay({
               variant="secondary"
               size="lg"
               type="button"
+              disabled={isEarlyLeave}
+              onClick={() => onMarkEarlyLeave(picked.id)}
+            >
+              {isEarlyLeave ? '已记早退' : '记录早退'}
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              type="button"
+              disabled={isEarlyLeave}
               onClick={() => onChangeFlowers(picked.id, 1)}
             >
               + 小红花
@@ -204,7 +201,7 @@ export function PickStudentOverlay({
               size="lg"
               type="button"
               className="text-white hover:bg-white/10"
-              disabled={sessionF <= FLOWER_MIN}
+              disabled={isEarlyLeave || sessionF <= FLOWER_MIN}
               onClick={() => onChangeFlowers(picked.id, -1)}
             >
               − 小红花
@@ -212,6 +209,6 @@ export function PickStudentOverlay({
           </>
         )}
       </div>
-    </TeacherPanel>
+    </div>
   );
 }

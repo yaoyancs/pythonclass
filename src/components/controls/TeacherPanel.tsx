@@ -7,7 +7,7 @@ interface TeacherPanelProps {
   onClose: () => void;
   children: ReactNode;
   wide?: boolean;
-  /** 深色主题（抽点大屏） */
+  /** 深色主题（提问抽点） */
   variant?: 'light' | 'dark';
   initialWidth?: number;
   initialHeight?: number;

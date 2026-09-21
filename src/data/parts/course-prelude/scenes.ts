@@ -64,8 +64,16 @@ export const scenes: DraftScene[] = [
           label: "平时成绩",
           percent: "10%",
           children: [
-            { label: "课堂表现", percent: "5%" },
-            { label: "平时作业", percent: "5%", note: "记 5 / 8 次" },
+            {
+              label: "课堂互动",
+              percent: "5%",
+              note: "幸运草；按本班第90百分位折到5分",
+            },
+            {
+              label: "提问",
+              percent: "5%",
+              note: "抽点小红花；按本班第90百分位折到5分",
+            },
           ],
         },
         {
@@ -84,7 +92,7 @@ export const scenes: DraftScene[] = [
         {
           label: "期末考试",
           percent: "40%",
-          note: "PTA 机考，闭卷",
+          note: "PTA 机考，闭卷；折算缺勤达 6 次不得参加（早退 3 次计 1 次缺勤，请假不计）",
         },
       ],
     },

@@ -6,6 +6,8 @@ import type {
   AttendanceStatus,
   ClassRoster,
   MultiRosterStore,
+  PerformanceGradeRow,
+  RewardKind,
   SemesterLedger,
   SessionLedger,
   Student,
@@ -22,8 +24,17 @@ function activeSessionKey(classId: ClassId): string {
   return `pyclass-active-session-${classId}`;
 }
 
-/** 本堂 / 学期小红花下限（可为负） */
-export const FLOWER_MIN = -50;
+/** 本堂 / 学期花、草下限（可为负） */
+export const REWARD_MIN = -50;
+/** @deprecated 使用 REWARD_MIN */
+export const FLOWER_MIN = REWARD_MIN;
+
+export const FINAL_ABSENCE_LIMIT = 6;
+
+export const PERFORMANCE_CSV_NOTE = [
+  '# 提问（小红花）与课堂互动（幸运草）各占 5 分，分别按本班第90百分位折到满分5（一位小数）；负值按 0。',
+  '# 考勤不算分。折算缺勤=无故缺席+⌊早退/3⌋；请假不计。折算缺勤达 6 次不得参加期末。',
+].join('\n');
 
 function emptyClassRoster(): ClassRoster {
   return { students: [], updatedAt: '', source: undefined };
@@ -129,6 +140,7 @@ function ensureRegistry(): TeachingClass[] {
       writeJson(semesterKey('monday'), {
         classId: 'monday',
         flowers: legacySem.flowers,
+        clovers: {},
         updatedAt: legacySem.updatedAt || new Date().toISOString(),
       });
     }
@@ -291,15 +303,51 @@ export function saveActiveClassId(classId: ClassId): void {
   localStorage.setItem(ACTIVE_CLASS_KEY, classId);
 }
 
+function countMap(raw?: Record<string, number> | null): Record<string, number> {
+  return raw && typeof raw === 'object' ? { ...raw } : {};
+}
+
+export function normalizeSemester(ledger: SemesterLedger): SemesterLedger {
+  return {
+    classId: ledger.classId,
+    flowers: countMap(ledger.flowers),
+    clovers: countMap(ledger.clovers),
+    updatedAt: ledger.updatedAt ?? '',
+  };
+}
+
+export function normalizeSession(session: SessionLedger): SessionLedger {
+  return {
+    ...session,
+    attendance: session.attendance ?? {},
+    flowers: countMap(session.flowers),
+    clovers: countMap(session.clovers),
+    pickHistory: Array.isArray(session.pickHistory) ? session.pickHistory : [],
+  };
+}
+
+export function normalizeLogEntry(entry: AttendanceLogEntry): AttendanceLogEntry {
+  return {
+    sessionId: entry.sessionId,
+    date: entry.date,
+    lessonId: entry.lessonId,
+    attendance: entry.attendance ?? {},
+    flowers: countMap(entry.flowers),
+    clovers: countMap(entry.clovers),
+    pickHistory: Array.isArray(entry.pickHistory) ? entry.pickHistory : [],
+  };
+}
+
 export function loadSemester(classId: ClassId): SemesterLedger {
-  if (!classId) return { classId: '', flowers: {}, updatedAt: '' };
-  return (
+  if (!classId) return { classId: '', flowers: {}, clovers: {}, updatedAt: '' };
+  const raw =
     readJson<SemesterLedger>(semesterKey(classId)) ?? {
       classId,
       flowers: {},
+      clovers: {},
       updatedAt: '',
-    }
-  );
+    };
+  return normalizeSemester({ ...raw, classId });
 }
 
 function saveSemester(ledger: SemesterLedger): void {
@@ -323,6 +371,7 @@ function emptySession(
     lessonId,
     attendance: {},
     flowers: {},
+    clovers: {},
     pickHistory: [],
     updatedAt: new Date().toISOString(),
   };
@@ -356,16 +405,10 @@ function nextMeetingNumber(classId: ClassId, date: string): number {
   return count + 1;
 }
 
-function adoptSession(session: SessionLedger, lessonId: string): SessionLedger {
+/** 复用当天本堂；lessonId 以首次创建为准，换讲不改写。 */
+function adoptSession(session: SessionLedger): SessionLedger {
   saveActiveSessionId(session.classId, session.sessionId);
-  if (session.lessonId === lessonId) return session;
-  const next: SessionLedger = {
-    ...session,
-    lessonId,
-    updatedAt: new Date().toISOString(),
-  };
-  saveSession(next);
-  return next;
+  return normalizeSession(session);
 }
 
 export function loadOrCreateSession(classId: ClassId, lessonId: string): SessionLedger {
@@ -376,11 +419,11 @@ export function loadOrCreateSession(classId: ClassId, lessonId: string): Session
   const activeId = loadActiveSessionId(classId);
   const fromActive = activeId ? readJson<SessionLedger>(sessionStorageKey(activeId)) : null;
   if (fromActive && fromActive.classId === classId && fromActive.date === date) {
-    return adoptSession(fromActive, lessonId);
+    return adoptSession(fromActive);
   }
   const fromToday = findLatestSessionOnDate(classId, date);
   if (fromToday) {
-    return adoptSession(fromToday, lessonId);
+    return adoptSession(fromToday);
   }
   const created = emptySession(classId, lessonId, date, 1);
   saveSession(created);
@@ -400,39 +443,173 @@ export function startNewSession(classId: ClassId, lessonId: string): SessionLedg
   return created;
 }
 
+/** 本堂 sessionId 中的当天第几次（无 _mN 则为 1） */
+export function meetingNumberFromSessionId(sessionId: string): number {
+  const m = sessionId.match(/_m(\d+)$/);
+  return m ? Number(m[1]) : 1;
+}
+
+export function meetingLabel(entry: { date: string; sessionId: string; lessonId?: string }): string {
+  const n = meetingNumberFromSessionId(entry.sessionId);
+  const lesson = entry.lessonId ? ` · ${entry.lessonId}` : '';
+  return `${entry.date} · 当天第 ${n} 次${lesson}`;
+}
+
+export function teachingDateIso(): string {
+  return todayIso();
+}
+
+export function loadStoredSession(sessionId: string): SessionLedger | null {
+  if (!sessionId) return null;
+  const raw = readJson<SessionLedger>(sessionStorageKey(sessionId));
+  return raw ? normalizeSession(raw) : null;
+}
+
+/**
+ * 补改某一堂考勤：只改档案，并在本机仍有该会话时同步会话。
+ * 不走日期保护，不切换当前 active 本堂。
+ */
+export function patchAttendanceBySessionId(
+  classId: ClassId,
+  sessionId: string,
+  studentId: string,
+  status: AttendanceStatus,
+): AttendanceLog {
+  if (!classId || !sessionId) return loadAttendanceLog(classId);
+  const log = loadAttendanceLog(classId);
+  const idx = log.entries.findIndex((e) => e.sessionId === sessionId);
+  if (idx < 0) return log;
+  const prev = normalizeLogEntry(log.entries[idx]!);
+  const entries = [...log.entries];
+  entries[idx] = {
+    ...prev,
+    attendance: { ...prev.attendance, [studentId]: status },
+  };
+  const next: AttendanceLog = {
+    classId,
+    entries,
+    updatedAt: new Date().toISOString(),
+  };
+  writeJson(attendanceLogKey(classId), next);
+
+  const stored = loadStoredSession(sessionId);
+  if (stored && stored.classId === classId) {
+    writeJson(sessionStorageKey(sessionId), {
+      ...stored,
+      attendance: { ...stored.attendance, [studentId]: status },
+      updatedAt: new Date().toISOString(),
+    });
+  }
+  return next;
+}
+
+function sessionFromLogEntry(classId: ClassId, entry: AttendanceLogEntry): SessionLedger {
+  return normalizeSession({
+    sessionId: entry.sessionId,
+    classId,
+    date: entry.date,
+    lessonId: entry.lessonId,
+    attendance: entry.attendance,
+    flowers: entry.flowers,
+    clovers: entry.clovers,
+    pickHistory: entry.pickHistory,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+/** 把当前本堂指到指定会话（仅允许今天的课次，以便沿用现有点名逻辑） */
+export function resumeSession(classId: ClassId, sessionId: string): SessionLedger | null {
+  if (!classId || !sessionId) return null;
+  const stored = loadStoredSession(sessionId);
+  const entry = loadAttendanceLog(classId).entries.find((e) => e.sessionId === sessionId);
+  if (!stored && !entry) return null;
+  const session = stored ?? sessionFromLogEntry(classId, entry!);
+  if (session.classId !== classId) return null;
+  if (session.date !== todayIso()) return null;
+  if (!stored) saveSession(session);
+  saveActiveSessionId(classId, session.sessionId);
+  return session;
+}
+
+export function previousTodaySessionId(
+  classId: ClassId,
+  currentSessionId: string,
+): string | null {
+  if (!classId) return null;
+  const date = todayIso();
+  const ids = new Set<string>();
+  for (const entry of loadAttendanceLog(classId).entries) {
+    if (entry.date === date) ids.add(entry.sessionId);
+  }
+  for (const session of Object.values(collectSessions())) {
+    if (session.classId === classId && session.date === date) ids.add(session.sessionId);
+  }
+  const currentN = meetingNumberFromSessionId(currentSessionId);
+  let bestId: string | null = null;
+  let bestN = 0;
+  for (const id of ids) {
+    if (id === currentSessionId) continue;
+    const n = meetingNumberFromSessionId(id);
+    if (n < currentN && n >= bestN) {
+      bestN = n;
+      bestId = id;
+    }
+  }
+  return bestId;
+}
+
+/** 同一天误开新堂：指回当天上一堂（meeting 更小的那条） */
+export function resumePreviousTodaySession(
+  classId: ClassId,
+  currentSessionId: string,
+): SessionLedger | null {
+  const prevId = previousTodaySessionId(classId, currentSessionId);
+  if (!prevId) return null;
+  return resumeSession(classId, prevId);
+}
+
 export function saveSession(session: SessionLedger): void {
   if (!session.classId) return;
+  const snap = normalizeSession(session);
   writeJson(sessionStorageKey(session.sessionId), {
-    ...session,
+    ...snap,
     updatedAt: new Date().toISOString(),
   });
 }
 
 function sessionForWrite(session: SessionLedger): SessionLedger {
-  if (!session.classId) return session;
-  if (session.date === todayIso()) return session;
+  if (!session.classId) return normalizeSession(session);
+  if (session.date === todayIso()) return normalizeSession(session);
   return startNewSession(session.classId, session.lessonId);
 }
 
 export function loadAttendanceLog(classId: ClassId): AttendanceLog {
   if (!classId) return { classId: '', entries: [], updatedAt: '' };
-  return (
+  const raw =
     readJson<AttendanceLog>(attendanceLogKey(classId)) ?? {
       classId,
       entries: [],
       updatedAt: '',
-    }
-  );
+    };
+  return {
+    classId,
+    entries: (raw.entries ?? []).map(normalizeLogEntry),
+    updatedAt: raw.updatedAt ?? '',
+  };
 }
 
 export function upsertAttendanceLog(session: SessionLedger): AttendanceLog {
   if (!session.classId) return { classId: '', entries: [], updatedAt: '' };
   const log = loadAttendanceLog(session.classId);
+  const snap = normalizeSession(session);
   const entry: AttendanceLogEntry = {
-    sessionId: session.sessionId,
-    date: session.date,
-    lessonId: session.lessonId,
-    attendance: { ...session.attendance },
+    sessionId: snap.sessionId,
+    date: snap.date,
+    lessonId: snap.lessonId,
+    attendance: { ...snap.attendance },
+    flowers: { ...snap.flowers },
+    clovers: { ...snap.clovers },
+    pickHistory: [...snap.pickHistory],
   };
   const idx = log.entries.findIndex((e) => e.sessionId === session.sessionId);
   const entries = [...log.entries];
@@ -482,6 +659,23 @@ export function setAllAttendance(
   return next;
 }
 
+const STATUS_LABEL: Record<AttendanceStatus, string> = {
+  present: '出席',
+  early_leave: '早退',
+  absent: '缺席',
+  leave: '请假',
+  unknown: '未点',
+};
+
+/** 折算缺勤：无故缺席 + ⌊早退/3⌋；请假不计 */
+export function equivalentAbsences(absent: number, earlyLeave: number): number {
+  return Math.max(0, absent) + Math.floor(Math.max(0, earlyLeave) / 3);
+}
+
+export function canTakeFinalExam(absent: number, earlyLeave: number): boolean {
+  return equivalentAbsences(absent, earlyLeave) < FINAL_ABSENCE_LIMIT;
+}
+
 export function buildAttendanceRanking(
   students: Student[],
   log: AttendanceLog,
@@ -489,26 +683,32 @@ export function buildAttendanceRanking(
   return students
     .map((student) => {
       let present = 0;
+      let earlyLeave = 0;
       let absent = 0;
       let leave = 0;
       let unknown = 0;
       for (const entry of log.entries) {
         const st = entry.attendance[student.id] ?? 'unknown';
         if (st === 'present') present += 1;
+        else if (st === 'early_leave') earlyLeave += 1;
         else if (st === 'absent') absent += 1;
         else if (st === 'leave') leave += 1;
         else unknown += 1;
       }
-      const marked = present + absent + leave;
+      const marked = present + earlyLeave + absent + leave;
       const rate = marked > 0 ? present / marked : 0;
+      const eq = equivalentAbsences(absent, earlyLeave);
       return {
         student,
         present,
+        earlyLeave,
         absent,
         leave,
         unknown,
         sessions: log.entries.length,
         rate,
+        equivalentAbsences: eq,
+        canTakeFinal: eq < FINAL_ABSENCE_LIMIT,
       };
     })
     .sort((a, b) => {
@@ -519,29 +719,255 @@ export function buildAttendanceRanking(
 }
 
 export function exportAttendanceCsv(students: Student[], log: AttendanceLog): string {
-  const statusLabel = (s: AttendanceStatus) =>
-    ({ present: '出席', absent: '缺席', leave: '请假', unknown: '未点' })[s];
-
   const dateHeaders = log.entries.map((e) => `${e.date}/${e.lessonId}`);
-  const header = ['学号', '姓名', ...dateHeaders, '出席', '缺席', '请假', '未点', '出勤率%'].join(',');
+  const header = [
+    '学号',
+    '姓名',
+    ...dateHeaders,
+    '出席',
+    '早退',
+    '缺席',
+    '请假',
+    '未点',
+    '出勤率%',
+    '折算缺勤',
+    '可否期末',
+  ].join(',');
 
   const ranking = buildAttendanceRanking(students, log);
   const lines = ranking.map((row) => {
     const cells = log.entries.map((e) =>
-      statusLabel(e.attendance[row.student.id] ?? 'unknown'),
+      STATUS_LABEL[e.attendance[row.student.id] ?? 'unknown'],
     );
     return [
       row.student.studentNo ?? '',
       row.student.name,
       ...cells,
       row.present,
+      row.earlyLeave,
       row.absent,
       row.leave,
       row.unknown,
       Math.round(row.rate * 1000) / 10,
+      row.equivalentAbsences,
+      row.canTakeFinal ? '可以' : '不得参加',
     ].join(',');
   });
   return [header, ...lines].join('\n');
+}
+
+/** 升序数组的第 90 百分位（ceil(0.9n)-1） */
+export function percentile90(values: number[]): number {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const idx = Math.min(sorted.length - 1, Math.max(0, Math.ceil(0.9 * sorted.length) - 1));
+  return sorted[idx]!;
+}
+
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+export function scalePerformanceScore(points: number, p90: number): number {
+  if (p90 <= 0) return points > 0 ? 5 : 0;
+  return round1(5 * Math.min(1, points / p90));
+}
+
+export function buildSemesterGradeRows(
+  students: Student[],
+  semester: SemesterLedger,
+  log: AttendanceLog,
+): PerformanceGradeRow[] {
+  const ranking = buildAttendanceRanking(students, log);
+  const byId = new Map(ranking.map((row) => [row.student.id, row]));
+  const sem = normalizeSemester(semester);
+  const flowerCounts = students.map((s) => Math.max(0, sem.flowers[s.id] ?? 0));
+  const cloverCounts = students.map((s) => Math.max(0, sem.clovers[s.id] ?? 0));
+  const flowerP90 = percentile90(flowerCounts);
+  const cloverP90 = percentile90(cloverCounts);
+
+  return students.map((student) => {
+    const att = byId.get(student.id);
+    const flowers = sem.flowers[student.id] ?? 0;
+    const clovers = sem.clovers[student.id] ?? 0;
+    const flowersScaled = scalePerformanceScore(Math.max(0, flowers), flowerP90);
+    const cloversScaled = scalePerformanceScore(Math.max(0, clovers), cloverP90);
+    const eq = att?.equivalentAbsences ?? equivalentAbsences(att?.absent ?? 0, att?.earlyLeave ?? 0);
+    return {
+      student,
+      flowers,
+      clovers,
+      present: att?.present ?? 0,
+      earlyLeave: att?.earlyLeave ?? 0,
+      absent: att?.absent ?? 0,
+      leave: att?.leave ?? 0,
+      unknown: att?.unknown ?? 0,
+      rate: att?.rate ?? 0,
+      flowersScaled,
+      flowersFinal: flowersScaled,
+      cloversScaled,
+      cloversFinal: cloversScaled,
+      equivalentAbsences: eq,
+      canTakeFinal: att?.canTakeFinal ?? eq < FINAL_ABSENCE_LIMIT,
+    };
+  });
+}
+
+export function exportSemesterPerformanceCsv(
+  students: Student[],
+  semester: SemesterLedger,
+  log: AttendanceLog,
+): string {
+  const header = [
+    '学号',
+    '姓名',
+    '学期小红花',
+    '提问折算',
+    '提问最终分',
+    '学期幸运草',
+    '课堂互动折算',
+    '课堂互动最终分',
+    '出席',
+    '早退',
+    '缺席',
+    '请假',
+    '未点',
+    '出勤率%',
+    '折算缺勤',
+    '可否期末',
+  ].join(',');
+  const rows = [...buildSemesterGradeRows(students, semester, log)].sort((a, b) => {
+    const aTotal = a.flowersFinal + a.cloversFinal;
+    const bTotal = b.flowersFinal + b.cloversFinal;
+    if (bTotal !== aTotal) return bTotal - aTotal;
+    if (b.cloversFinal !== a.cloversFinal) return b.cloversFinal - a.cloversFinal;
+    return a.student.name.localeCompare(b.student.name, 'zh');
+  });
+  const lines = rows.map((row) =>
+    [
+      row.student.studentNo ?? '',
+      row.student.name,
+      row.flowers,
+      row.flowersScaled,
+      row.flowersFinal,
+      row.clovers,
+      row.cloversScaled,
+      row.cloversFinal,
+      row.present,
+      row.earlyLeave,
+      row.absent,
+      row.leave,
+      row.unknown,
+      Math.round(row.rate * 1000) / 10,
+      row.equivalentAbsences,
+      row.canTakeFinal ? '可以' : '不得参加',
+    ].join(','),
+  );
+  return [PERFORMANCE_CSV_NOTE, header, ...lines].join('\n');
+}
+
+/** 档案 + 本机会话合并，供本堂明细导出与对账 */
+export function listMeetingEntries(classId: ClassId): AttendanceLogEntry[] {
+  const byId = new Map<string, AttendanceLogEntry>();
+  for (const entry of loadAttendanceLog(classId).entries) {
+    byId.set(entry.sessionId, normalizeLogEntry(entry));
+  }
+  for (const session of Object.values(collectSessions())) {
+    if (session.classId !== classId || !session.sessionId) continue;
+    const live = normalizeSession(session);
+    const fromSession: AttendanceLogEntry = {
+      sessionId: live.sessionId,
+      date: live.date,
+      lessonId: live.lessonId,
+      attendance: { ...live.attendance },
+      flowers: { ...live.flowers },
+      clovers: { ...live.clovers },
+      pickHistory: [...live.pickHistory],
+    };
+    const prev = byId.get(live.sessionId);
+    if (!prev) {
+      byId.set(live.sessionId, fromSession);
+      continue;
+    }
+    byId.set(live.sessionId, {
+      sessionId: live.sessionId,
+      date: live.date || prev.date,
+      lessonId: prev.lessonId || live.lessonId,
+      attendance: { ...prev.attendance, ...fromSession.attendance },
+      flowers: { ...prev.flowers, ...fromSession.flowers },
+      clovers: { ...prev.clovers, ...fromSession.clovers },
+      pickHistory: fromSession.pickHistory.length ? fromSession.pickHistory : prev.pickHistory,
+    });
+  }
+  return [...byId.values()].sort(
+    (a, b) => a.date.localeCompare(b.date) || a.sessionId.localeCompare(b.sessionId),
+  );
+}
+
+export function exportMeetingDetailCsv(students: Student[], classId: ClassId): string {
+  const header = [
+    'date',
+    'sessionId',
+    'lessonId',
+    '学号',
+    '姓名',
+    '该堂出勤',
+    '该堂小红花（提问）',
+    '该堂幸运草（课堂互动）',
+    '该堂是否被抽中',
+  ].join(',');
+  const meetings = listMeetingEntries(classId);
+  const lines: string[] = [];
+  for (const meeting of meetings) {
+    const picked = new Set(meeting.pickHistory);
+    for (const student of students) {
+      lines.push(
+        [
+          meeting.date,
+          meeting.sessionId,
+          meeting.lessonId,
+          student.studentNo ?? '',
+          student.name,
+          STATUS_LABEL[meeting.attendance[student.id] ?? 'unknown'],
+          meeting.flowers[student.id] ?? 0,
+          meeting.clovers[student.id] ?? 0,
+          picked.has(student.id) ? '是' : '否',
+        ].join(','),
+      );
+    }
+  }
+  return [header, ...lines].join('\n');
+}
+
+export function adjustReward(
+  session: SessionLedger,
+  studentId: string,
+  delta: number,
+  kind: RewardKind,
+): { session: SessionLedger; semester: SemesterLedger } {
+  const base = normalizeSession(sessionForWrite(session));
+  const semester = loadSemester(base.classId);
+  const prevSession = (base[kind][studentId] ?? 0);
+  const prevSemester = (semester[kind][studentId] ?? 0);
+  const sessionCount = Math.max(REWARD_MIN, prevSession + delta);
+  const applied = sessionCount - prevSession;
+  const semesterCount = Math.max(REWARD_MIN, prevSemester + applied);
+
+  const nextSession: SessionLedger = {
+    ...base,
+    [kind]: { ...base[kind], [studentId]: sessionCount },
+    updatedAt: new Date().toISOString(),
+  };
+  const nextSemester: SemesterLedger = {
+    classId: base.classId,
+    flowers: kind === 'flowers' ? { ...semester.flowers, [studentId]: semesterCount } : { ...semester.flowers },
+    clovers: kind === 'clovers' ? { ...semester.clovers, [studentId]: semesterCount } : { ...semester.clovers },
+    updatedAt: new Date().toISOString(),
+  };
+  saveSession(nextSession);
+  saveSemester(nextSemester);
+  upsertAttendanceLog(nextSession);
+  return { session: nextSession, semester: nextSemester };
 }
 
 export function adjustFlowers(
@@ -549,36 +975,27 @@ export function adjustFlowers(
   studentId: string,
   delta: number,
 ): { session: SessionLedger; semester: SemesterLedger } {
-  const semester = loadSemester(session.classId);
-  const prevSession = session.flowers[studentId] ?? 0;
-  const prevSemester = semester.flowers[studentId] ?? 0;
-  const sessionCount = Math.max(FLOWER_MIN, prevSession + delta);
-  const applied = sessionCount - prevSession;
-  const semesterCount = Math.max(FLOWER_MIN, prevSemester + applied);
+  return adjustReward(session, studentId, delta, 'flowers');
+}
 
-  const nextSession: SessionLedger = {
-    ...session,
-    flowers: { ...session.flowers, [studentId]: sessionCount },
-    updatedAt: new Date().toISOString(),
-  };
-  const nextSemester: SemesterLedger = {
-    classId: session.classId,
-    flowers: { ...semester.flowers, [studentId]: semesterCount },
-    updatedAt: new Date().toISOString(),
-  };
-  saveSession(nextSession);
-  saveSemester(nextSemester);
-  return { session: nextSession, semester: nextSemester };
+export function adjustClovers(
+  session: SessionLedger,
+  studentId: string,
+  delta: number,
+): { session: SessionLedger; semester: SemesterLedger } {
+  return adjustReward(session, studentId, delta, 'clovers');
 }
 
 export function recordPick(session: SessionLedger, studentId: string): SessionLedger {
-  if (session.pickHistory.includes(studentId)) return session;
+  const base = normalizeSession(sessionForWrite(session));
+  if (base.pickHistory.includes(studentId)) return base;
   const next: SessionLedger = {
-    ...session,
-    pickHistory: [...session.pickHistory, studentId],
+    ...base,
+    pickHistory: [...base.pickHistory, studentId],
     updatedAt: new Date().toISOString(),
   };
   saveSession(next);
+  upsertAttendanceLog(next);
   return next;
 }
 
@@ -587,7 +1004,7 @@ export function pickPool(students: Student[], session: SessionLedger): Student[]
   return students.filter((s) => {
     if (picked.has(s.id)) return false;
     const att = session.attendance[s.id] ?? 'unknown';
-    return att !== 'absent' && att !== 'leave';
+    return att !== 'absent' && att !== 'leave' && att !== 'early_leave';
   });
 }
 
@@ -627,7 +1044,7 @@ function collectSessions(): Record<string, SessionLedger> {
       const raw = localStorage.getItem(key);
       if (!raw) continue;
       try {
-        const session = JSON.parse(raw) as SessionLedger;
+        const session = normalizeSession(JSON.parse(raw) as SessionLedger);
         if (session?.sessionId) sessions[session.sessionId] = session;
       } catch {
         // skip bad entry
@@ -643,7 +1060,11 @@ function collectSemesters(classIds: ClassId[]): Record<string, SemesterLedger> {
   const out: Record<string, SemesterLedger> = {};
   for (const id of classIds) {
     const ledger = loadSemester(id);
-    if (ledger.updatedAt || Object.keys(ledger.flowers).length) {
+    if (
+      ledger.updatedAt ||
+      Object.keys(ledger.flowers).length ||
+      Object.keys(ledger.clovers).length
+    ) {
       out[id] = ledger;
     }
   }
@@ -725,6 +1146,7 @@ export function importTeacherPack(pack: TeacherCloudPack): void {
     writeJson(semesterKey(classId), {
       classId,
       flowers: semester.flowers ?? {},
+      clovers: semester.clovers ?? {},
       updatedAt: semester.updatedAt ?? '',
     });
   }
@@ -733,14 +1155,14 @@ export function importTeacherPack(pack: TeacherCloudPack): void {
     if (!log) continue;
     writeJson(attendanceLogKey(classId), {
       classId,
-      entries: Array.isArray(log.entries) ? log.entries : [],
+      entries: Array.isArray(log.entries) ? log.entries.map(normalizeLogEntry) : [],
       updatedAt: log.updatedAt ?? '',
     });
   }
 
   for (const session of Object.values(pack.sessions ?? {})) {
     if (!session?.sessionId || !session.classId) continue;
-    writeJson(sessionStorageKey(session.sessionId), session);
+    writeJson(sessionStorageKey(session.sessionId), normalizeSession(session));
   }
 }
 
