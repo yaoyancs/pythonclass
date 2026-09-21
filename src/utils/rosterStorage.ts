@@ -18,6 +18,10 @@ const ACTIVE_CLASS_KEY = 'pyclass-active-class';
 const LEGACY_ROSTER_KEY = 'pyclass-roster';
 const LEGACY_SEMESTER_KEY = 'pyclass-semester-flowers';
 
+function activeSessionKey(classId: ClassId): string {
+  return `pyclass-active-session-${classId}`;
+}
+
 /** 本堂 / 学期小红花下限（可为负） */
 export const FLOWER_MIN = -50;
 
@@ -37,8 +41,9 @@ function todayIso(): string {
   return `${y}-${m}-${day}`;
 }
 
-export function makeSessionId(classId: ClassId, lessonId: string, date = todayIso()): string {
-  return `${date}_${lessonId}_${classId}`;
+/** 本堂身份：日期 + 班级 + 当天第几次课。不绑定讲次，换页不另开考勤。 */
+export function makeSessionId(classId: ClassId, date = todayIso(), meeting = 1): string {
+  return meeting <= 1 ? `${date}_${classId}` : `${date}_${classId}_m${meeting}`;
 }
 
 function sessionStorageKey(sessionId: string): string {
@@ -208,16 +213,19 @@ export function deleteClass(classId: ClassId): ClassId | null {
 
   localStorage.removeItem(semesterKey(classId));
   localStorage.removeItem(attendanceLogKey(classId));
+  localStorage.removeItem(activeSessionKey(classId));
 
-  const suffix = `_${classId}`;
   const toRemove: string[] = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (!key?.startsWith('pyclass-session-')) continue;
-    if (key.endsWith(suffix) || key.includes(`_${classId}`)) {
-      // session key = pyclass-session-${date}_${lessonId}_${classId}
-      const sessionId = key.slice('pyclass-session-'.length);
-      if (sessionId.endsWith(`_${classId}`)) toRemove.push(key);
+    const raw = localStorage.getItem(key);
+    if (!raw) continue;
+    try {
+      const session = JSON.parse(raw) as SessionLedger;
+      if (session.classId === classId) toRemove.push(key);
+    } catch {
+      // skip
     }
   }
   for (const key of toRemove) localStorage.removeItem(key);
@@ -302,9 +310,14 @@ function saveSemester(ledger: SemesterLedger): void {
   });
 }
 
-function emptySession(classId: ClassId, lessonId: string, date: string): SessionLedger {
+function emptySession(
+  classId: ClassId,
+  lessonId: string,
+  date: string,
+  meeting = 1,
+): SessionLedger {
   return {
-    sessionId: makeSessionId(classId, lessonId, date),
+    sessionId: makeSessionId(classId, date, meeting),
     classId,
     date,
     lessonId,
@@ -315,16 +328,75 @@ function emptySession(classId: ClassId, lessonId: string, date: string): Session
   };
 }
 
+function loadActiveSessionId(classId: ClassId): string | null {
+  if (!classId) return null;
+  return localStorage.getItem(activeSessionKey(classId));
+}
+
+function saveActiveSessionId(classId: ClassId, sessionId: string): void {
+  if (!classId) return;
+  localStorage.setItem(activeSessionKey(classId), sessionId);
+}
+
+function findLatestSessionOnDate(classId: ClassId, date: string): SessionLedger | null {
+  let best: SessionLedger | null = null;
+  for (const session of Object.values(collectSessions())) {
+    if (session.classId !== classId || session.date !== date) continue;
+    if (!best || session.updatedAt > best.updatedAt) best = session;
+  }
+  return best;
+}
+
+function nextMeetingNumber(classId: ClassId, date: string): number {
+  let count = 0;
+  for (const session of Object.values(collectSessions())) {
+    if (session.classId !== classId || session.date !== date) continue;
+    count += 1;
+  }
+  return count + 1;
+}
+
+function adoptSession(session: SessionLedger, lessonId: string): SessionLedger {
+  saveActiveSessionId(session.classId, session.sessionId);
+  if (session.lessonId === lessonId) return session;
+  const next: SessionLedger = {
+    ...session,
+    lessonId,
+    updatedAt: new Date().toISOString(),
+  };
+  saveSession(next);
+  return next;
+}
+
 export function loadOrCreateSession(classId: ClassId, lessonId: string): SessionLedger {
   if (!classId) {
     return emptySession('', lessonId, todayIso());
   }
   const date = todayIso();
-  const id = makeSessionId(classId, lessonId, date);
-  const existing = readJson<SessionLedger>(sessionStorageKey(id));
-  if (existing && existing.sessionId === id) return existing;
-  const created = emptySession(classId, lessonId, date);
-  writeJson(sessionStorageKey(id), created);
+  const activeId = loadActiveSessionId(classId);
+  const fromActive = activeId ? readJson<SessionLedger>(sessionStorageKey(activeId)) : null;
+  if (fromActive && fromActive.classId === classId && fromActive.date === date) {
+    return adoptSession(fromActive, lessonId);
+  }
+  const fromToday = findLatestSessionOnDate(classId, date);
+  if (fromToday) {
+    return adoptSession(fromToday, lessonId);
+  }
+  const created = emptySession(classId, lessonId, date, 1);
+  saveSession(created);
+  saveActiveSessionId(classId, created.sessionId);
+  return created;
+}
+
+/** 新开本堂：上次考勤留在学期档案，不再被覆盖 */
+export function startNewSession(classId: ClassId, lessonId: string): SessionLedger {
+  if (!classId) {
+    return emptySession('', lessonId, todayIso());
+  }
+  const date = todayIso();
+  const created = emptySession(classId, lessonId, date, nextMeetingNumber(classId, date));
+  saveSession(created);
+  saveActiveSessionId(classId, created.sessionId);
   return created;
 }
 
@@ -334,6 +406,12 @@ export function saveSession(session: SessionLedger): void {
     ...session,
     updatedAt: new Date().toISOString(),
   });
+}
+
+function sessionForWrite(session: SessionLedger): SessionLedger {
+  if (!session.classId) return session;
+  if (session.date === todayIso()) return session;
+  return startNewSession(session.classId, session.lessonId);
 }
 
 export function loadAttendanceLog(classId: ClassId): AttendanceLog {
@@ -375,9 +453,10 @@ export function setAttendance(
   studentId: string,
   status: AttendanceStatus,
 ): SessionLedger {
+  const base = sessionForWrite(session);
   const next: SessionLedger = {
-    ...session,
-    attendance: { ...session.attendance, [studentId]: status },
+    ...base,
+    attendance: { ...base.attendance, [studentId]: status },
     updatedAt: new Date().toISOString(),
   };
   saveSession(next);
@@ -390,10 +469,11 @@ export function setAllAttendance(
   studentIds: string[],
   status: AttendanceStatus,
 ): SessionLedger {
-  const attendance = { ...session.attendance };
+  const base = sessionForWrite(session);
+  const attendance = { ...base.attendance };
   for (const id of studentIds) attendance[id] = status;
   const next: SessionLedger = {
-    ...session,
+    ...base,
     attendance,
     updatedAt: new Date().toISOString(),
   };
@@ -511,6 +591,15 @@ export function pickPool(students: Student[], session: SessionLedger): Student[]
   });
 }
 
+export function studentMatchesQuery(student: Student, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  if (student.name.toLowerCase().includes(q)) return true;
+  if (student.studentNo?.toLowerCase().includes(q)) return true;
+  if (student.id.toLowerCase().includes(q)) return true;
+  return false;
+}
+
 export function pickRandomStudent(pool: Student[]): Student | null {
   if (!pool.length) return null;
   const buf = new Uint32Array(1);
@@ -601,6 +690,7 @@ function clearTeacherLocalKeys(): void {
       key === LEGACY_ROSTER_KEY ||
       key === LEGACY_SEMESTER_KEY ||
       key.startsWith('pyclass-session-') ||
+      key.startsWith('pyclass-active-session-') ||
       key.startsWith('pyclass-semester-flowers-') ||
       key.startsWith('pyclass-attendance-log-')
     ) {

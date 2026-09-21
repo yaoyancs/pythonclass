@@ -24,6 +24,7 @@ import {
   saveClassRoster,
   setAllAttendance,
   setAttendance,
+  startNewSession,
   upsertAttendanceLog,
 } from '../utils/rosterStorage';
 
@@ -208,6 +209,15 @@ export function useRosterSession(lessonId: string, options: UseRosterSessionOpti
     [notifyPersist],
   );
 
+  const beginNewSession = useCallback(() => {
+    const current = sessionRef.current;
+    const next = startNewSession(current.classId || classId, current.lessonId);
+    sessionRef.current = next;
+    setSession(next);
+    setAttendanceLog(loadAttendanceLog(next.classId));
+    notifyPersist();
+  }, [classId, notifyPersist]);
+
   const getPickPool = useCallback(() => pickPool(students, session), [students, session]);
 
   return {
@@ -227,6 +237,7 @@ export function useRosterSession(lessonId: string, options: UseRosterSessionOpti
     removeClass,
     updateAttendance,
     markAllPresent,
+    beginNewSession,
     changeFlowers,
     commitPick,
     getPickPool,

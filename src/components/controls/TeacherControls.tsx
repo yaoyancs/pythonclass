@@ -56,6 +56,7 @@ function TeacherControlsUnlocked({
     removeClass,
     updateAttendance,
     markAllPresent,
+    beginNewSession,
     changeFlowers,
     commitPick,
     getPickPool,
@@ -192,6 +193,7 @@ function TeacherControlsUnlocked({
           onManageRoster={() => setPanel('roster')}
           onUpdate={updateAttendance}
           onMarkAllPresent={markAllPresent}
+          onStartNewSession={beginNewSession}
           onClose={closePanel}
         />
       )}

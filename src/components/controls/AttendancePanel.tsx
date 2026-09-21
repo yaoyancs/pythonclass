@@ -11,6 +11,7 @@ import {
   buildAttendanceRanking,
   exportAttendanceCsv,
   getClassLabel,
+  studentMatchesQuery,
 } from '../../utils/rosterStorage';
 import { Button } from '../ui/Button';
 import { ClassSwitcher } from './ClassSwitcher';
@@ -34,6 +35,7 @@ interface AttendancePanelProps {
   onManageRoster: () => void;
   onUpdate: (studentId: string, status: AttendanceStatus) => void;
   onMarkAllPresent: () => void;
+  onStartNewSession: () => void;
   onClose: () => void;
 }
 
@@ -48,15 +50,31 @@ export function AttendancePanel({
   onManageRoster,
   onUpdate,
   onMarkAllPresent,
+  onStartNewSession,
   onClose,
 }: AttendancePanelProps) {
   const metaLabel = getClassLabel(classId);
   const [tab, setTab] = useState<'today' | 'rank'>('today');
+  const [query, setQuery] = useState('');
 
   const ranking = useMemo(
     () => buildAttendanceRanking(students, attendanceLog),
     [students, attendanceLog],
   );
+
+  const filtered = useMemo(
+    () => students.filter((s) => studentMatchesQuery(s, query)),
+    [students, query],
+  );
+
+  const startFresh = () => {
+    const ok = window.confirm(
+      '开始新的本堂考勤？上次记录会留在学期档案中，不会被覆盖。本堂名单将全部回到「未点」。',
+    );
+    if (!ok) return;
+    setQuery('');
+    onStartNewSession();
+  };
 
   const exportSemester = () => {
     if (!attendanceLog.entries.length) {
@@ -77,7 +95,7 @@ export function AttendancePanel({
       />
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <p className="text-sm text-text-secondary mr-auto">
-          已记录 {attendanceLog.entries.length} 次课 · 本堂 {session.sessionId}
+          已记录 {attendanceLog.entries.length} 次课 · {session.date} · 本堂 {session.sessionId}
         </p>
         <Button variant="ghost" size="md" type="button" onClick={onManageRoster}>
           管理名单
@@ -86,9 +104,14 @@ export function AttendancePanel({
           导出学期考勤
         </Button>
         {students.length > 0 && tab === 'today' && (
-          <Button variant="secondary" size="md" type="button" onClick={onMarkAllPresent}>
-            全员出席
-          </Button>
+          <>
+            <Button variant="secondary" size="md" type="button" onClick={onMarkAllPresent}>
+              全员出席
+            </Button>
+            <Button variant="secondary" size="md" type="button" onClick={startFresh}>
+              新开本堂
+            </Button>
+          </>
         )}
       </div>
 
@@ -116,37 +139,60 @@ export function AttendancePanel({
           请先在「班级名单」中导入本班 CSV（一次即可）。
         </p>
       ) : tab === 'today' ? (
-        <ul className="divide-y divide-classroom-border/60">
-          {students.map((s) => {
-            const status = session.attendance[s.id] ?? 'unknown';
-            return (
-              <li key={s.id} className="flex flex-wrap items-center gap-3 py-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-lg">{s.name}</p>
-                  {s.studentNo && (
-                    <p className="text-sm text-text-secondary tabular-nums">{s.studentNo}</p>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {STATUSES.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      className={`rounded-full px-3 py-1.5 text-sm border transition-colors ${
-                        status === opt.value
-                          ? 'bg-accent text-white border-accent'
-                          : 'border-classroom-border text-text-secondary hover:border-accent/50'
-                      }`}
-                      onClick={() => onUpdate(s.id, opt.value)}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        <>
+          <label className="block mb-3">
+            <span className="sr-only">按学号或姓名搜索</span>
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="按学号或姓名搜索，定向标记出勤"
+              className="w-full rounded-full border border-classroom-border bg-white px-4 py-2.5 text-base outline-none focus:border-accent"
+            />
+          </label>
+          {filtered.length === 0 ? (
+            <p className="text-text-secondary">没有匹配「{query.trim()}」的同学。</p>
+          ) : (
+            <>
+              {query.trim() && (
+                <p className="text-sm text-text-secondary mb-2">
+                  找到 {filtered.length} 人（共 {students.length} 人）
+                </p>
+              )}
+              <ul className="divide-y divide-classroom-border/60">
+                {filtered.map((s) => {
+                  const status = session.attendance[s.id] ?? 'unknown';
+                  return (
+                    <li key={s.id} className="flex flex-wrap items-center gap-3 py-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-lg">{s.name}</p>
+                        {s.studentNo && (
+                          <p className="text-sm text-text-secondary tabular-nums">{s.studentNo}</p>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {STATUSES.map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            className={`rounded-full px-3 py-1.5 text-sm border transition-colors ${
+                              status === opt.value
+                                ? 'bg-accent text-white border-accent'
+                                : 'border-classroom-border text-text-secondary hover:border-accent/50'
+                            }`}
+                            onClick={() => onUpdate(s.id, opt.value)}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+        </>
       ) : attendanceLog.entries.length === 0 ? (
         <p className="text-text-secondary">完成本堂考勤后，将累计形成学期排行榜。</p>
       ) : (

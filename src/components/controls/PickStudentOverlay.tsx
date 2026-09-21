@@ -30,6 +30,7 @@ export function PickStudentOverlay({
   const timerRef = useRef<number | null>(null);
   const recordedRef = useRef(false);
   const poolRef = useRef(pool);
+  const previewRef = useRef<Student | null>(null);
   poolRef.current = pool;
 
   useEffect(() => {
@@ -37,6 +38,20 @@ export function PickStudentOverlay({
       if (timerRef.current != null) window.clearInterval(timerRef.current);
     };
   }, []);
+
+  const settleOn = (finalStudent: Student) => {
+    if (timerRef.current != null) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setDisplayName(finalStudent.name);
+    setPicked(finalStudent);
+    setPhase('done');
+    if (!recordedRef.current) {
+      recordedRef.current = true;
+      onPicked(finalStudent.id);
+    }
+  };
 
   const startRoll = () => {
     const currentPool = poolRef.current;
@@ -49,6 +64,7 @@ export function PickStudentOverlay({
       return;
     }
     recordedRef.current = false;
+    previewRef.current = null;
     setPicked(null);
     setPhase('rolling');
 
@@ -59,24 +75,33 @@ export function PickStudentOverlay({
     timerRef.current = window.setInterval(() => {
       ticks += 1;
       const preview = pickRandomStudent(currentPool);
-      if (preview) setDisplayName(preview.name);
+      if (preview) {
+        previewRef.current = preview;
+        setDisplayName(preview.name);
+      }
       if (ticks >= totalTicks) {
-        if (timerRef.current != null) window.clearInterval(timerRef.current);
-        timerRef.current = null;
-        const finalStudent = pickRandomStudent(currentPool);
+        const finalStudent = pickRandomStudent(currentPool) ?? previewRef.current;
         if (!finalStudent) {
+          if (timerRef.current != null) window.clearInterval(timerRef.current);
+          timerRef.current = null;
           setPhase('idle');
           return;
         }
-        setDisplayName(finalStudent.name);
-        setPicked(finalStudent);
-        setPhase('done');
-        if (!recordedRef.current) {
-          recordedRef.current = true;
-          onPicked(finalStudent.id);
-        }
+        settleOn(finalStudent);
       }
     }, 70);
+  };
+
+  const stopRoll = () => {
+    const currentPool = poolRef.current;
+    const finalStudent = previewRef.current ?? pickRandomStudent(currentPool);
+    if (!finalStudent) {
+      if (timerRef.current != null) window.clearInterval(timerRef.current);
+      timerRef.current = null;
+      setPhase('idle');
+      return;
+    }
+    settleOn(finalStudent);
   };
 
   const classLabel = getClassLabel(session.classId);
@@ -148,6 +173,11 @@ export function PickStudentOverlay({
       )}
 
       <div className="mt-10 flex flex-wrap justify-center gap-3">
+        {phase === 'rolling' && (
+          <Button variant="primary" size="lg" type="button" onClick={stopRoll}>
+            停止
+          </Button>
+        )}
         {phase !== 'rolling' && (
           <Button
             variant="primary"
