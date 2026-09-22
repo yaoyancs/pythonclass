@@ -104,9 +104,16 @@ export function HistoryDialogueStage({ dialogue, sceneId }: HistoryDialogueStage
       {!transformed ? (
         <p className="mt-8 text-base text-accent/80">点击继续：人类语言变成机器指令</p>
       ) : (
-        <p className="mt-8 text-stage-sub text-accent stage-fade-in">
-          CPU 只听得懂机器指令——人类语言到不了处理器。
-        </p>
+        <div className="mt-8 space-y-3 stage-fade-in">
+          <p className="text-stage-sub text-accent">
+            CPU 只听得懂机器指令——人类语言到不了处理器。
+          </p>
+          {dialogue.conclusion && (
+            <p className="title-kai text-xl text-text-primary leading-relaxed">
+              {dialogue.conclusion}
+            </p>
+          )}
+        </div>
       )}
     </div>
   );

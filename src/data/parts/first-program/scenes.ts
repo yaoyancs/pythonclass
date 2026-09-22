@@ -1,33 +1,45 @@
 import type { DraftScene } from "../../../types/scene";
 
-/** 本 part：只讲变量——起名、赋值、改变。输入与诗卡放在飞花令。 */
+/** 本 part：只讲变量——为什么需要、是什么、赋值、取用、会变。输入与诗卡放在飞花令。 */
 export const scenes: DraftScene[] = [
   {
     id: "scene-fp-16",
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "变量——程序怎样记住和改变数据",
+      headline: "同一份数据要用两次",
       whyNeedVar: {
-        bareCode: "print((92 + 85 + 88) / 3)",
+        bareCode: "print(92)\nprint(92 + 8)",
         questions: [
-          "这段程序在做什么？",
-          "92、85、88 分别是哪一门课的成绩？",
-          "如果数学成绩从 85 改成 89，应该改哪个数字？同一成绩用十次呢？",
+          "92 写了两遍。如果成绩改成 90，要改几处？",
+          "程序知不知道 92 是 Python 成绩？",
         ],
         teacherLines: [
-          "这段程序能运行，计算也正确，但它有一个问题：数字没有名字。",
-          "计算机知道这里有三个数字，人却不知道每个数字代表什么。",
-          "我们需要给数据起名字。",
+          "这段程序能运行，但数字没有名字。",
+          "算完就丢了；改一处还得记得改另一处。",
         ],
-        numbers: [
-          { value: "92", label: "Python成绩" },
-          { value: "85", label: "数学成绩" },
-          { value: "88", label: "英语成绩" },
+        numbers: [{ value: "92", label: "Python成绩" }],
+        namedCode: "score = 92\nprint(score)\nprint(score + 8)",
+        summary: "反复出现的数据，需要被记住，并且有一个名字。",
+      },
+    },
+  },
+  {
+    id: "scene-fp-16b",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      headline: "变量是什么",
+      varDefinition: {
+        parts: [
+          { label: "名字", note: "标签", example: "score" },
+          { label: "值", note: "盒子里的东西", example: "92" },
+          { label: "赋值", note: "把标签贴上去", example: "score = 92" },
         ],
-        namedCode:
-          "python_score = 92\nmath_score = 85\nenglish_score = 88\n\naverage = (python_score + math_score + english_score) / 3\nprint(average)",
-        summary: "变量最直接的作用，是给程序中的数据起一个有意义的名字。",
+        definition:
+          "变量 = 程序给一份数据起的名字。用它保存数据、之后取用，并且可以改成另一份数据。",
+        mathLine: "数学里：未知数，等号两边永远相等。",
+        programLine: "编程里：有名字的存储。等号是「把右边放进左边」。",
       },
     },
   },
@@ -42,13 +54,12 @@ export const scenes: DraftScene[] = [
         mode: "label",
         name: "score",
         value: "92",
-        valueKind: "int",
         codeLines: ["score = 92"],
         boardNote: "赋值",
         teacherLine:
-          "Python 执行赋值时，先得到右边的值 92，再让左边的名字 score 指向这个值。",
+          "先算右边，再贴左边：先得到值 92，再让名字 score 指向它。右边也可以是表达式，例如 10 + 20。",
         conclusion:
-          "变量可以先理解为程序给数据起的名字。程序中的 = 主要表示赋值，不是数学里的「左右永远相等」。",
+          "程序中的 = 主要表示赋值，不是数学里的「左右永远相等」。",
       },
     },
   },
@@ -57,7 +68,7 @@ export const scenes: DraftScene[] = [
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "第一次预测变量的值",
+      headline: "用名字，不是用文字",
       varPredict: {
         code: "score = 92\nprint(score)",
         question: "输出的是单词 score，还是数字 92？",
@@ -65,12 +76,13 @@ export const scenes: DraftScene[] = [
         compareCode: 'print(score)\nprint("score")',
         compareOutputs: ["92", "score"],
         cards: [
-          { caption: "score", value: "92", kind: "int" },
-          { caption: '"score"', value: "score", kind: "str" },
+          { caption: "score", value: "92" },
+          { caption: '"score"', value: "score" },
         ],
         takeaway: [
           "score → 变量名，找到它当前对应的值",
           '"score" → 字符串，就是文字 score',
+          "上一页 print(10) 是直接写出值；现在值住在名字后面。",
         ],
       },
     },
@@ -80,39 +92,28 @@ export const scenes: DraftScene[] = [
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "重新赋值：变量为什么叫「变」量",
+      headline: "变量为什么叫「变」量",
       question: "最后输出 92 还是 95？请说出理由。",
       varModel: {
         mode: "rebind",
         name: "score",
         value: "92",
         nextValue: "95",
-        valueKind: "int",
         codeLines: ["score = 92", "score = 95", "print(score)"],
         teacherLine:
           "第二次赋值不是让 92 变成 95，而是让名字 score 改为指向新的值 95。",
-        conclusion: "程序运行的过程，就是数据状态不断变化的过程。",
-      },
-    },
-  },
-  {
-    id: "scene-fp-20",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      question: "数学里 score = score + 5 好像不成立。Python 为什么允许？",
-      varModel: {
-        mode: "update",
-        name: "score",
-        value: "90",
-        nextValue: "95",
-        valueKind: "int",
-        codeLines: ["score = 90", "score = score + 5", "print(score)"],
-        teacherLine:
-          "左边的 score 表示要更新谁；右边的 score 表示取出它当前的值。",
-        conclusion:
-          "这不是数学等式，而是执行指令：取出旧值，加 5，再保存为新值。",
-        humanTranslation: "把 score 当前的值增加 5。",
+        conclusion: "变的不是数字变魔术，变的是这个名字现在指向谁。",
+        followOn: {
+          question: "数学里 score = score + 5 好像不成立。Python 为什么允许？",
+          codeLines: ["score = 90", "score = score + 5", "print(score)"],
+          value: "90",
+          nextValue: "95",
+          teacherLine:
+            "左边的 score 表示要更新谁；右边的 score 表示取出它当前的值。",
+          conclusion:
+            "取出旧值，加 5，再贴回去。这不是数学等式，而是一条执行指令。",
+          humanTranslation: "把 score 当前的值增加 5。",
+        },
       },
     },
   },
@@ -121,7 +122,7 @@ export const scenes: DraftScene[] = [
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "变量命名原则：代码首先写给人读",
+      headline: "名字要让人读懂",
       codeComparison: {
         left: {
           label: "难读",
@@ -135,65 +136,8 @@ export const scenes: DraftScene[] = [
       bulletPoints: [
         "名字要表达含义",
         "多个单词推荐用下划线：student_name、average_score",
+        "不能用 print、if 这些已被语言占用的词当名字；完整规则见教材",
       ],
-    },
-  },
-  {
-    id: "scene-fp-22",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "标识符与 Python 保留字",
-      identifiers: {
-        definition:
-          "在 Python 程序中用来起名字的字符序列。",
-        examples: "如：变量名、函数名、类名、模块名。",
-        rules: [
-          "由大写字母、小写字母、数字、下划线、汉字组成",
-          "对大小写敏感，不能以数字开头",
-          "中间不能出现空格，长度没有限制",
-        ],
-        keywordLead: "这些词已经被语言占用，不能拿来当名字。",
-        keywords: [
-          "False",
-          "None",
-          "True",
-          "and",
-          "as",
-          "assert",
-          "async",
-          "await",
-          "break",
-          "class",
-          "continue",
-          "def",
-          "del",
-          "elif",
-          "else",
-          "except",
-          "finally",
-          "for",
-          "from",
-          "global",
-          "if",
-          "import",
-          "in",
-          "is",
-          "lambda",
-          "nonlocal",
-          "not",
-          "or",
-          "pass",
-          "raise",
-          "return",
-          "try",
-          "while",
-          "with",
-          "yield",
-          "match",
-          "case",
-        ],
-      },
     },
   },
 ];

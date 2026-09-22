@@ -51,18 +51,4 @@ export const scenes: DraftScene[] = [
       },
     },
   },
-  {
-    id: "scene-08",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "Python 的优点与边界",
-      pythonPros: {
-        question: "为什么用 Python？请点选你认同的理由",
-        reasons: ["容易读", "库丰富", "数据与 AI 生态成熟", "开发速度快"],
-        boundary:
-          "Python 并不是所有场景下运行最快的语言。选择语言看任务，而不是进行语言崇拜。",
-      },
-    },
-  },
 ];

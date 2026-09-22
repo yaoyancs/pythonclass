@@ -8,12 +8,19 @@ interface Props {
 }
 
 export function VarModelStage({ content, sceneId }: Props) {
-  const maxPhase = 4;
+  const follow = content.followOn;
+  const maxPhase = follow ? 8 : 4;
   const { phase, advance, done } = useStageAdvance(sceneId, maxPhase);
+  const inFollow = Boolean(follow) && phase >= 5;
+  const displayPhase = inFollow ? phase - 5 : Math.min(phase, 4);
   const name = content.name ?? 'score';
   const value = content.value ?? (content.mode === 'update' ? '90' : '92');
   const nextValue = content.nextValue ?? '95';
   const kind = content.valueKind;
+  const codeLines = inFollow && follow ? follow.codeLines : content.codeLines;
+  const teacherLine = inFollow && follow ? follow.teacherLine : content.teacherLine;
+  const showTeacher = inFollow ? displayPhase >= 1 : phase >= 1;
+  const showRebindClose = Boolean(follow) && phase >= 4 && !inFollow;
 
   return (
     <div
@@ -25,17 +32,21 @@ export function VarModelStage({ content, sceneId }: Props) {
         if ((e.key === 'Enter' || e.key === ' ') && advance()) e.preventDefault();
       }}
     >
+      {inFollow && follow?.question && (
+        <p className="mb-4 stage-emphasis text-xl timeline-node-in">{follow.question}</p>
+      )}
+
       <div className="rounded-3xl bg-code-bg shadow-card px-5 py-4 mb-5 font-mono text-xl text-code-text relative">
-        {content.mode === 'label' && content.boardNote && phase >= 1 && (
+        {content.mode === 'label' && content.boardNote && phase >= 1 && !inFollow && (
           <span className="absolute -top-3 left-24 rounded-full bg-highlight text-white text-sm px-3 py-0.5 timeline-node-in">
             {content.boardNote}
           </span>
         )}
-        {content.codeLines.map((line, i) => (
+        {codeLines.map((line, i) => (
           <div
             key={`${line}-${i}`}
             className={
-              content.mode === 'label' && phase >= 4 && i === 0
+              content.mode === 'label' && phase >= 4 && !inFollow && i === 0
                 ? 'bg-highlight/90 text-code-bg rounded px-2 -mx-2'
                 : undefined
             }
@@ -46,41 +57,57 @@ export function VarModelStage({ content, sceneId }: Props) {
       </div>
 
       <div className="rounded-3xl bg-classroom-stage shadow-card px-6 py-8 min-h-[15rem] relative overflow-hidden">
-        {content.mode === 'label' && (
-          <LabelFrames phase={phase} name={name} value={value} kind={kind} />
+        {content.mode === 'label' && !inFollow && (
+          <LabelFrames phase={displayPhase} name={name} value={value} kind={kind} />
         )}
-        {content.mode === 'rebind' && (
+        {content.mode === 'rebind' && !inFollow && (
           <RebindFrames
-            phase={phase}
+            phase={displayPhase}
             name={name}
             value={value}
             nextValue={nextValue}
             kind={kind}
           />
         )}
-        {content.mode === 'update' && (
-          <UpdateFrames phase={phase} name={name} value={value} nextValue={nextValue} kind={kind} />
+        {(content.mode === 'update' || inFollow) && (
+          <UpdateFrames
+            phase={inFollow ? displayPhase : phase}
+            name={name}
+            value={inFollow && follow ? follow.value : value}
+            nextValue={inFollow && follow ? follow.nextValue : nextValue}
+            kind={kind}
+          />
         )}
       </div>
 
-      {phase >= 1 && (
+      {showTeacher && (
         <p className="mt-4 title-kai text-xl text-text-secondary timeline-node-in leading-relaxed">
-          “{content.teacherLine}”
+          “{teacherLine}”
         </p>
+      )}
+
+      {showRebindClose && (
+        <p className="mt-4 stage-emphasis text-xl timeline-node-in">{content.conclusion}</p>
       )}
 
       {done && (
         <div className="mt-4 space-y-2 timeline-node-in">
-          <p className="stage-emphasis text-xl">{content.conclusion}</p>
-          {content.humanTranslation && (
+          <p className="stage-emphasis text-xl">
+            {follow ? follow.conclusion : content.conclusion}
+          </p>
+          {(follow?.humanTranslation ?? content.humanTranslation) && (
             <p className="title-kai text-lg text-text-secondary">
-              人话：{content.humanTranslation}
+              人话：{follow?.humanTranslation ?? content.humanTranslation}
             </p>
           )}
         </div>
       )}
 
-      {!done && <p className="mt-5 text-base text-accent/80">点击继续 · 或按空格 / →</p>}
+      {!done && (
+        <p className="mt-5 text-base text-accent/80">
+          {showRebindClose ? '点击继续 · 取出旧值再贴回去' : '点击继续 · 或按空格 / →'}
+        </p>
+      )}
     </div>
   );
 }

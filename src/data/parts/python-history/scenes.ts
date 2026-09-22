@@ -60,36 +60,6 @@ export const scenes: DraftScene[] = [
     },
   },
   {
-    id: "scene-pyhist-design",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "Python 在赌什么",
-      pythonDesign: {
-        principles: [
-          {
-            line: "可读性很重要",
-            gloss: "代码被阅读的次数，往往多于被书写的次数。",
-          },
-          {
-            line: "同样一件事，最好有一种明显的写法",
-            gloss: "少绕弯、少炫技，先把意思写清楚。",
-          },
-        ],
-        compare: {
-          left: {
-            label: "绕一点",
-            code: 'msg = "hi"\nprint(msg)',
-          },
-          right: {
-            label: "直接一点",
-            code: 'print("hi")',
-          },
-        },
-      },
-    },
-  },
-  {
     id: "scene-pyhist-brief",
     type: "explain",
     layout: "fullscreen",

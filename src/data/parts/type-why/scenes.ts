@@ -1,6 +1,6 @@
 import type { DraftScene } from "../../../types/scene";
 
-/** 本 part：制造类型冲突；不讲完转换（留给 type-cast）。 */
+/** 本 part：制造类型冲突（飞花令下一轮）；不讲完转换（留给 type-cast）。 */
 export const scenes: DraftScene[] = [
   {
     id: "scene-tw-01",
@@ -8,16 +8,16 @@ export const scenes: DraftScene[] = [
     layout: "fullscreen",
     content: {
       headline: "看起来很合理的程序",
-      body: "接上讲收束：想根据输入年龄，算出「明年多少岁」。",
-      question: "若用户输入 2，你期望输出什么？",
+      body: "飞花令要进入下一轮：当前轮次加 1。上讲预告的「年龄 + 1」是同一类写法。",
+      question: "若用户输入 2，你期望下一轮是几？",
       codeComparison: {
         left: {
           label: "自然语言想法",
-          code: "读入年龄\n明年 = 年龄 + 1\n打印明年",
+          code: "读入当前轮次\n下一轮 = 轮次 + 1\n打印下一轮",
         },
         right: {
           label: "Python 写法",
-          code: 'age = input("请输入年龄：")\nnext_year = age + 1\nprint("明年你", next_year, "岁")',
+          code: 'round_no = input("现在是第几轮：")\nnext_round = round_no + 1\nprint("下一轮是第", next_round, "轮")',
         },
       },
     },
@@ -33,7 +33,7 @@ export const scenes: DraftScene[] = [
     },
     code: {
       initial:
-        'age = input("请输入年龄：")\nnext_year = age + 1\nprint("明年你", next_year, "岁")',
+        'round_no = input("现在是第几轮：")\nnext_round = round_no + 1\nprint("下一轮是第", next_round, "轮")',
       editable: false,
       resetToInitial: true,
     },
@@ -47,7 +47,8 @@ export const scenes: DraftScene[] = [
       body: "input() 得到的是文字，即使你键入的是 2。",
       bulletPoints: [
         "看起来像数字 ≠ 程序里已经是数值",
-        "文字不能直接按「加一岁」的规则去加",
+        "文字不能按「下一轮」的规则去加",
+        "诗句、轮次、得分看起来都能写进变量，但不是一类东西",
         "本讲先学会认类型；如何转换，后面专门解决",
       ],
       preview: "下一节：值、类型、字面量，以及 type()",

@@ -9,6 +9,7 @@ import { scenes as executePython } from "./execute-python/scenes";
 import { scenes as firstProgram } from "./first-program/scenes";
 import { scenes as campusLife01 } from "./campus-life-01/scenes";
 import { scenes as wrapUp } from "./wrap-up/scenes";
+import { scenes as varRecapFeihua } from "./var-recap-feihua/scenes";
 import { scenes as typeWhy } from "./type-why/scenes";
 import { scenes as typeInspect } from "./type-inspect/scenes";
 import { scenes as numbersIntFloat } from "./numbers-int-float/scenes";
@@ -30,6 +31,7 @@ export const PARTS: Record<string, ContentPart> = {
   "first-program": { id: "first-program", scenes: firstProgram },
   "campus-life-01": { id: "campus-life-01", scenes: campusLife01 },
   "wrap-up": { id: "wrap-up", scenes: wrapUp },
+  "var-recap-feihua": { id: "var-recap-feihua", scenes: varRecapFeihua },
   "type-why": { id: "type-why", scenes: typeWhy },
   "type-inspect": { id: "type-inspect", scenes: typeInspect },
   "numbers-int-float": { id: "numbers-int-float", scenes: numbersIntFloat },

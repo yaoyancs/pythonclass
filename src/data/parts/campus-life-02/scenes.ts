@@ -1,30 +1,30 @@
 import type { DraftScene } from "../../../types/scene";
 
-/** CampusLife 0.2：多类型输入 → 转换 → 计算 → 比较 → 输出。 */
+/** 飞花令 0.2：多类型输入 → 转换 → 计算 → 比较 → 输出。不写 if。 */
 export const scenes: DraftScene[] = [
   {
     id: "scene-cl2-01",
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "从 0.1 到 0.2：要能算",
-      body: "0.1 能展示姓名与时长；0.2 要能接收真实输入并计算。",
+      headline: "从诗卡到飞花令 0.2：要能算",
+      body: "第 1 讲诗卡能展示姓名与固定诗句；0.2 要接收轮次、得分并计算。",
       codeComparison: {
         left: {
           label: "0.1 偏展示",
-          code: 'name = input("姓名：")\nweekday = "周一"\nstudy_hours = 2\nprint(name, weekday, study_hours)',
+          code: 'player = input("请输入你的名字：")\npoem = "春眠不觉晓"\nauthor = "孟浩然"\nprint(player, poem, author)',
         },
         right: {
           label: "0.2 要可计算",
-          code: "输入多项生活数据\n转成正确类型\n计算合计 / 是否达标\n打印报告",
+          code: "输入姓名、主题、轮次、得分\n转成正确类型\n计算下一轮 / 是否及格\n打印开场与记分",
         },
       },
       flowDiagram: [
-        "记录一天",
+        "诗卡展示",
         "→ 类型正确",
         "→ 可计算",
         "→ 可比较",
-        "→（后续）保存与分析",
+        "→（第3讲）按结果说不同的话",
       ],
     },
   },
@@ -33,13 +33,12 @@ export const scenes: DraftScene[] = [
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "一天数据：先约定类型",
+      headline: "一场飞花令：先约定类型",
       bulletPoints: [
-        "姓名 name → str",
-        "学习 study_hours、睡眠 sleep_hours → float",
-        "运动 exercise_minutes → int",
-        "消费 spending → float",
-        "是否达标 study_ok → bool（由比较得到）",
+        "player、poem、author、theme → str",
+        "round_no → int",
+        "score → float",
+        "passed → bool（由比较得到）",
       ],
       body: "写代码前先回答：这项要算吗？要算就转换。",
     },
@@ -53,22 +52,22 @@ export const scenes: DraftScene[] = [
       questionCascade: {
         title: "不运行，先回答",
         questions: [
-          "哪些 input 后面必须 float 或 int？",
-          "total_hours 在算什么？",
-          "study_ok 为什么是布尔？",
-          "最后报告里应出现哪些信息？",
+          "哪些 input 后面必须 int 或 float？",
+          "next_round 在算什么？",
+          "passed 为什么是布尔？",
+          "最后开场里应出现哪些信息？",
         ],
         conclusionLines: [
           "输入 → 按类型转换",
-          "处理 → 合计时长 + 学习是否达标",
-          "输出 → 用 f-string 打印报告",
+          "处理 → 下一轮 + 是否及格",
+          "输出 → 用 f-string 打印开场与记分",
         ],
-        footer: "建议试输入：李华 / 2.5 / 7 / 30 / 18.5",
+        footer: "建议试输入：李华 / 花 / 春眠不觉晓 / 2 / 85.5",
       },
     },
     code: {
       initial:
-        'name = input("请输入姓名：")\nstudy_hours = float(input("今日学习时长（小时）："))\nsleep_hours = float(input("昨晚睡眠时长（小时）："))\nexercise_minutes = int(input("今日运动时长（分钟）："))\nspending = float(input("今日消费金额（元）："))\n\ntotal_hours = study_hours + sleep_hours\nstudy_ok = study_hours >= 2.0\n\nprint(f"\\n{name} 的今日生活报告")\nprint(f"学习：{study_hours} 小时")\nprint(f"睡眠：{sleep_hours} 小时")\nprint(f"运动：{exercise_minutes} 分钟")\nprint(f"消费：{spending} 元")\nprint(f"学习+睡眠合计：{total_hours} 小时")\nprint(f"学习是否达标（≥2小时）：{study_ok}")',
+        'player = input("请输入选手名：")\ntheme = input("本轮花名：")\npoem = input("请输入诗句：")\nround_no = int(input("现在是第几轮："))\nscore = float(input("本轮得分："))\n\nnext_round = round_no + 1\npassed = score >= 60\n\nprint(f"\\n{player} · {theme}令")\nprint(f"诗句：{poem}")\nprint(f"当前第 {round_no} 轮，下一轮是第 {next_round} 轮")\nprint(f"得分：{score}")\nprint(f"是否及格（≥60）：{passed}")',
       editable: true,
       resetToInitial: true,
     },
@@ -79,16 +78,17 @@ export const scenes: DraftScene[] = [
     layout: "split",
     content: {
       headline: "改需求：动一处，观察变化",
-      body: "把达标线从 2.0 改成 3.0，或增加「运动是否达标」再打印一行。",
+      body: "把及格线从 60 改成 80，或再打印一行 round_no > 1。",
       bulletPoints: [
         "改的是规则（阈值），不是东拼西凑改输出文字",
         "改完用同一组输入再跑，核对 True/False 是否合理",
         "类型错了先查 type() 与转换，再查算术",
+        "仍然不写 if",
       ],
     },
     code: {
       initial:
-        'name = input("请输入姓名：")\nstudy_hours = float(input("今日学习时长（小时）："))\nexercise_minutes = int(input("今日运动时长（分钟）："))\n\nstudy_ok = study_hours >= 2.0\nexercise_ok = exercise_minutes >= 30\n\nprint(f"{name}｜学习达标：{study_ok}｜运动达标：{exercise_ok}")',
+        'player = input("请输入选手名：")\nround_no = int(input("现在是第几轮："))\nscore = float(input("本轮得分："))\n\npassed = score >= 60\nnot_first = round_no > 1\n\nprint(f"{player}｜及格：{passed}｜已经不是第一轮：{not_first}")',
       editable: true,
       resetToInitial: true,
     },

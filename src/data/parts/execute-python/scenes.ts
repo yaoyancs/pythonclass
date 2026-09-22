@@ -51,6 +51,30 @@ export const scenes: DraftScene[] = [
     },
   },
   {
+    id: "scene-15",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      headline: "动手前：最小语法规则",
+      syntaxRules: {
+        rules: [
+          "英文符号",
+          "成对的引号",
+          "成对的括号",
+          "一条语句完成一个明确动作",
+          "Python 区分大小写",
+          "错误信息是线索，不是惩罚",
+        ],
+        brokenCode: 'print("Hello)',
+        fixSteps: [
+          "先看最后一行：错误类型（如 SyntaxError）在说什么",
+          "再看箭头或行号：问题大概在哪一行、哪个位置",
+          "回到对应代码，优先检查引号、括号是否成对",
+        ],
+      },
+    },
+  },
+  {
     id: "scene-12",
     type: "explain",
     layout: "fullscreen",
@@ -74,51 +98,8 @@ export const scenes: DraftScene[] = [
           ],
           answers: ["10", "30", "10 + 20", "HelloPython"],
         },
-        takeaway: "print() 负责输出；数字可计算；引号中的内容按文字处理。",
-      },
-    },
-  },
-  {
-    id: "scene-14",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "表达式",
-      exprOrder: {
-        expression: "2 + 3 * 4",
-        studentPredict: "结果是多少？",
-        steps: [
-          { label: "先算乘法", focus: "2 + 3 × 4   →   2 + 12" },
-          { label: "再算加法", focus: "2 + 12   →   14" },
-        ],
-        altExpression: "(2 + 3) * 4",
-        altResult: "20",
-        conclusion:
-          "表达式是能够计算出一个值的代码。括号不仅影响数学结果，也是在明确地表达我们的意图。",
-      },
-    },
-  },
-  {
-    id: "scene-15",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "最小语法规则",
-      syntaxRules: {
-        rules: [
-          "英文符号",
-          "成对的引号",
-          "成对的括号",
-          "一条语句完成一个明确动作",
-          "Python 区分大小写",
-          "错误信息是线索，不是惩罚",
-        ],
-        brokenCode: 'print("Hello)',
-        fixSteps: [
-          "先看最后一行：错误类型（如 SyntaxError）在说什么",
-          "再看箭头或行号：问题大概在哪一行、哪个位置",
-          "回到对应代码，优先检查引号、括号是否成对",
-        ],
+        takeaway:
+          "print() 负责输出；数字可计算；引号中的内容按文字处理。下一问：这份值等会儿还要用，程序怎样记住它？",
       },
     },
   },

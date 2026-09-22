@@ -94,6 +94,8 @@ export interface HistoryDialogueContent {
   cpuBinary: string[];
   /** 点击后人类侧淡出时的提示 */
   transformHint?: string;
+  /** 冲突立住后的过渡句 */
+  conclusion?: string;
 }
 
 /** 第一代：机器语言 */
@@ -105,6 +107,8 @@ export interface MachineLangContent {
   question: string;
   painPoints: string[];
   bugHint: string;
+  /** 这一代解决了什么、留下什么问题 */
+  conclusion?: string;
 }
 
 /** 第二代：汇编语言 */
@@ -114,6 +118,7 @@ export interface AssemblyLangContent {
   teacherNote: string;
   assemblerLabel: string;
   translatorHint: string;
+  conclusion?: string;
 }
 
 /** 第三代：高级语言对比 */
@@ -374,6 +379,24 @@ export interface VarModelContent {
   nextValue?: string;
   /** 值卡片上的浅色类型标（如 int），不展开讲堆/对象 */
   valueKind?: string;
+  /** 重绑定之后紧接着讲「取出旧值再贴回去」，避免再翻一页重复「= 不是相等」 */
+  followOn?: {
+    codeLines: string[];
+    value: string;
+    nextValue: string;
+    teacherLine: string;
+    conclusion: string;
+    humanTranslation?: string;
+    question?: string;
+  };
+}
+
+/** 变量定义落脚页：名字、值、赋值三件套 */
+export interface VarDefinitionContent {
+  parts: { label: string; note: string; example: string }[];
+  definition: string;
+  mathLine: string;
+  programLine: string;
 }
 
 /** 输入→处理→输出 */
@@ -529,6 +552,7 @@ export interface SceneContent {
   varModel?: VarModelContent;
   ipo?: IpoContent;
   whyNeedVar?: WhyNeedVarContent;
+  varDefinition?: VarDefinitionContent;
   varPredict?: VarPredictContent;
   inputFlow?: InputFlowContent;
   questionCascade?: QuestionCascadeContent;

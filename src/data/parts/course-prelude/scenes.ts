@@ -1,4 +1,5 @@
 import type { DraftScene } from "../../../types/scene";
+import { COURSE_SCHEDULE } from "../../calendar";
 
 export const scenes: DraftScene[] = [
   {
@@ -9,21 +10,7 @@ export const scenes: DraftScene[] = [
     content: {
       headline: "各位步入大学后的第一门编程课",
       body: "专业必修课  ·  共 48 学时",
-      schedule: [
-        {
-          title: "理论 32 学时",
-          subtitle: "第 1 至 11 周",
-          rows: [
-            { time: "周二 3–5 节", place: "JC405（1 班）" },
-            { time: "周三 3–5 节", place: "JS104（2 班）" },
-          ],
-        },
-        {
-          title: "上机 16 学时",
-          subtitle: "第 1 至 18 周 · 单周",
-          rows: [{ time: "周四 6–7 / 8–9 节", place: "JS325" }],
-        },
-      ],
+      schedule: COURSE_SCHEDULE,
       image: {
         src: "/python-meme.png",
         alt: "人生苦短，我用 Python",

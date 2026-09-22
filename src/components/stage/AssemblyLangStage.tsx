@@ -9,8 +9,9 @@ interface AssemblyLangStageProps {
 }
 
 export function AssemblyLangStage({ content, sceneId }: AssemblyLangStageProps) {
-  // 0 二进制 → 1 缩成汇编 → 2 教师说明 → 3 汇编器（翻译程序）
-  const { phase, advance, done } = useStageAdvance(sceneId, 3);
+  // 0 二进制 → 1 缩成汇编 → 2 教师说明 → 3 汇编器 → 4 板书
+  const maxPhase = content.conclusion ? 4 : 3;
+  const { phase, advance, done } = useStageAdvance(sceneId, maxPhase);
   const showAsm = phase >= 1;
   const showNote = phase >= 2;
   const showAssembler = phase >= 3;
@@ -123,6 +124,12 @@ export function AssemblyLangStage({ content, sceneId }: AssemblyLangStageProps) 
             “{content.teacherNote}”
           </p>
         </blockquote>
+      )}
+
+      {content.conclusion && phase >= 4 && (
+        <p className="mt-4 rounded-3xl bg-accent-muted px-6 py-4 title-kai text-xl text-text-primary stage-fade-in">
+          {content.conclusion}
+        </p>
       )}
 
       {!done && (

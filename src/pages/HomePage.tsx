@@ -109,6 +109,10 @@ export function HomePage() {
               共 {COURSE.totalLectures} 讲
               <span className="mx-3 text-classroom-border">·</span>
               {COURSE.practiceNote}
+              <span className="mx-3 text-classroom-border">·</span>
+              <Link to="/outline" className="text-accent hover:underline underline-offset-4">
+                教学日历
+              </Link>
             </p>
           </div>
         </div>

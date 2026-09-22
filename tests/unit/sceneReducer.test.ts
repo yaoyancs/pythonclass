@@ -60,7 +60,7 @@ describe('sceneReducer', () => {
     ]);
     expect(lesson02.scenes.length).toBeGreaterThan(20);
     expect(lesson02.scenes.some((s) => s.id === 'lesson02-catalog')).toBe(true);
-    expect(lesson02.scenes.filter((s) => s.partId === '01').every((s) => s.title === '为什么输入2不能直接加1')).toBe(
+    expect(lesson02.scenes.filter((s) => s.partId === '01').every((s) => s.title === '飞花令诗卡里的变量')).toBe(
       true,
     );
   });

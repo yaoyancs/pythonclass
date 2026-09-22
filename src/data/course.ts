@@ -9,7 +9,7 @@ export const COURSE = {
   department: '计算机学院',
   teacher: '姚艳',
   university: '曲阜师范大学',
-  totalLectures: 11,
+  totalLectures: 10,
   hoursPerLecture: 3,
 } as const;
 

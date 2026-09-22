@@ -1,6 +1,6 @@
 import type { Offering } from "../../types/scene";
 
-/** 2026 秋：约 11 讲 × 3 课时。跨学期改课时/目录时复制本文件再改组装即可。 */
+/** 2026 秋：约 10 讲 × 3 课时。跨学期改课时/目录时复制本文件再改组装即可。 */
 export const offering2026S: Offering = {
   id: "2026S",
   term: "2026 秋",
@@ -38,27 +38,27 @@ export const offering2026S: Offering = {
       id: "lesson02",
       number: 2,
       title: "数据类型",
-      blurb: "表示和处理数据",
+      blurb: "飞花令里认类型、运算、转换与比较",
       hours: 3,
       ready: true,
       homework: {
         title: "第二次课后作业",
         items: [
-          "复习：用 type() 区分 2、2.0、\"2\"、True",
-          "改写开场年龄程序：必须先转换再 +1，并自测两组输入",
-          "扩展 CampusLife 0.2：再增加一个比较（如睡眠 ≥ 7）并打印布尔结果",
-          "完成 PTA 中本讲对应练习",
+          "用 type() 区分 2、2.0、\"花\"、True。",
+          "把第 1 讲诗卡改成三个变量 player、poem、author，并用 f-string 打印。",
+          "飞花令记分：input 轮次与得分，必须先转换再算「下一轮」和「是否及格」，自测两组输入。",
+          "完成 PTA 中本讲对应练习。",
         ],
       },
       parts: [
-        { id: "01", title: "为什么输入2不能直接加1", ref: "type-why" },
-        { id: "02", title: "值、类型、字面量与type()", ref: "type-inspect" },
-        { id: "03", title: "整数、浮点数与数值运算", ref: "numbers-int-float" },
-        { id: "04", title: "字符串", ref: "strings" },
-        { id: "05", title: "input()结果与类型转换", ref: "type-cast" },
-        { id: "06", title: "布尔值与比较运算", ref: "bool-compare" },
-        { id: "07", title: "可计算的大学生活数据助手", ref: "campus-life-02" },
-        { id: "08", title: "总结、作业与第3讲钩子", ref: "conclusion-homework" },
+        { id: "01", title: "飞花令诗卡里的变量", ref: "var-recap-feihua" },
+        { id: "02", title: "认类型：诗句、轮次、得分不是一类东西", ref: "type-inspect" },
+        { id: "03", title: "整数、浮点数与得分运算", ref: "numbers-int-float" },
+        { id: "04", title: "字符串：花名、诗句拼接与最简 f-string", ref: "strings" },
+        { id: "05", title: "input() 与转换：下一轮为什么不能直接 +1", ref: "type-cast" },
+        { id: "06", title: "布尔与比较：是否达标（先不写 if）", ref: "bool-compare" },
+        { id: "07", title: "飞花令 0.2：可计算的开场与记分", ref: "campus-life-02" },
+        { id: "08", title: "小结、作业与第3讲钩子", ref: "conclusion-homework" },
       ],
     },
     {
@@ -118,8 +118,8 @@ export const offering2026S: Offering = {
     {
       id: "lesson09",
       number: 9,
-      title: "数据分析NumPy",
-      blurb: "批量数值计算",
+      title: "数据分析（NumPy & Pandas）",
+      blurb: "批量数值与表格分析",
       hours: 3,
       ready: false,
       parts: [],
@@ -127,17 +127,8 @@ export const offering2026S: Offering = {
     {
       id: "lesson10",
       number: 10,
-      title: "数据分析Pandas",
-      blurb: "分析表格数据",
-      hours: 3,
-      ready: false,
-      parts: [],
-    },
-    {
-      id: "lesson11",
-      number: 11,
-      title: "数据可视化",
-      blurb: "综合项目实践",
+      title: "数据可视化（Matplotlib）",
+      blurb: "用图表呈现数据",
       hours: 3,
       ready: false,
       parts: [],

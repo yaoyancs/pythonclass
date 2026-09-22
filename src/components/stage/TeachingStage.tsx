@@ -45,6 +45,7 @@ import { IdentifiersStage } from './IdentifiersStage';
 import { VarModelStage } from './VarModelStage';
 import { IpoStage } from './IpoStage';
 import { WhyNeedVarStage } from './WhyNeedVarStage';
+import { VarDefinitionStage } from './VarDefinitionStage';
 import { VarPredictStage } from './VarPredictStage';
 import { InputFlowStage } from './InputFlowStage';
 import { QuestionCascadeStage } from './QuestionCascadeStage';
@@ -95,6 +96,7 @@ export function TeachingStage() {
       content.varModel ||
       content.ipo ||
       content.whyNeedVar ||
+      content.varDefinition ||
       content.varPredict ||
       content.inputFlow ||
       content.questionCascade ||
@@ -304,6 +306,9 @@ export function TeachingStage() {
             {content.ipo && <IpoStage content={content.ipo} sceneId={scene.id} />}
             {content.whyNeedVar && (
               <WhyNeedVarStage content={content.whyNeedVar} sceneId={scene.id} />
+            )}
+            {content.varDefinition && (
+              <VarDefinitionStage content={content.varDefinition} sceneId={scene.id} />
             )}
             {content.varPredict && (
               <VarPredictStage content={content.varPredict} sceneId={scene.id} />

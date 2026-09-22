@@ -22,8 +22,9 @@ function buildBinaryWall(seedLines: string[]): string[] {
 }
 
 export function MachineLangStage({ content, sceneId }: MachineLangStageProps) {
-  // 0 示意二进制 → 1 提问 → 2 痛点 → 3 找错动画
-  const { phase, advance, done } = useStageAdvance(sceneId, 3);
+  // 0 示意二进制 → 1 提问 → 2 痛点 → 3 找错动画 → 4 板书
+  const maxPhase = content.conclusion ? 4 : 3;
+  const { phase, advance, done } = useStageAdvance(sceneId, maxPhase);
   const wall = buildBinaryWall(content.binaryLines);
   const mappedSteps = Math.min(content.binaryLines.length, 2);
   const showBug = phase >= 3;
@@ -142,6 +143,12 @@ export function MachineLangStage({ content, sceneId }: MachineLangStageProps) {
             </li>
           ))}
         </ul>
+      )}
+
+      {content.conclusion && phase >= 4 && (
+        <p className="mt-4 rounded-3xl bg-accent-muted px-6 py-4 title-kai text-xl text-text-primary stage-fade-in">
+          {content.conclusion}
+        </p>
       )}
 
       {!done && (
