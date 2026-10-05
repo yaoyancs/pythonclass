@@ -6,8 +6,9 @@ import { ClassroomFooter } from './ClassroomFooter';
 import { TeachingStage } from '../stage/TeachingStage';
 import { PythonPlayground } from '../playground/PythonPlayground';
 import { KeyboardShortcuts } from '../controls/KeyboardShortcuts';
+import { AnnotationCanvas } from '../controls/AnnotationCanvas';
 
-const DEFAULT_RIGHT_PCT = 53;
+const DEFAULT_RIGHT_PCT = 38;
 const MIN_RIGHT_PCT = 28;
 const MAX_RIGHT_PCT = 72;
 
@@ -18,6 +19,7 @@ export function ClassroomShell() {
   const mainRef = useRef<HTMLElement>(null);
   const [rightPct, setRightPct] = useState(DEFAULT_RIGHT_PCT);
   const [isDragging, setIsDragging] = useState(false);
+  const [annotationActive, setAnnotationActive] = useState(false);
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -68,7 +70,11 @@ export function ClassroomShell() {
 
   return (
     <div className="classroom-grid h-full">
-      <ClassroomHeader onToggleFullscreen={toggleFullscreen} />
+      <ClassroomHeader
+        annotationActive={annotationActive}
+        onToggleAnnotation={() => setAnnotationActive((value) => !value)}
+        onToggleFullscreen={toggleFullscreen}
+      />
 
       <main
         ref={mainRef}
@@ -114,7 +120,17 @@ export function ClassroomShell() {
       </main>
 
       <ClassroomFooter />
-      <KeyboardShortcuts onRun={handleRun} onToggleFullscreen={toggleFullscreen} />
+      <AnnotationCanvas
+        active={annotationActive}
+        sceneId={scene.id}
+        onActiveChange={setAnnotationActive}
+      />
+      <KeyboardShortcuts
+        annotationActive={annotationActive}
+        onRun={handleRun}
+        onToggleAnnotation={() => setAnnotationActive((value) => !value)}
+        onToggleFullscreen={toggleFullscreen}
+      />
     </div>
   );
 }

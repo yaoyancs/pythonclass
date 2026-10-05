@@ -7,6 +7,8 @@ import { ProgressBar } from "../ui/ProgressBar";
 import { Button } from "../ui/Button";
 
 interface ClassroomHeaderProps {
+  annotationActive: boolean;
+  onToggleAnnotation: () => void;
   onToggleFullscreen: () => void;
 }
 
@@ -20,7 +22,11 @@ function formatClock(date: Date): string {
   return `${datePart} ${timePart}`;
 }
 
-export function ClassroomHeader({ onToggleFullscreen }: ClassroomHeaderProps) {
+export function ClassroomHeader({
+  annotationActive,
+  onToggleAnnotation,
+  onToggleFullscreen,
+}: ClassroomHeaderProps) {
   const { state, scene, lesson } = useSceneEngine();
   const [logoAvailable, setLogoAvailable] = useState(true);
   const [now, setNow] = useState(() => new Date());
@@ -86,6 +92,14 @@ export function ClassroomHeader({ onToggleFullscreen }: ClassroomHeaderProps) {
                 {formatClock(now)}
               </p>
             </div>
+            <Button
+              variant={annotationActive ? "primary" : "ghost"}
+              size="md"
+              onClick={onToggleAnnotation}
+              title="课堂画笔 (P)"
+            >
+              ✎ 画笔
+            </Button>
             <Button
               variant="ghost"
               size="md"

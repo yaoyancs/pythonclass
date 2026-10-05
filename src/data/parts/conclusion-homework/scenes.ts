@@ -1,33 +1,23 @@
 import type { DraftScene } from "../../../types/scene";
 
-/** 第 2 讲收束：小结 + 作业 + 第 3 讲钩子。 */
+/** 第 2 讲收束：小结 + 作业。 */
 export const scenes: DraftScene[] = [
   {
     id: "scene-ch-01",
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "小结",
+      headline: "本讲要点",
       finalVerdict: {
         lines: [
-          "本讲弄清：数据不仅有值，还有类型。",
-          "会认 int / float / str / bool，会转换，会比较。",
-          "飞花令从「能展示诗卡」升级到「可计算、可判断」。",
+          "数据先有名字，再看它是哪一种。",
+          "变量。名字指向对象，可以改指向。两个名字也可以指向同一个对象。",
+          "类型。int、float、str、bool，用 type() 区分。",
+          "数字。/ 得到小数。括号最先，然后 * / // %，再 + -。同级从左到右。",
+          "字符串。下标从 0 开始，可以正向、负向取，也可以切片。不能改其中一格。",
+          "布尔。比较得到 True 或 False。> 不含等于，>= 才含。and、or、not 把是非题合在一起。",
+          "输入。input() 读到的是文字。要拿去算，先 int()。f\"...\" 把花括号里的值嵌进句子。",
         ],
-        abilities: [
-          "解释诗卡里的变量：名字、值、赋值",
-          "解释为什么 input 的轮次不能直接 +1",
-          "使用 type() 查证类型",
-          "进行整数与浮点基本运算",
-          "拼接字符串并写最简 f-string",
-          "使用 int() / float() / str() 转换",
-          "写出比较表达式并理解 True/False",
-          "完成飞花令 0.2 开场与记分",
-        ],
-        teaserCode:
-          'passed = score >= 60\nprint(passed)\n# 若 passed 为 True，打印「过关」；\n# 若为 False，打印「再来一轮」——怎么写？',
-        teaserQuestion: "只有 True/False 还不够：程序如何根据结果走不同的路？",
-        teaserClose: "下一讲：条件判断 —— 让程序作出选择。",
       },
     },
   },
@@ -37,28 +27,10 @@ export const scenes: DraftScene[] = [
     layout: "fullscreen",
     content: {
       headline: "课后作业",
-      body: "第二次课后作业",
       bulletPoints: [
-        "用 type() 区分 2、2.0、\"花\"、True。",
-        "把第 1 讲诗卡改成三个变量 player、poem、author，并用 f-string 打印。",
-        "飞花令记分：input 轮次与得分，必须先转换再算「下一轮」和「是否及格」，自测两组输入。",
-        "完成 PTA 中本讲对应练习。",
+        "收银找零。顾客付 100 元。从键盘输入应付的整数金额，打出三行：找零多少元、能换几张 20 元、剩下多少元。用 36 元自己验一次：找零 64 元，20 元有 3 张，剩下 4 元。",
+        "快递单上的手机号。从键盘输入 11 位手机号，打出打码后的号码：前 3 位、四个 *、后 4 位。再打出长度是不是 11。用 13812345678 自己验一次：应当得到 138****5678，长度判断为 True。",
       ],
-    },
-  },
-  {
-    id: "scene-ch-03",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "下一讲预告",
-      body: "比较给了我们 True / False；下一讲用 if 让程序分支。",
-      bulletPoints: [
-        "同一段飞花令程序，不同得分，可以走不同路径",
-        "将从「打印是否及格」变成「过关或再来一轮」",
-        "先保证类型正确，再写分支 —— 否则 if 判断的是错的东西",
-      ],
-      preview: "第 3 讲 · 条件判断",
     },
   },
 ];

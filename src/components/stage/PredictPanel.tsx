@@ -1,10 +1,13 @@
+import { useSyncExternalStore } from 'react';
 import { useSceneEngine } from '../../engine/SceneEngine';
+import { getBeatPhase, subscribeBeatPhase } from '../../hooks/useStageAdvance';
 import { Button } from '../ui/Button';
 
 export function PredictPanel() {
   const { state, dispatch, scene } = useSceneEngine();
+  const beatPhase = useSyncExternalStore(subscribeBeatPhase, getBeatPhase, getBeatPhase);
   const prediction = scene.prediction;
-  if (!prediction) return null;
+  if (!prediction || beatPhase > 0) return null;
 
   const submitted = state.sceneLocal.predictionSubmitted;
   const selected = state.sceneLocal.predictionSelected;
@@ -44,13 +47,6 @@ export function PredictPanel() {
         >
           提交预测
         </Button>
-      )}
-
-      {submitted && !state.sceneLocal.runUnlocked && null}
-      {submitted && (
-        <p className="text-success text-stage-sub">
-          预测已提交 — 现在可以运行代码验证你的预测
-        </p>
       )}
 
       {prediction.stepTrace && state.sceneLocal.revealShown && (

@@ -17,7 +17,7 @@ export type WorkerRequest =
   | { type: 'INTERRUPT'; id: string };
 
 export type WorkerResponse =
-  | { type: 'STATUS'; status: 'loading' | 'ready' | 'error'; message?: string }
+  | { type: 'STATUS'; status: 'loading' | 'ready' | 'error'; message?: string; inputBuffer?: SharedArrayBuffer }
   | { type: 'INPUT_REQUEST'; id: string; prompt: string }
   | { type: 'RESULT'; id: string; stdout: string; stderr: string; error?: PythonError }
   | { type: 'INTERRUPTED'; id: string };

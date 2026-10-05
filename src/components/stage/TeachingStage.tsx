@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { PredictPanel } from './PredictPanel';
 import { RevealPanel } from './RevealPanel';
@@ -46,6 +47,11 @@ import { VarModelStage } from './VarModelStage';
 import { IpoStage } from './IpoStage';
 import { WhyNeedVarStage } from './WhyNeedVarStage';
 import { VarDefinitionStage } from './VarDefinitionStage';
+import { AssignIntroStage } from './AssignIntroStage';
+import { BindingModelStage } from './BindingModelStage';
+import { TypeMapStage } from './TypeMapStage';
+import { TypeProbeStage } from './TypeProbeStage';
+import { IntFloatStage } from './IntFloatStage';
 import { VarPredictStage } from './VarPredictStage';
 import { InputFlowStage } from './InputFlowStage';
 import { QuestionCascadeStage } from './QuestionCascadeStage';
@@ -55,10 +61,23 @@ import { AiLiveCodeStage } from './AiLiveCodeStage';
 import { MethodVerifyStage } from './MethodVerifyStage';
 import { WhyLearnWrapStage } from './WhyLearnWrapStage';
 import { FinalVerdictStage } from './FinalVerdictStage';
+import { NameLinkStage } from './NameLinkStage';
+import { StringBoardStage } from './StringBoardStage';
+import { StringCutStage } from './StringCutStage';
+import { StringTemplateStage } from './StringTemplateStage';
+import { StringCastStage } from './StringCastStage';
+import { StringIdeaStage } from './StringIdeaStage';
+import { StringForkStage } from './StringForkStage';
+import { StringSliceStage } from './StringSliceStage';
+import { CodeBeatsStage } from './CodeBeatsStage';
 
 export function TeachingStage() {
   const { scene, lesson, dispatch } = useSceneEngine();
   const { content } = scene;
+  const [beatPhase, setBeatPhase] = useState(0);
+  useEffect(() => {
+    setBeatPhase(0);
+  }, [scene.id]);
   const isFullscreen = scene.layout === 'fullscreen';
   const dense = Boolean(
     content.image ||
@@ -97,6 +116,11 @@ export function TeachingStage() {
       content.ipo ||
       content.whyNeedVar ||
       content.varDefinition ||
+      content.assignIntro ||
+      content.bindingModel ||
+      content.typeMap ||
+      content.typeProbe ||
+      content.intFloat ||
       content.varPredict ||
       content.inputFlow ||
       content.questionCascade ||
@@ -105,7 +129,13 @@ export function TeachingStage() {
       content.aiLiveCode ||
       content.methodVerify ||
       content.whyLearnWrap ||
-      content.finalVerdict,
+      content.finalVerdict ||
+      content.nameLink ||
+      content.stringBoard ||
+      content.stringIdea ||
+      content.stringFork ||
+      content.stringSlice ||
+      content.codeBeats,
   );
   const hasSideImage = Boolean(content.image);
   const pinTop = Boolean(
@@ -124,9 +154,11 @@ export function TeachingStage() {
             className={`title-stage text-text-primary ${
               hasSideImage
                 ? 'whitespace-nowrap text-[clamp(1.75rem,4.6vw,3.75rem)] leading-[1.2]'
-                : isFullscreen && !dense
-                  ? 'text-stage-hero'
-                  : 'text-stage-headline'
+                : content.typeProbe || content.typeMap
+                  ? 'text-[2.35rem] leading-tight'
+                  : isFullscreen && !dense
+                    ? 'text-stage-hero'
+                    : 'text-stage-headline'
             }`}
           >
             {content.headline}
@@ -182,6 +214,43 @@ export function TeachingStage() {
                   </li>
                 ))}
               </ul>
+            )}
+
+            {content.markedPoints && (
+              <ul className="mt-10 space-y-5">
+                {content.markedPoints.map((spans) => (
+                  <li
+                    key={spans.map((span) => span.text).join('')}
+                    className="text-stage-sub font-medium flex items-baseline gap-4 text-text-primary"
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full bg-accent shrink-0 translate-y-[-0.28em]" />
+                    <span>
+                      {spans.map((span, index) =>
+                        span.mark ? (
+                          <span key={index} className="font-semibold text-error">
+                            {span.text}
+                          </span>
+                        ) : (
+                          <span key={index}>{span.text}</span>
+                        ),
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {content.note && (
+              <div className="mt-10 border-t border-classroom-border pt-8">
+                <p className="text-stage-sub font-semibold text-text-primary">{content.note.title}</p>
+                <ol className="mt-4 space-y-3 list-decimal pl-7">
+                  {content.note.points.map((point) => (
+                    <li key={point} className="text-stage-sub font-medium text-text-secondary">
+                      {point}
+                    </li>
+                  ))}
+                </ol>
+              </div>
             )}
 
             {content.flowDiagram && (
@@ -295,7 +364,7 @@ export function TeachingStage() {
             {content.replDemo && <ReplDemoStage content={content.replDemo} sceneId={scene.id} />}
             {content.stepExec && <StepExecStage content={content.stepExec} sceneId={scene.id} />}
             {content.typedDemo && <TypedDemoStage content={content.typedDemo} sceneId={scene.id} />}
-            {content.exprOrder && <ExprOrderStage content={content.exprOrder} sceneId={scene.id} />}
+            {content.exprOrder && <ExprOrderStage content={content.exprOrder} />}
             {content.syntaxRules && (
               <SyntaxRulesStage content={content.syntaxRules} sceneId={scene.id} />
             )}
@@ -309,6 +378,19 @@ export function TeachingStage() {
             )}
             {content.varDefinition && (
               <VarDefinitionStage content={content.varDefinition} sceneId={scene.id} />
+            )}
+            {content.assignIntro && (
+              <AssignIntroStage content={content.assignIntro} sceneId={scene.id} />
+            )}
+            {content.bindingModel && (
+              <BindingModelStage content={content.bindingModel} sceneId={scene.id} />
+            )}
+            {content.typeMap && <TypeMapStage />}
+            {content.typeProbe && (
+              <TypeProbeStage content={content.typeProbe} sceneId={scene.id} />
+            )}
+            {content.intFloat && (
+              <IntFloatStage content={content.intFloat} sceneId={scene.id} />
             )}
             {content.varPredict && (
               <VarPredictStage content={content.varPredict} sceneId={scene.id} />
@@ -337,18 +419,45 @@ export function TeachingStage() {
             {content.finalVerdict && (
               <FinalVerdictStage content={content.finalVerdict} sceneId={scene.id} />
             )}
+            {content.nameLink && (
+              <NameLinkStage content={content.nameLink} sceneId={scene.id} />
+            )}
+            {content.stringBoard && (
+              <StringBoardStage content={content.stringBoard} sceneId={scene.id} />
+            )}
+            {content.stringCut && (
+              <StringCutStage content={content.stringCut} sceneId={scene.id} />
+            )}
+            {content.stringTemplate && (
+              <StringTemplateStage content={content.stringTemplate} sceneId={scene.id} />
+            )}
+            {content.stringCast && (
+              <StringCastStage content={content.stringCast} sceneId={scene.id} />
+            )}
+            {content.stringIdea && (
+              <StringIdeaStage content={content.stringIdea} sceneId={scene.id} />
+            )}
+            {content.stringFork && (
+              <StringForkStage content={content.stringFork} sceneId={scene.id} />
+            )}
+            {content.stringSlice && (
+              <StringSliceStage content={content.stringSlice} sceneId={scene.id} />
+            )}
+            {content.codeBeats && (
+              <CodeBeatsStage content={content.codeBeats} sceneId={scene.id} onPhase={setBeatPhase} />
+            )}
           </div>
           {content.image && <SceneSideImage image={content.image} />}
         </div>
 
-        {(scene.prediction || scene.requiresPrediction) && <PredictPanel />}
+        {beatPhase === 0 && (scene.prediction || scene.requiresPrediction) && <PredictPanel />}
         {scene.content.voteOptions && <VotePanel />}
         {scene.type === 'break' && <BreakPanel />}
         {scene.type === 'summary' && <SummaryPanel />}
         <HintPanel />
         <HumanReviewPanel />
         {(scene.type === 'challenge' || scene.type === 'aiReview') && <AIReviewerPanel />}
-        {scene.type !== 'summary' && <RevealPanel />}
+        {beatPhase === 0 && scene.type !== 'summary' && <RevealPanel />}
       </div>
     </section>
   );

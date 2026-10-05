@@ -9,6 +9,7 @@ export class PyodideClient {
   private status: EngineStatus = 'idle';
   private statusMessage?: string;
   private statusListeners = new Set<(s: EngineStatus, msg?: string) => void>();
+  private inputSab: SharedArrayBuffer | null = null;
   private pendingRuns = new Map<
     string,
     {
@@ -77,6 +78,18 @@ export class PyodideClient {
     this.worker = null;
   }
 
+  private fulfillInput(value: string): void {
+    if (!this.inputSab) return;
+    const i32 = new Int32Array(this.inputSab);
+    const bytes = new Uint8Array(this.inputSab);
+    const encoded = new TextEncoder().encode(value);
+    const length = Math.min(encoded.length, this.inputSab.byteLength - 8);
+    bytes.set(encoded.subarray(0, length), 8);
+    i32[1] = length;
+    Atomics.store(i32, 0, 1);
+    Atomics.notify(i32, 0);
+  }
+
   private post(msg: WorkerRequest) {
     this.worker?.postMessage(msg);
   }
@@ -90,16 +103,13 @@ export class PyodideClient {
   private async handleMessage(msg: WorkerResponse) {
     switch (msg.type) {
       case 'STATUS':
+        if (msg.inputBuffer) this.inputSab = msg.inputBuffer;
         this.notifyStatus(msg.status, msg.message);
         break;
       case 'INPUT_REQUEST': {
         const pending = this.pendingRuns.get(msg.id);
-        if (pending?.onInput) {
-          const value = await pending.onInput(msg.prompt);
-          this.post({ type: 'INPUT', id: msg.id, value });
-        } else {
-          this.post({ type: 'INPUT', id: msg.id, value: '' });
-        }
+        const value = pending?.onInput ? await pending.onInput(msg.prompt) : '';
+        this.fulfillInput(value);
         break;
       }
       case 'RESULT': {

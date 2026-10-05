@@ -2,11 +2,18 @@ import { useEffect } from 'react';
 import { useSceneEngine } from '../../engine/SceneEngine';
 
 interface KeyboardShortcutsProps {
+  annotationActive: boolean;
   onRun: () => void;
+  onToggleAnnotation: () => void;
   onToggleFullscreen: () => void;
 }
 
-export function KeyboardShortcuts({ onRun, onToggleFullscreen }: KeyboardShortcutsProps) {
+export function KeyboardShortcuts({
+  annotationActive,
+  onRun,
+  onToggleAnnotation,
+  onToggleFullscreen,
+}: KeyboardShortcutsProps) {
   const { state, dispatch } = useSceneEngine();
 
   useEffect(() => {
@@ -37,20 +44,38 @@ export function KeyboardShortcuts({ onRun, onToggleFullscreen }: KeyboardShortcu
           e.preventDefault();
           onRun();
           break;
+        case 'p':
+        case 'P':
+          e.preventDefault();
+          onToggleAnnotation();
+          break;
         case 'f':
         case 'F':
           e.preventDefault();
           onToggleFullscreen();
           break;
         case 'Escape':
-          if (state.isFullscreen) onToggleFullscreen();
+          if (annotationActive) {
+            e.preventDefault();
+            onToggleAnnotation();
+          } else if (state.isFullscreen) {
+            onToggleFullscreen();
+          }
           break;
       }
     };
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [state.editorFocused, state.isFullscreen, dispatch, onRun, onToggleFullscreen]);
+  }, [
+    annotationActive,
+    state.editorFocused,
+    state.isFullscreen,
+    dispatch,
+    onRun,
+    onToggleAnnotation,
+    onToggleFullscreen,
+  ]);
 
   return null;
 }

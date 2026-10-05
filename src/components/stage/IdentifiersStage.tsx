@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import type { IdentifiersContent } from '../../types/scene';
+import { useSceneEngine } from '../../engine/SceneEngine';
 import { useStageAdvance } from '../../hooks/useStageAdvance';
 
 interface Props {
@@ -7,12 +9,22 @@ interface Props {
 }
 
 export function IdentifiersStage({ content, sceneId }: Props) {
-  // 0 定义 → 1 规则 → 2 保留字
-  const { phase, advance, done } = useStageAdvance(sceneId, 2);
+  const { dispatch } = useSceneEngine();
+  const demos = content.demos ?? [];
+  const maxPhase = Math.max(demos.length - 1, 0);
+  const { phase, advance, done } = useStageAdvance(sceneId, maxPhase);
+  const demo = demos[phase];
+  const showKeywords = phase === 1;
+  const showKeywordNote = phase === 2;
+
+  useEffect(() => {
+    if (!demo) return;
+    dispatch({ type: 'UPDATE_CODE', code: demo.code, clearOutput: true });
+  }, [phase, demo, dispatch]);
 
   return (
     <div
-      className="mt-4 cursor-pointer select-none"
+      className="mt-3 cursor-pointer select-none"
       onClick={() => advance()}
       role="button"
       tabIndex={0}
@@ -20,53 +32,54 @@ export function IdentifiersStage({ content, sceneId }: Props) {
         if ((e.key === 'Enter' || e.key === ' ') && advance()) e.preventDefault();
       }}
     >
-      <div className="rounded-3xl bg-classroom-stage shadow-card px-6 py-5">
-        <p className="text-sm text-accent font-semibold tracking-wide">1. 标识符</p>
-        <p className="mt-3 text-xl leading-relaxed">{content.definition}</p>
-        <p className="mt-2 text-lg text-text-secondary">{content.examples}</p>
-      </div>
-
-      {phase >= 1 && (
-        <div className="mt-4 timeline-node-in">
-          <p className="mb-3 text-lg font-semibold">标识符命名规则</p>
-          <ol className="space-y-2">
-            {content.rules.map((rule, i) => (
-              <li
-                key={rule}
-                className="rounded-2xl bg-classroom-stage shadow-card px-5 py-3 text-lg flex gap-4"
-              >
-                <span className="text-accent tabular-nums">{i + 1}.</span>
-                <span>{rule}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
+      <p className="text-xl leading-relaxed">{content.definition}</p>
+      {phase === 0 && content.examples && (
+        <p className="mt-1 text-lg text-text-secondary">{content.examples}</p>
       )}
 
-      {phase >= 2 && (
-        <div className="mt-5 timeline-node-in">
-          <p className="text-sm text-accent font-semibold tracking-wide">2. Python 关键字（保留字）</p>
-          <p className="mt-2 text-lg text-text-secondary">{content.keywordLead}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
+      <ol className="mt-3 space-y-1.5">
+        {content.rules.map((rule, i) => (
+          <li
+            key={rule}
+            className="flex gap-3 rounded-2xl bg-classroom-stage px-4 py-2 text-lg shadow-card"
+          >
+            <span className="tabular-nums text-accent">{i + 1}.</span>
+            <span>{rule}</span>
+          </li>
+        ))}
+      </ol>
+
+      {demo && (
+        <p key={demo.title} className="mt-3 title-kai text-xl text-text-secondary timeline-node-in leading-relaxed">
+          <span className="text-accent">{demo.title}。 </span>
+          {demo.note}
+        </p>
+      )}
+
+      {showKeywords && (
+        <div className="mt-3 timeline-node-in">
+          <p className="text-lg text-text-secondary">{content.keywordLead}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
             {content.keywords.map((word) => (
               <span
                 key={word}
-                className="rounded-xl bg-code-bg px-3 py-1.5 font-mono text-base text-code-text"
+                className="rounded-lg bg-code-bg px-2.5 py-0.5 font-mono text-sm text-code-text"
               >
                 {word}
               </span>
             ))}
           </div>
-          {content.keywordNote && (
-            <p className="mt-4 text-lg">{content.keywordNote}</p>
-          )}
         </div>
       )}
 
-      {done && content.close && (
-        <p className="mt-5 text-lg text-text-secondary">{content.close}</p>
+      {showKeywordNote && content.keywordNote && (
+        <p className="mt-3 text-lg timeline-node-in">{content.keywordNote}</p>
       )}
-      {!done && <p className="mt-4 text-base text-accent/80">点击继续 · 或按空格 / →</p>}
+
+      {done && content.close && (
+        <p className="mt-4 text-lg text-text-secondary timeline-node-in">{content.close}</p>
+      )}
+      {!done && <p className="mt-3 text-base text-accent/80">点击继续 · 或按空格 / →</p>}
     </div>
   );
 }

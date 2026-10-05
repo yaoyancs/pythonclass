@@ -334,14 +334,10 @@ export interface TypedDemoContent {
   takeaway: string;
 }
 
-/** 表达式求值动画 */
+/** 算术运算符优先级：层级表 + 对照例子 */
 export interface ExprOrderContent {
-  expression: string;
-  studentPredict?: string;
-  steps: { label: string; focus: string }[];
-  altExpression: string;
-  altResult: string;
-  conclusion: string;
+  tiers: { rank: string; ops: string; note: string }[];
+  cases: { expr: string; result: string; note: string }[];
 }
 
 /** 标识符定义、命名规则、Python 保留字 */
@@ -353,6 +349,8 @@ export interface IdentifiersContent {
   keywords: string[];
   keywordNote?: string;
   close?: string;
+  /** 点按切换右侧编辑器里的例子。第一段同时作为 scene.code.initial。 */
+  demos?: { title: string; note: string; code: string }[];
 }
 
 /** 最小语法规则 + 故意错误 */
@@ -379,6 +377,8 @@ export interface VarModelContent {
   nextValue?: string;
   /** 值卡片上的浅色类型标（如 int），不展开讲堆/对象 */
   valueKind?: string;
+  /** update 模式右边加上的数。未写时按 5，与 score = score + 5 一致。 */
+  delta?: number;
   /** 重绑定之后紧接着讲「取出旧值再贴回去」，避免再翻一页重复「= 不是相等」 */
   followOn?: {
     codeLines: string[];
@@ -388,7 +388,21 @@ export interface VarModelContent {
     conclusion: string;
     humanTranslation?: string;
     question?: string;
+    /** 右边加上的数，动画写成「旧值 + delta」。默认 5，与「score = score + 5」一致。 */
+    delta?: number;
   };
+}
+
+/** 名字一侧与对象一侧：identity / type / value */
+export interface BindingModelContent {
+  summary: string;
+}
+
+/** 第 2 讲：上图（名字指向数据）+ 下动画（赋值过程） */
+export interface AssignIntroContent {
+  name: string;
+  value: string;
+  summary: string;
 }
 
 /** 变量定义落脚页：名字、值、赋值三件套 */
@@ -492,13 +506,154 @@ export interface WhyLearnWrapContent {
   aiNote: string;
 }
 
+/** 数据类型思维导图：每种类型一行适用场景 */
+export interface TypeMapContent {
+  note?: string;
+}
+
+/** 第 10 页：整数精确存放，浮点数拆成符号、指数、尾数 */
+export interface IntFloatContent {
+  intNote: string;
+  floatNote: string;
+  equalNote: string;
+}
+
+/** 第 8 页：先认四个字面量，再看名字换指向后类型跟着变 */
+export interface TypeProbeContent {
+  ask: string;
+  classNote: string;
+  nameNote: string;
+  quoteNote: string;
+  literalsCode: string;
+  nameCode: string;
+  literals: { value: string; type: string; read: string }[];
+}
+
 /** 最终结论页 */
 export interface FinalVerdictContent {
   lines: string[];
-  abilities: string[];
-  teaserCode: string;
-  teaserQuestion: string;
-  teaserClose: string;
+  abilities?: string[];
+  teaserCode?: string;
+  teaserQuestion?: string;
+  teaserClose?: string;
+}
+
+/** 两个名字指向同一对象，或模块名字空间（dict：键 → 指针，对象在表外） */
+export interface NameLinkContent {
+  mode: 'alias' | 'namespace';
+  summary: string;
+}
+
+/** 一次展示的下标或切片例子。pick 是要亮起的下标。 */
+export interface StringBoardExample {
+  code: string;
+  result: string;
+  note: string;
+  pick?: number[];
+}
+
+/** 第 2 讲：一排字符上的下标、切片，以及「有没有 / 有几个」 */
+export interface StringBoardContent {
+  word: string;
+  mode: 'index' | 'negative' | 'slice' | 'step' | 'reverse' | 'find';
+  /** 格子上方的变量名，画出「名字 → 字符串对象」 */
+  bindingName?: string;
+  /** find：要在这排字符里寻找的那一个 */
+  mark?: string;
+  /** find 点到最后一步时换上的代码 */
+  nextCode?: string;
+  /** 有 examples 时一次展示整页，不再点按推进 */
+  lead?: string;
+  examples?: StringBoardExample[];
+}
+
+/** 同一组下标先切对、再切错，然后按空白切开 */
+export interface StringCutContent {
+  fitted: { text: string; ranges: [number, number][] };
+  shifted: { text: string; ranges: [number, number][] };
+  words: string[];
+  codes: [string, string, string];
+  close: string;
+}
+
+/** 加号接句，再收成带空位的 f-string */
+export interface StringTemplateContent {
+  plusCode: string;
+  formatCode: string;
+  pieces: string[];
+  gaps: string[];
+  slots: { name: string; value: string }[];
+  lines: string[];
+}
+
+/** 输入的一排数字字符，转成整数后再运算 */
+export interface StringCastContent {
+  digits: string;
+  factor: string;
+  product: string;
+  code: string;
+  line: string;
+}
+
+/** 第 2 讲字符串收束：是文本 / 有顺序 / 不可变 */
+export interface StringIdeaContent {
+  title: string;
+  branches: { title: string; items: string[] }[];
+  close: string;
+}
+
+/** 同一页里，运行之后才逐段换上后面的代码和一句结论 */
+export interface CodeBeat {
+  code?: string;
+  line?: string;
+  note?: string;
+  choices?: { label: string; correct?: boolean }[];
+  fork?: StringForkContent;
+}
+
+export interface CodeBeatsContent {
+  /** 为 true 时，已经出现的句子都留在屏幕上 */
+  accumulate?: boolean;
+  /** 为 true 时，不必先运行就能逐段打开疑问和对应代码 */
+  beforeRun?: boolean;
+  beats: CodeBeat[];
+}
+
+/** 造一个新字符串：两个名字各指一串，原串内部没有被改掉 */
+export interface StringForkContent {
+  keep: { name: string; value: string };
+  created: { name: string; value: string };
+  /** 要点掉的错误想法 */
+  rejectInPlace: string;
+  close: string;
+}
+
+/** 教学比赛微课堂：字符串切片的专用可视化场景 */
+export interface StringSliceContent {
+  mode:
+    | 'cover'
+    | 'privacy'
+    | 'decompose'
+    | 'index-need'
+    | 'syntax'
+    | 'cut-demo'
+    | 'negative'
+    | 'boundary'
+    | 'ai-review'
+    | 'cases'
+    | 'pitfalls'
+    | 'minus-ways'
+    | 'practice'
+    | 'values'
+    | 'summary'
+    | 'homework';
+  phone?: string;
+}
+
+/** 圆点里需要单独标红的类型名 */
+export interface MarkedSpan {
+  text: string;
+  mark?: boolean;
 }
 
 export interface SceneContent {
@@ -506,6 +661,10 @@ export interface SceneContent {
   body?: string;
   question?: string;
   bulletPoints?: string[];
+  /** 与 bulletPoints 同款圆点，span.mark 为真时标红 */
+  markedPoints?: MarkedSpan[][];
+  /** 圆点列表下方的另一块说明，标题 + 编号，不与 bulletPoints 混用 */
+  note?: { title: string; points: string[] };
   codeComparison?: {
     left: { label: string; code: string };
     right: { label: string; code: string };
@@ -553,6 +712,8 @@ export interface SceneContent {
   ipo?: IpoContent;
   whyNeedVar?: WhyNeedVarContent;
   varDefinition?: VarDefinitionContent;
+  assignIntro?: AssignIntroContent;
+  bindingModel?: BindingModelContent;
   varPredict?: VarPredictContent;
   inputFlow?: InputFlowContent;
   questionCascade?: QuestionCascadeContent;
@@ -562,6 +723,18 @@ export interface SceneContent {
   methodVerify?: MethodVerifyContent;
   whyLearnWrap?: WhyLearnWrapContent;
   finalVerdict?: FinalVerdictContent;
+  typeMap?: TypeMapContent;
+  typeProbe?: TypeProbeContent;
+  intFloat?: IntFloatContent;
+  nameLink?: NameLinkContent;
+  stringBoard?: StringBoardContent;
+  stringCut?: StringCutContent;
+  stringTemplate?: StringTemplateContent;
+  stringCast?: StringCastContent;
+  stringIdea?: StringIdeaContent;
+  stringFork?: StringForkContent;
+  codeBeats?: CodeBeatsContent;
+  stringSlice?: StringSliceContent;
 }
 
 export interface SceneCode {

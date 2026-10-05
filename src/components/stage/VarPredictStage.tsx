@@ -1,4 +1,5 @@
 import type { VarPredictContent } from '../../types/scene';
+import { useSceneEngine } from '../../engine/SceneEngine';
 import { useStageAdvance } from '../../hooks/useStageAdvance';
 import { TypeBadge } from '../ui/TypeBadge';
 
@@ -9,6 +10,8 @@ interface Props {
 
 export function VarPredictStage({ content, sceneId }: Props) {
   // 0 code+q → 1 reveal first → 2 compare → 3 compare reveal → 4 takeaway
+  const { scene } = useSceneEngine();
+  const hasEditor = Boolean(scene.code);
   const maxPhase = content.compareCode ? 4 : 2;
   const { phase, advance, done } = useStageAdvance(sceneId, maxPhase);
 
@@ -22,9 +25,11 @@ export function VarPredictStage({ content, sceneId }: Props) {
         if ((e.key === 'Enter' || e.key === ' ') && advance()) e.preventDefault();
       }}
     >
-      <pre className="rounded-3xl bg-code-bg shadow-card px-6 py-5 font-mono text-xl text-code-text whitespace-pre-wrap">
-        {content.code}
-      </pre>
+      {!hasEditor && (
+        <pre className="rounded-3xl bg-code-bg shadow-card px-6 py-5 font-mono text-xl text-code-text whitespace-pre-wrap">
+          {content.code}
+        </pre>
+      )}
       <p className="mt-5 stage-emphasis text-2xl">{content.question}</p>
 
       {phase >= 1 && (
@@ -34,7 +39,7 @@ export function VarPredictStage({ content, sceneId }: Props) {
         </div>
       )}
 
-      {content.compareCode && phase >= 2 && (
+      {content.compareCode && phase >= 2 && !hasEditor && (
         <pre className="mt-5 rounded-3xl bg-code-bg shadow-card px-6 py-5 font-mono text-xl text-code-text whitespace-pre-wrap timeline-node-in">
           {content.compareCode}
         </pre>

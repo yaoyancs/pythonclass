@@ -10,9 +10,8 @@ export const scenes: DraftScene[] = [
       headline: "课堂小结",
       finalVerdict: {
         lines: [
-          "本讲弄清：为什么学编程、代码如何被执行，并用变量给数据起名字。",
+          "本讲学了：为什么学编程、代码如何被执行，并用变量给数据起名字。",
           "用 input() 接收姓名，打印出自己的诗卡。",
-          "接下来要弄清：数据在程序里究竟有哪些类型。",
         ],
         abilities: [
           "说明 Python 程序怎样跑起来",
@@ -21,11 +20,6 @@ export const scenes: DraftScene[] = [
           "解释赋值：保存、取用、改写",
           "使用 input() 读入姓名并打印诗卡",
         ],
-        teaserCode:
-          'age = input("请输入年龄：")\nnext_year = age + 1\n\nprint("明年你", next_year, "岁")',
-        teaserQuestion: "这段程序看起来很合理，为什么运行时可能出错？",
-        teaserClose:
-          "下一课：程序中的数据究竟有哪些类型，以及 Python 为什么如此在意数据类型。",
       },
     },
   },
@@ -40,7 +34,7 @@ export const scenes: DraftScene[] = [
         "在自己电脑上搭建好 Python 编程环境。",
         "本地编写三个程序：（1）键盘输入 name，输出「大家好，我的名字叫XXX。」（2）定义单价、重量、总价，计算并输出总价。（3）用变量和 input() 打印校园卡：姓名、学号、专业、学院。",
         "完成 PTA 的 Lab 1。",
-        "复习本讲课件与课本，预习第 2 讲。",
+        "复习本讲课件与课本。",
       ],
     },
   },

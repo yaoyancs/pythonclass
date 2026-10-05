@@ -64,6 +64,11 @@ function applyRunComplete(state: ClassroomState, scene: Scene): ClassroomState {
     phase = 'output';
   }
 
+  if (scene.reveal && (scene.prediction || scene.requiresPrediction)) {
+    local = { ...local, revealShown: true };
+    phase = 'reveal';
+  }
+
   return {
     ...state,
     scenePhase: phase,
@@ -190,7 +195,11 @@ export function sceneReducer(
     case 'UPDATE_CODE':
       return {
         ...state,
-        sceneLocal: { ...state.sceneLocal, code: action.code },
+        sceneLocal: {
+          ...state.sceneLocal,
+          code: action.code,
+          lastOutput: action.clearOutput ? null : state.sceneLocal.lastOutput,
+        },
         scenePhase: state.scenePhase === 'output' ? 'modify' : state.scenePhase,
       };
 

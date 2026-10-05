@@ -25,7 +25,7 @@ export const scenes: DraftScene[] = [
     code: {
       initial:
         "scores = [78, 92, 85, 61, 95]\naverage = sum(scores) / len(scores)\nprint(average)",
-      editable: false,
+      editable: true,
       resetToInitial: true,
     },
   },

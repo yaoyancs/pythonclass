@@ -56,7 +56,7 @@ export type ClassroomAction =
   | { type: 'REVEAL' }
   | { type: 'SHOW_AI_REVIEW' }
   | { type: 'COMPLETE_HUMAN_REVIEW' }
-  | { type: 'UPDATE_CODE'; code: string }
+  | { type: 'UPDATE_CODE'; code: string; clearOutput?: boolean }
   | { type: 'SELECT_VOTE'; option: string }
   | { type: 'SET_FULLSCREEN'; value: boolean }
   | { type: 'SET_EDITOR_FOCUSED'; value: boolean }

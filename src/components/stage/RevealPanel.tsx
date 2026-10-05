@@ -1,8 +1,11 @@
+import { useSyncExternalStore } from 'react';
 import { useSceneEngine } from '../../engine/SceneEngine';
+import { getBeatPhase, subscribeBeatPhase } from '../../hooks/useStageAdvance';
 
 export function RevealPanel() {
   const { state, scene } = useSceneEngine();
-  if (!scene.reveal || !state.sceneLocal.revealShown) return null;
+  const beatPhase = useSyncExternalStore(subscribeBeatPhase, getBeatPhase, getBeatPhase);
+  if (!scene.reveal || !state.sceneLocal.revealShown || beatPhase > 0) return null;
 
   return (
     <div className="mt-8 rounded-2xl bg-accent-muted border border-classroom-border p-8">

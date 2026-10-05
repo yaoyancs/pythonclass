@@ -14,6 +14,7 @@ export function OutputPanel() {
   }
 
   const hasError = !!output.error;
+  const errorText = output.error ? output.stderr || output.error.message : '';
 
   return (
     <div className="shrink-0 min-h-[128px] rounded-2xl bg-code-bg p-5 space-y-3">
@@ -29,13 +30,8 @@ export function OutputPanel() {
         </pre>
       )}
 
-      {hasError && output.error && (
-        <div className="rounded-lg border border-code-error/50 bg-code-error/10 p-4">
-          <p className="text-code-error font-semibold text-lg">{output.error.type}</p>
-          <pre className="font-mono text-base text-code-error/90 mt-2 whitespace-pre-wrap">
-            {output.error.message}
-          </pre>
-        </div>
+      {hasError && errorText && (
+        <pre className="font-mono text-base text-code-error whitespace-pre-wrap">{errorText}</pre>
       )}
     </div>
   );

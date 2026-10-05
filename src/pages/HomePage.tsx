@@ -50,9 +50,9 @@ function ReadyLectureLink({
             <span className="mx-2 text-classroom-border">·</span>
             <Link
               to={lectureHomeworkPath(lecture.id)}
-              className="text-accent hover:underline underline-offset-4"
+              className="text-error hover:underline underline-offset-4"
             >
-              作业
+              本讲作业
             </Link>
           </>
         )}
@@ -116,6 +116,27 @@ export function HomePage() {
             </p>
           </div>
         </div>
+
+        <section className="mt-10">
+          <Link
+            to="/lesson/string-slicing"
+            className="group flex items-center gap-6 rounded-3xl border-2 border-accent/40 bg-accent-muted px-9 py-6 shadow-card transition-all hover:border-accent hover:-translate-y-0.5"
+          >
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-accent text-2xl text-white">
+              ✦
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold tracking-[0.18em] text-accent">
+                《Python程序设计》
+              </p>
+              <p className="mt-1 title-stage text-3xl text-text-primary group-hover:text-accent transition-colors">
+                《字符串切片》
+              </p>
+             
+            </div>
+            <span className="text-2xl text-accent transition-transform group-hover:translate-x-1">→</span>
+          </Link>
+        </section>
 
         {featured && (
           <section className="mt-12">

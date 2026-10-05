@@ -19,8 +19,10 @@ export function VarModelStage({ content, sceneId }: Props) {
   const kind = content.valueKind;
   const codeLines = inFollow && follow ? follow.codeLines : content.codeLines;
   const teacherLine = inFollow && follow ? follow.teacherLine : content.teacherLine;
-  const showTeacher = inFollow ? displayPhase >= 1 : phase >= 1;
+  const updateStory = content.mode === 'update' && !inFollow;
+  const showTeacher = updateStory ? false : inFollow ? displayPhase >= 1 : phase >= 1;
   const showRebindClose = Boolean(follow) && phase >= 4 && !inFollow;
+  const delta = inFollow && follow ? (follow.delta ?? 5) : (content.delta ?? 5);
 
   return (
     <div
@@ -36,27 +38,47 @@ export function VarModelStage({ content, sceneId }: Props) {
         <p className="mb-4 stage-emphasis text-xl timeline-node-in">{follow.question}</p>
       )}
 
-      <div className="rounded-3xl bg-code-bg shadow-card px-5 py-4 mb-5 font-mono text-xl text-code-text relative">
+      <div className="rounded-3xl bg-code-bg shadow-card px-5 py-4 mb-3 font-mono text-xl text-code-text relative">
         {content.mode === 'label' && content.boardNote && phase >= 1 && !inFollow && (
           <span className="absolute -top-3 left-24 rounded-full bg-highlight text-white text-sm px-3 py-0.5 timeline-node-in">
             {content.boardNote}
           </span>
         )}
-        {codeLines.map((line, i) => (
-          <div
-            key={`${line}-${i}`}
-            className={
-              content.mode === 'label' && phase >= 4 && !inFollow && i === 0
-                ? 'bg-highlight/90 text-code-bg rounded px-2 -mx-2'
-                : undefined
-            }
-          >
-            {line}
-          </div>
-        ))}
+        {codeLines.map((line, i) => {
+          if (updateStory) {
+            return (
+              <UpdateCodeLine
+                key={`${line}-${i}`}
+                line={line}
+                index={i}
+                phase={phase}
+                name={name}
+              />
+            );
+          }
+          const memoryStep = inFollow ? displayPhase : phase;
+          const activeLine =
+            content.mode === 'label' && phase >= 4 && !inFollow
+              ? 0
+              : content.mode === 'update' || inFollow
+                ? memoryStep === 0
+                  ? 0
+                  : 1
+                : -1;
+          return (
+            <div
+              key={`${line}-${i}`}
+              className={
+                i === activeLine ? 'bg-highlight/90 text-code-bg rounded px-2 -mx-2' : undefined
+              }
+            >
+              {line}
+            </div>
+          );
+        })}
       </div>
 
-      <div className="rounded-3xl bg-classroom-stage shadow-card px-6 py-8 min-h-[15rem] relative overflow-hidden">
+      <div className="rounded-3xl bg-classroom-stage shadow-card px-6 py-4 relative overflow-hidden">
         {content.mode === 'label' && !inFollow && (
           <LabelFrames phase={displayPhase} name={name} value={value} kind={kind} />
         )}
@@ -76,9 +98,16 @@ export function VarModelStage({ content, sceneId }: Props) {
             value={inFollow && follow ? follow.value : value}
             nextValue={inFollow && follow ? follow.nextValue : nextValue}
             kind={kind}
+            delta={delta}
           />
         )}
       </div>
+
+      {updateStory && (
+        <p key={phase} className="mt-2 title-kai text-xl text-text-secondary timeline-node-in leading-relaxed">
+          {updateStepNote(phase, name, value, nextValue, delta)}
+        </p>
+      )}
 
       {showTeacher && (
         <p className="mt-4 title-kai text-xl text-text-secondary timeline-node-in leading-relaxed">
@@ -104,7 +133,7 @@ export function VarModelStage({ content, sceneId }: Props) {
       )}
 
       {!done && (
-        <p className="mt-5 text-base text-accent/80">
+        <p className="mt-3 text-base text-accent/80">
           {showRebindClose ? '点击继续 · 取出旧值再贴回去' : '点击继续 · 或按空格 / →'}
         </p>
       )}
@@ -236,42 +265,179 @@ function RebindFrames({
   );
 }
 
+function NamePill({ name }: { name: string }) {
+  return (
+    <div className="text-center">
+      <div className="rounded-full bg-accent text-white px-5 py-2 title-kai text-xl">{name}</div>
+      <p className="mt-2 text-sm text-text-secondary">名字</p>
+    </div>
+  );
+}
+
+function ObjectPill({
+  value,
+  label,
+  faded,
+  active,
+  pulse,
+  kind,
+}: {
+  value: string;
+  label: string;
+  faded?: boolean;
+  active?: boolean;
+  pulse?: boolean;
+  kind?: string;
+}) {
+  return (
+    <div className={`text-center transition-opacity duration-700 ${faded ? 'opacity-30' : 'opacity-100'}`}>
+      <div
+        className={`relative rounded-2xl border-2 border-dashed px-8 py-3 font-mono text-3xl text-text-primary ${
+          faded ? 'border-classroom-border' : active ? 'border-accent bg-accent-muted' : 'border-accent'
+        } ${pulse ? 'animate-pulse' : ''}`}
+      >
+        {value}
+        {kind && !faded && (
+          <span className="absolute -top-2 -right-2">
+            <TypeBadge kind={kind} />
+          </span>
+        )}
+      </div>
+      <p className="mt-1 text-sm text-text-secondary">{label}</p>
+    </div>
+  );
+}
+
+const LINE_HI = 'bg-highlight/90 text-code-bg rounded px-1';
+
+function updateStepNote(
+  phase: number,
+  name: string,
+  value: string,
+  nextValue: string,
+  delta: number,
+): string {
+  if (phase <= 0) return `现在 ${name} 指向 ${value}`;
+  if (phase === 1) return `右边是读取：取出 ${value}`;
+  if (phase === 2) return `${value} + ${delta} 得到新对象 ${nextValue}，${value} 还在`;
+  if (phase === 3) return `名字改指向 ${nextValue}，${value} 没有变成 ${nextValue}`;
+  return `打印的是 ${name} 现在指向的对象`;
+}
+
+function UpdateCodeLine({
+  line,
+  index,
+  phase,
+  name,
+}: {
+  line: string;
+  index: number;
+  phase: number;
+  name: string;
+}) {
+  const wholeLine = (index === 0 && phase === 0) || (index >= 2 && phase >= 4);
+  return (
+    <div className={wholeLine ? 'bg-highlight/90 text-code-bg rounded px-2 -mx-2' : undefined}>
+      {index === 1 ? highlightSelfAssign(line, name, phase) : line}
+    </div>
+  );
+}
+
+function highlightSelfAssign(line: string, name: string, phase: number) {
+  const first = line.indexOf(name);
+  const second = first < 0 ? -1 : line.indexOf(name, first + name.length);
+  const plus = second < 0 ? -1 : line.indexOf('+', second);
+  if (first < 0 || second < 0 || plus < 0) return line;
+  return (
+    <>
+      {line.slice(0, first)}
+      <span className={phase === 3 ? LINE_HI : undefined}>{line.slice(first, first + name.length)}</span>
+      {line.slice(first + name.length, second)}
+      <span className={phase === 1 ? LINE_HI : undefined}>{line.slice(second, second + name.length)}</span>
+      {line.slice(second + name.length, plus)}
+      <span className={phase === 2 ? LINE_HI : undefined}>{line.slice(plus)}</span>
+    </>
+  );
+}
+
+/** 两格对象固定不动，箭头从旧对象移到新对象。 */
 function UpdateFrames({
   phase,
   name,
   value,
   nextValue,
   kind,
+  delta = 5,
 }: {
   phase: number;
   name: string;
   value: string;
   nextValue: string;
   kind?: string;
+  delta?: number;
 }) {
-  const sticker = kind ? `  ·  ${kind}` : '';
-  const frames = [
-    { t: `读取右边当前的 ${name}`, d: `${name} ─────→ ${value}${sticker}` },
-    { t: '计算右边的表达式', d: `${value} + 5 → ${nextValue}` },
-    { t: '重新赋值', d: `${name} ─────→ ${nextValue}${sticker}` },
-    { t: '输出', d: nextValue },
-  ];
-  const n = Math.min(phase + 1, 4);
+  const showNext = phase >= 2;
+  const rebound = phase >= 3;
+  const printed = phase >= 4;
+
   return (
-    <div className="space-y-3">
-      {frames.slice(0, n).map((f, i) => (
-        <div
-          key={f.t}
-          className={`rounded-2xl px-5 py-3 timeline-node-in ${
-            i === n - 1 ? 'bg-accent text-white' : 'bg-accent-muted text-text-primary'
-          }`}
-        >
-          <p className="text-lg">第 {i + 1} 步：{f.t}</p>
-          <p className={`font-mono text-base mt-1 ${i === n - 1 ? 'text-white/90' : 'text-text-secondary'}`}>
-            {f.d}
-          </p>
-        </div>
-      ))}
+    <div className="mx-auto flex max-w-3xl items-center justify-center gap-3">
+      <NamePill name={name} />
+      <BindingArrow rebound={rebound} />
+      <div className="flex flex-col gap-3">
+        <ObjectPill
+          value={value}
+          label={rebound ? '原来的对象' : '对象'}
+          faded={rebound}
+          active={phase === 1}
+          pulse={phase === 1}
+          kind={kind}
+        />
+        {showNext ? (
+          <div className={phase === 2 ? 'timeline-node-in' : undefined}>
+            <ObjectPill
+              value={nextValue}
+              label={printed ? `print(${name}) → ${nextValue}` : rebound ? '对象' : `${value} + ${delta}`}
+              active={rebound}
+              kind={kind}
+            />
+          </div>
+        ) : (
+          <EmptyObjectSlot value={nextValue} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BindingArrow({ rebound }: { rebound: boolean }) {
+  const originY = 87;
+  const targetY = rebound ? 153 : 26;
+  const reach = 248;
+  const angle = Math.atan2(targetY - originY, reach);
+  const length = Math.hypot(reach, targetY - originY);
+  return (
+    <div className="relative h-[210px] w-[236px] shrink-0 text-accent" aria-hidden>
+      <div
+        className="absolute left-0 transition-transform duration-700 ease-out"
+        style={{ top: originY, transform: `rotate(${angle}rad)`, transformOrigin: '0 0' }}
+      >
+        <svg width={length} height="16" viewBox={`0 0 ${length} 16`} className="overflow-visible -translate-y-2">
+          <line x1="0" y1="8" x2={Math.max(length - 14, 0)} y2="8" stroke="currentColor" strokeWidth="3" />
+          <polygon points={`${length},8 ${length - 16},1 ${length - 16},15`} fill="currentColor" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function EmptyObjectSlot({ value }: { value: string }) {
+  return (
+    <div className="text-center">
+      <div className="rounded-2xl border-2 border-dashed border-classroom-border px-8 py-3 font-mono text-3xl text-transparent">
+        {value}
+      </div>
+      <p className="mt-1 text-sm text-text-secondary">新对象</p>
     </div>
   );
 }

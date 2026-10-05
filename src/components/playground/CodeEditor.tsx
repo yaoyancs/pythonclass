@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Editor, { type BeforeMount, type OnMount } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { useSceneEngine } from '../../engine/SceneEngine';
@@ -26,11 +26,12 @@ const defineTheme: BeforeMount = (monaco) => {
 };
 
 export function CodeEditor({ onFocusChange }: CodeEditorProps) {
-  const { state, scene, dispatch } = useSceneEngine();
+  const { state, scene, lesson, dispatch } = useSceneEngine();
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [height, setHeight] = useState(220);
   const code = state.sceneLocal.code;
-  const editable = scene.code?.editable ?? false;
+  // 第 2 讲的练习区始终可改，不进入只读。
+  const editable = lesson.id === 'lesson02' || (scene.code?.editable ?? false);
 
   const handleMount: OnMount = (ed) => {
     editorRef.current = ed;
@@ -39,10 +40,15 @@ export function CodeEditor({ onFocusChange }: CodeEditorProps) {
       setHeight(Math.min(Math.max(ed.getContentHeight() + 36, 160), 620));
     };
     syncHeight();
+    ed.updateOptions({ readOnly: !editable, domReadOnly: false });
     ed.onDidContentSizeChange(syncHeight);
     ed.onDidFocusEditorText(() => onFocusChange?.(true));
     ed.onDidBlurEditorText(() => onFocusChange?.(false));
   };
+
+  useEffect(() => {
+    editorRef.current?.updateOptions({ readOnly: !editable, domReadOnly: false });
+  }, [editable, scene.id]);
 
   return (
     <div

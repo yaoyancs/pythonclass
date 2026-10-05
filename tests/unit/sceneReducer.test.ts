@@ -56,13 +56,26 @@ describe('sceneReducer', () => {
       '05',
       '06',
       '07',
-      '08',
     ]);
     expect(lesson02.scenes.length).toBeGreaterThan(20);
     expect(lesson02.scenes.some((s) => s.id === 'lesson02-catalog')).toBe(true);
-    expect(lesson02.scenes.filter((s) => s.partId === '01').every((s) => s.title === '飞花令诗卡里的变量')).toBe(
+    expect(lesson02.scenes.filter((s) => s.partId === '01').every((s) => s.title === '变量')).toBe(
       true,
     );
+  });
+
+  it('reveals a string prediction after the code runs', () => {
+    const index = lesson02.scenes.findIndex((scene) => scene.id === 'scene-str-08');
+    const state = createInitialState(lesson02, index);
+    expect(state.sceneLocal.runUnlocked).toBe(false);
+    const selected = sceneReducer(lesson02, state, { type: 'SELECT_PREDICTION', optionId: 'typeerror' });
+    const submitted = sceneReducer(lesson02, selected, { type: 'SUBMIT_PREDICTION' });
+    const ran = sceneReducer(lesson02, submitted, {
+      type: 'RUN_COMPLETE',
+      result: { stdout: '', stderr: 'TypeError', error: { type: 'TypeError', message: 'does not support item assignment' } },
+    });
+    expect(ran.sceneLocal.revealShown).toBe(true);
+    expect(ran.scenePhase).toBe('reveal');
   });
 
   it('persists scene index via hydrate', () => {
