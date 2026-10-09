@@ -18,6 +18,14 @@ import { scenes as typeCast } from "./type-cast/scenes";
 import { scenes as boolCompare } from "./bool-compare/scenes";
 import { scenes as campusLife02 } from "./campus-life-02/scenes";
 import { scenes as conclusionHomework } from "./conclusion-homework/scenes";
+import { scenes as ifLine } from "./if-line/scenes";
+import { scenes as ifSurcharge } from "./if-surcharge/scenes";
+import { scenes as ifStudent } from "./if-student/scenes";
+import { scenes as ifTiers } from "./if-tiers/scenes";
+import { scenes as ifConditions } from "./if-conditions/scenes";
+import { scenes as ifCampus } from "./if-campus/scenes";
+import { scenes as rideTicket03 } from "./ride-ticket-03/scenes";
+import { scenes as lesson03Close } from "./lesson03-close/scenes";
 
 /** 全课知识块仓库：开课表通过 ref 引用 */
 export const PARTS: Record<string, ContentPart> = {
@@ -40,6 +48,14 @@ export const PARTS: Record<string, ContentPart> = {
   "bool-compare": { id: "bool-compare", scenes: boolCompare },
   "campus-life-02": { id: "campus-life-02", scenes: campusLife02 },
   "conclusion-homework": { id: "conclusion-homework", scenes: conclusionHomework },
+  "if-line": { id: "if-line", scenes: ifLine },
+  "if-surcharge": { id: "if-surcharge", scenes: ifSurcharge },
+  "if-student": { id: "if-student", scenes: ifStudent },
+  "if-tiers": { id: "if-tiers", scenes: ifTiers },
+  "if-conditions": { id: "if-conditions", scenes: ifConditions },
+  "if-campus": { id: "if-campus", scenes: ifCampus },
+  "ride-ticket-03": { id: "ride-ticket-03", scenes: rideTicket03 },
+  "lesson03-close": { id: "lesson03-close", scenes: lesson03Close },
 };
 
 export function getPart(ref: string): ContentPart {
