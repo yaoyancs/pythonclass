@@ -11,6 +11,7 @@ interface TeacherPanelProps {
   variant?: 'light' | 'dark';
   initialWidth?: number;
   initialHeight?: number;
+  onMinimize?: () => void;
 }
 
 function clamp(n: number, min: number, max: number): number {
@@ -26,13 +27,14 @@ export function TeacherPanel({
   variant = 'light',
   initialWidth,
   initialHeight,
+  onMinimize,
 }: TeacherPanelProps) {
-  const defaultW = initialWidth ?? (wide ? 760 : 520);
-  const defaultH = initialHeight ?? (wide ? 560 : 420);
+  const defaultW = Math.min(initialWidth ?? (wide ? 760 : 520), window.innerWidth - 32);
+  const defaultH = Math.min(initialHeight ?? (wide ? 560 : 420), window.innerHeight - 32);
 
   const [pos, setPos] = useState(() => ({
-    x: Math.max(24, (window.innerWidth - defaultW) / 2),
-    y: Math.max(24, window.innerHeight * 0.08),
+    x: Math.max(16, (window.innerWidth - defaultW) / 2),
+    y: Math.max(16, window.innerHeight * 0.08),
   }));
   const [size, setSize] = useState({ w: defaultW, h: defaultH });
   const dragRef = useRef<{ ox: number; oy: number; px: number; py: number } | null>(null);
@@ -126,14 +128,27 @@ export function TeacherPanel({
               拖拽标题栏移动 · 右下角缩放
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="md"
-            onClick={onClose}
-            className={dark ? 'text-white/80 hover:bg-white/10' : ''}
-          >
-            关闭
-          </Button>
+          <div className="flex items-center gap-1 shrink-0">
+            {onMinimize && (
+              <Button
+                variant="ghost"
+                size="md"
+                type="button"
+                onClick={onMinimize}
+                className={dark ? 'text-white/80 hover:bg-white/10' : ''}
+              >
+                最小化
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={onClose}
+              className={dark ? 'text-white/80 hover:bg-white/10' : ''}
+            >
+              关闭
+            </Button>
+          </div>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4">{children}</div>
         <div

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSceneEngine } from '../../engine/SceneEngine';
+import { useStageAdvance } from '../../hooks/useStageAdvance';
 import { PredictPanel } from './PredictPanel';
 import { RevealPanel } from './RevealPanel';
 import { VotePanel } from './VotePanel';
@@ -12,6 +13,7 @@ import {
   CatalogList,
   GradeTable,
   InfoCardGrid,
+  SceneGallery,
   SceneSideImage,
   ScheduleList,
 } from './CourseInfoBlocks';
@@ -69,10 +71,13 @@ import { StringCastStage } from './StringCastStage';
 import { StringIdeaStage } from './StringIdeaStage';
 import { StringForkStage } from './StringForkStage';
 import { StringSliceStage } from './StringSliceStage';
+import { BranchContestStage } from './BranchContestStage';
 import { CodeBeatsStage } from './CodeBeatsStage';
 
 export function TeachingStage() {
   const { scene, lesson, dispatch } = useSceneEngine();
+  const clickLines = scene.content.clickLines ?? [];
+  const clickReveal = useStageAdvance(scene.id, clickLines.length, clickLines.length > 0);
   const { content } = scene;
   const [beatPhase, setBeatPhase] = useState(0);
   useEffect(() => {
@@ -81,6 +86,7 @@ export function TeachingStage() {
   const isFullscreen = scene.layout === 'fullscreen';
   const dense = Boolean(
     content.image ||
+      content.gallery ||
       content.infoCards ||
       content.schedule ||
       content.gradeItems ||
@@ -135,6 +141,7 @@ export function TeachingStage() {
       content.stringIdea ||
       content.stringFork ||
       content.stringSlice ||
+      content.branchContest ||
       content.codeBeats,
   );
   const hasSideImage = Boolean(content.image);
@@ -146,12 +153,14 @@ export function TeachingStage() {
     <section
       className={`grid h-full overflow-hidden ${
         pinTop ? 'place-items-start' : 'place-items-center'
-      } ${isFullscreen ? (pinTop ? 'px-10 pt-4 pb-5' : 'px-10 py-8') : 'px-14 py-10'}`}
+      } ${isFullscreen ? (pinTop ? 'px-10 pt-4 pb-5' : 'px-10 py-8') : scene.editorSide === 'left' ? 'px-6 py-6' : 'px-14 py-10'}`}
     >
       <div className="w-full max-h-full overflow-y-auto">
         {content.headline && (
           <h2
             className={`title-stage text-text-primary ${
+              clickLines.length > 0 && !clickReveal.done ? 'cursor-pointer' : ''
+            } ${
               hasSideImage
                 ? 'whitespace-nowrap text-[clamp(1.75rem,4.6vw,3.75rem)] leading-[1.2]'
                 : content.typeProbe || content.typeMap
@@ -160,9 +169,24 @@ export function TeachingStage() {
                     ? 'text-stage-hero'
                     : 'text-stage-headline'
             }`}
+            onClick={() => {
+              if (clickLines.length > 0) clickReveal.advance();
+            }}
           >
             {content.headline}
           </h2>
+        )}
+        {clickLines.length > 0 && (
+          <div
+            className={`mt-8 space-y-5 ${clickReveal.done ? '' : 'cursor-pointer'}`}
+            onClick={() => clickReveal.advance()}
+          >
+            {clickLines.slice(0, clickReveal.phase).map((line) => (
+              <p key={line} className="text-stage-sub font-medium text-text-primary">
+                {line}
+              </p>
+            ))}
+          </div>
         )}
         <div
           className={
@@ -259,6 +283,25 @@ export function TeachingStage() {
                   <div key={line}>{line}</div>
                 ))}
               </div>
+            )}
+
+            {content.compareTable && (
+              <table className="mt-8 w-full border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-classroom-border text-stage-sub text-text-secondary">
+                    <th className="py-3 pr-6 font-semibold">{content.compareTable.leftHeader}</th>
+                    <th className="py-3 font-semibold">{content.compareTable.rightHeader}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {content.compareTable.rows.map((row) => (
+                    <tr key={row.left} className="border-b border-classroom-border/70">
+                      <td className="py-4 pr-6 text-stage-sub text-text-primary">{row.left}</td>
+                      <td className="py-4 font-mono text-xl text-text-primary">{row.right}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
 
             {content.codeComparison && (
@@ -443,8 +486,14 @@ export function TeachingStage() {
             {content.stringSlice && (
               <StringSliceStage content={content.stringSlice} sceneId={scene.id} />
             )}
+            {content.branchContest && (
+              <BranchContestStage content={content.branchContest} sceneId={scene.id} />
+            )}
             {content.codeBeats && (
               <CodeBeatsStage content={content.codeBeats} sceneId={scene.id} onPhase={setBeatPhase} />
+            )}
+            {content.gallery && (
+              <SceneGallery images={content.gallery} links={content.galleryLinks} />
             )}
           </div>
           {content.image && <SceneSideImage image={content.image} />}

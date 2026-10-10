@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 declare global {
   interface Window {
     __pyclassStageAdvance?: () => boolean;
+    __pyclassStageRetreat?: () => boolean;
   }
 }
 
@@ -34,11 +35,23 @@ export function useStageAdvance(sceneId: string, maxPhase: number, enabled = tru
   useEffect(() => {
     phaseRef.current = 0;
     setPhase(0);
+    publishBeatPhase(0);
   }, [sceneId]);
+
+  useEffect(() => {
+    publishBeatPhase(phase);
+  }, [phase]);
 
   const advance = useCallback(() => {
     if (phaseRef.current >= maxRef.current) return false;
     phaseRef.current += 1;
+    setPhase(phaseRef.current);
+    return true;
+  }, []);
+
+  const retreat = useCallback(() => {
+    if (phaseRef.current <= 0) return false;
+    phaseRef.current -= 1;
     setPhase(phaseRef.current);
     return true;
   }, []);
@@ -51,10 +64,12 @@ export function useStageAdvance(sceneId: string, maxPhase: number, enabled = tru
   useEffect(() => {
     if (!enabled) return;
     window.__pyclassStageAdvance = () => advance();
+    window.__pyclassStageRetreat = () => retreat();
     return () => {
       delete window.__pyclassStageAdvance;
+      delete window.__pyclassStageRetreat;
     };
-  }, [advance, enabled]);
+  }, [advance, retreat, enabled]);
 
-  return { phase, advance, reset, done: phase >= maxPhase };
+  return { phase, advance, retreat, reset, done: phase >= maxPhase };
 }

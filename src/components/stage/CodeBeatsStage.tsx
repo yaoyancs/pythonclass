@@ -28,10 +28,10 @@ export function CodeBeatsStage({ content, sceneId, onPhase }: Props) {
   useEffect(() => {
     if (!unlocked) return;
     const next = [...content.beats.slice(0, phase)].reverse().find((beat) => beat.code)?.code;
-    if (next && state.sceneLocal.code !== next) {
+    if (next) {
       dispatch({ type: 'UPDATE_CODE', code: next });
     }
-  }, [unlocked, phase, content.beats, state.sceneLocal.code, dispatch]);
+  }, [unlocked, phase, content.beats, dispatch]);
 
   useEffect(() => {
     setPicked(null);

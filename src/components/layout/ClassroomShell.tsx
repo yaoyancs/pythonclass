@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type Dispatch, type PointerEvent as ReactPointerEvent, type SetStateAction } from 'react';
 import { useLessonAnalytics } from '../../analytics/useLessonAnalytics';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { ClassroomHeader } from './ClassroomHeader';
@@ -15,7 +15,9 @@ const MAX_RIGHT_PCT = 72;
 export function ClassroomShell() {
   useLessonAnalytics();
   const { dispatch, scene } = useSceneEngine();
-  const isFullscreenLayout = scene.layout === 'fullscreen';
+  const editorOnly = Boolean(scene.editorOnly);
+  const isFullscreenLayout = scene.layout === 'fullscreen' && !editorOnly;
+  const editorLeft = scene.editorSide === 'left';
   const mainRef = useRef<HTMLElement>(null);
   const [rightPct, setRightPct] = useState(DEFAULT_RIGHT_PCT);
   const [isDragging, setIsDragging] = useState(false);
@@ -36,7 +38,11 @@ export function ClassroomShell() {
     run?.();
   }, []);
 
-  const handleSplitterPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  useEffect(() => {
+    if (editorLeft) setRightPct(42);
+  }, [editorLeft, scene.id]);
+
+  const handleSplitterPointerDown = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     const main = mainRef.current;
     if (!main) return;
@@ -80,41 +86,48 @@ export function ClassroomShell() {
         ref={mainRef}
         className="grid min-h-0 overflow-hidden"
         style={
-          isFullscreenLayout
+          isFullscreenLayout || editorOnly
             ? undefined
-            : { gridTemplateColumns: `minmax(0, 1fr) 6px ${rightPct}%` }
+            : { gridTemplateColumns: editorLeft ? `${100 - rightPct}% 6px ${rightPct}%` : `minmax(0, 1fr) 6px ${rightPct}%` }
         }
       >
-        <div className="min-h-0 overflow-hidden">
-          <TeachingStage />
-        </div>
-        {!isFullscreenLayout && (
+        {editorOnly ? (
+          <div className="min-h-0 overflow-hidden">
+            <PythonPlayground />
+          </div>
+        ) : editorLeft && !isFullscreenLayout ? (
           <>
-            <div
-              role="separator"
-              aria-orientation="vertical"
-              aria-label="调整讲台与代码区宽度"
-              aria-valuenow={Math.round(rightPct)}
-              aria-valuemin={MIN_RIGHT_PCT}
-              aria-valuemax={MAX_RIGHT_PCT}
-              tabIndex={0}
-              className={`relative z-10 cursor-col-resize touch-none ${
-                isDragging ? 'bg-accent' : 'bg-classroom-border hover:bg-accent/70'
-              }`}
-              onPointerDown={handleSplitterPointerDown}
-              onKeyDown={(e) => {
-                if (e.key === 'ArrowLeft') {
-                  e.preventDefault();
-                  setRightPct((p) => Math.min(MAX_RIGHT_PCT, p + 2));
-                } else if (e.key === 'ArrowRight') {
-                  e.preventDefault();
-                  setRightPct((p) => Math.max(MIN_RIGHT_PCT, p - 2));
-                }
-              }}
-            />
             <div className="min-h-0 overflow-hidden">
               <PythonPlayground />
             </div>
+            <Splitter
+              isDragging={isDragging}
+              rightPct={rightPct}
+              setRightPct={setRightPct}
+              onPointerDown={handleSplitterPointerDown}
+            />
+            <div className="min-h-0 overflow-hidden">
+              <TeachingStage />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="min-h-0 overflow-hidden">
+              <TeachingStage />
+            </div>
+            {!isFullscreenLayout && (
+              <>
+                <Splitter
+                  isDragging={isDragging}
+                  rightPct={rightPct}
+                  setRightPct={setRightPct}
+                  onPointerDown={handleSplitterPointerDown}
+                />
+                <div className="min-h-0 overflow-hidden">
+                  <PythonPlayground />
+                </div>
+              </>
+            )}
           </>
         )}
       </main>
@@ -132,5 +145,42 @@ export function ClassroomShell() {
         onToggleFullscreen={toggleFullscreen}
       />
     </div>
+  );
+}
+
+function Splitter({
+  isDragging,
+  rightPct,
+  setRightPct,
+  onPointerDown,
+}: {
+  isDragging: boolean;
+  rightPct: number;
+  setRightPct: Dispatch<SetStateAction<number>>;
+  onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => void;
+}) {
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="调整讲台与代码区宽度"
+      aria-valuenow={Math.round(rightPct)}
+      aria-valuemin={MIN_RIGHT_PCT}
+      aria-valuemax={MAX_RIGHT_PCT}
+      tabIndex={0}
+      className={`relative z-10 cursor-col-resize touch-none ${
+        isDragging ? 'bg-accent' : 'bg-classroom-border hover:bg-accent/70'
+      }`}
+      onPointerDown={onPointerDown}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          setRightPct((p) => Math.min(MAX_RIGHT_PCT, p + 2));
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          setRightPct((p) => Math.max(MIN_RIGHT_PCT, p - 2));
+        }
+      }}
+    />
   );
 }

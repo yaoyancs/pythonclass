@@ -1,5 +1,5 @@
-import type { CatalogItem, GradeItem, InfoCard, SceneImage, ScheduleBlock } from '../../types/scene';
-import { Fragment } from 'react';
+import type { CatalogItem, GalleryLink, GradeItem, InfoCard, SceneImage, ScheduleBlock } from '../../types/scene';
+import { Fragment, useRef, useState } from 'react';
 
 export function SceneSideImage({ image }: { image: SceneImage }) {
   return (
@@ -13,6 +13,93 @@ export function SceneSideImage({ image }: { image: SceneImage }) {
         <figcaption className="mt-4 text-center text-lg text-text-secondary">{image.caption}</figcaption>
       )}
     </figure>
+  );
+}
+
+export function SceneGallery({ images, links }: { images: SceneImage[]; links?: GalleryLink[] }) {
+  const boardRef = useRef<HTMLDivElement>(null);
+  const nodeRefs = useRef<Record<string, HTMLElement | null>>({});
+  const [line, setLine] = useState<{ x1: number; y1: number; x2: number; y2: number; color: string } | null>(
+    null,
+  );
+  const [drawKey, setDrawKey] = useState(0);
+  const sources = new Set(links?.map((item) => item.from));
+
+  function connect(fromId: string) {
+    const link = links?.find((item) => item.from === fromId);
+    const board = boardRef.current;
+    const from = nodeRefs.current[fromId];
+    const to = link ? nodeRefs.current[link.to] : null;
+    if (!link || !board || !from || !to) return;
+    const origin = board.getBoundingClientRect();
+    const a = from.getBoundingClientRect();
+    const b = to.getBoundingClientRect();
+    setLine({
+      x1: a.left + a.width / 2 - origin.left,
+      y1: a.top + a.height / 2 - origin.top,
+      x2: b.left + b.width / 2 - origin.left,
+      y2: b.top + b.height / 2 - origin.top,
+      color: link.color,
+    });
+    setDrawKey((key) => key + 1);
+  }
+
+  return (
+    <div ref={boardRef} className="relative mt-6">
+      <ul className="grid grid-cols-4 gap-x-5 gap-y-48">
+        {images.map((image) => {
+          const clickable = Boolean(image.id && sources.has(image.id));
+          const frame = (
+            <img
+              src={image.src}
+              alt={image.alt}
+              className="mx-auto h-32 w-full object-contain"
+            />
+          );
+          return (
+            <li key={image.src}>
+              {clickable ? (
+                <button
+                  type="button"
+                  ref={(node) => {
+                    if (image.id) nodeRefs.current[image.id] = node;
+                  }}
+                  className="block w-full rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  aria-label={image.alt}
+                  onClick={() => image.id && connect(image.id)}
+                >
+                  {frame}
+                </button>
+              ) : (
+                <div
+                  ref={(node) => {
+                    if (image.id) nodeRefs.current[image.id] = node;
+                  }}
+                >
+                  {frame}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {line && (
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
+          <line
+            key={drawKey}
+            x1={line.x1}
+            y1={line.y1}
+            x2={line.x2}
+            y2={line.y2}
+            stroke={line.color}
+            strokeWidth="3"
+            strokeLinecap="round"
+            pathLength={1}
+            className="gallery-link-draw"
+          />
+        </svg>
+      )}
+    </div>
   );
 }
 

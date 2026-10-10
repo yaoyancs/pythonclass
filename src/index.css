@@ -99,6 +99,39 @@
     filter: drop-shadow(0 10px 20px rgba(18, 33, 28, 0.1));
   }
 
+  .slice-row {
+    display: grid;
+    overflow: hidden;
+    border: 1px solid #9bb0a6;
+    border-radius: 0.55rem;
+    background: #ffffff;
+  }
+
+  .slice-row-cell {
+    border-right: 1px solid #9bb0a6;
+    padding: 0.45rem 0;
+    background: #ffffff;
+    color: #0a1210;
+    font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 1.15rem;
+    font-weight: 700;
+    text-align: center;
+    transition: background-color 0.35s ease, color 0.35s ease, opacity 0.35s ease;
+  }
+
+  .slice-row-cell:last-child {
+    border-right: none;
+  }
+
+  .slice-row-cell-on {
+    background: #0a5c4f;
+    color: #ffffff;
+  }
+
+  .slice-row-cell-dim {
+    opacity: 0.32;
+  }
+
   .slice-demo-cell {
     position: relative;
     z-index: 2;
@@ -713,6 +746,34 @@
     animation: pyhist-card-in 0.5s ease-out both;
   }
 
+  .drone-fly {
+    animation: drone-to-tree 3.2s ease-in-out infinite;
+  }
+
+  @keyframes drone-to-tree {
+    from { transform: translateX(0); }
+    to { transform: translateX(-9.5rem); }
+  }
+
+  .exec-current-line,
+  .exec-current-line-fluo {
+    background: #514022;
+    box-shadow: inset 3px 0 0 #fbbf24;
+  }
+
+  .exec-line-note {
+    color: #fbbf24 !important;
+    font-style: normal !important;
+    margin-left: 1.25rem;
+  }
+
+  .exec-line-note-fluo {
+    color: #fbbf24 !important;
+    font-style: normal !important;
+    font-weight: 700;
+    margin-left: 1.5rem;
+  }
+
   @keyframes pyhist-node-in {
     from {
       opacity: 0;
@@ -726,5 +787,20 @@
 
   .pyhist-node-in {
     animation: pyhist-node-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes gallery-link-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .gallery-link-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: gallery-link-draw 0.7s ease-out forwards;
   }
 }

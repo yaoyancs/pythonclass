@@ -51,7 +51,7 @@ const SLICE_STEPS: SliceStep[] = [
 ];
 
 export function StringBoardStage({ content, sceneId }: Props) {
-  const { state, dispatch } = useSceneEngine();
+  const { dispatch } = useSceneEngine();
   const shownAtOnce = (content.examples?.length ?? 0) > 0;
   const maxPhase = content.mode === 'slice' ? 5 : content.mode === 'find' ? 2 : 3;
   const { phase, advance, done } = useStageAdvance(sceneId, maxPhase, !shownAtOnce);
@@ -66,8 +66,8 @@ export function StringBoardStage({ content, sceneId }: Props) {
 
   useEffect(() => {
     if (content.mode !== 'find' || phase < 2 || !content.nextCode) return;
-    if (state.sceneLocal.code !== content.nextCode) dispatch({ type: 'UPDATE_CODE', code: content.nextCode });
-  }, [content.mode, content.nextCode, phase, state.sceneLocal.code, dispatch]);
+    dispatch({ type: 'UPDATE_CODE', code: content.nextCode });
+  }, [content.mode, content.nextCode, phase, dispatch]);
 
   if (shownAtOnce) return <StaticStringBoard content={content} />;
 

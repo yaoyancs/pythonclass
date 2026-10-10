@@ -16,9 +16,9 @@ export function StringCastStage({ content, sceneId }: Props) {
   const digits = [...content.digits];
 
   useEffect(() => {
-    if (!unlocked || phase < 2 || state.sceneLocal.code === content.code) return;
+    if (!unlocked || phase < 2) return;
     dispatch({ type: 'UPDATE_CODE', code: content.code });
-  }, [unlocked, phase, content.code, state.sceneLocal.code, dispatch]);
+  }, [unlocked, phase, content.code, dispatch]);
 
   if (!unlocked) return null;
 

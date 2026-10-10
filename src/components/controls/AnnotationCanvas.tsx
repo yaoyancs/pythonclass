@@ -21,10 +21,16 @@ interface AnnotationCanvasProps {
 }
 
 const COLORS = [
-  { value: '#d92d20', label: '红色' },
-  { value: '#2563eb', label: '蓝色' },
-  { value: '#111827', label: '黑色' },
-  { value: '#f59e0b', label: '黄色' },
+  { value: '#d92d20', label: '红' },
+  { value: '#16a34a', label: '绿' },
+  { value: '#2563eb', label: '蓝' },
+  { value: '#7c3aed', label: '紫' },
+];
+
+const WIDTHS = [
+  { value: 3, label: '细' },
+  { value: 6, label: '中' },
+  { value: 12, label: '粗' },
 ];
 
 export function AnnotationCanvas({
@@ -37,8 +43,11 @@ export function AnnotationCanvas({
   const drawingRef = useRef(false);
   const [tool, setTool] = useState<Tool>('pen');
   const [color, setColor] = useState(COLORS[0].value);
-  const [width, setWidth] = useState(5);
+  const [width, setWidth] = useState(6);
   const [revision, setRevision] = useState(0);
+  const [cursor, setCursor] = useState<Point | null>(null);
+  const [dock, setDock] = useState({ x: 16, y: 88 });
+  const dragRef = useRef<{ ox: number; oy: number; px: number; py: number } | null>(null);
 
   const drawStroke = useCallback((ctx: CanvasRenderingContext2D, stroke: Stroke) => {
     const { points } = stroke;
@@ -92,10 +101,11 @@ export function AnnotationCanvas({
   }, [redraw]);
 
   useEffect(() => {
+    if (!active) return;
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     return () => window.removeEventListener('resize', resizeCanvas);
-  }, [resizeCanvas]);
+  }, [active, resizeCanvas]);
 
   useEffect(() => {
     strokesRef.current = [];
@@ -127,11 +137,14 @@ export function AnnotationCanvas({
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!active || !drawingRef.current) return;
+    if (!active) return;
+    const point = pointFromEvent(event);
+    setCursor(point);
+    if (!drawingRef.current) return;
     event.preventDefault();
     const stroke = strokesRef.current.at(-1);
     if (!stroke) return;
-    stroke.points.push(pointFromEvent(event));
+    stroke.points.push(point);
     redraw();
   };
 
@@ -151,112 +164,180 @@ export function AnnotationCanvas({
   };
 
   const clear = () => {
+    if (!strokesRef.current.length) return;
+    if (!window.confirm('清空本页全部标注？')) return;
     strokesRef.current = [];
     setRevision((value) => value + 1);
     redraw();
   };
 
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') {
+        event.preventDefault();
+        strokesRef.current.pop();
+        setRevision((value) => value + 1);
+        redraw();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [active, redraw]);
+
+  const cursorSize = tool === 'eraser' ? width * 3 : width;
+
   return (
     <>
+      {active && (
       <canvas
         ref={canvasRef}
-        className={`fixed inset-0 z-40 touch-none ${
-          active ? 'pointer-events-auto cursor-crosshair' : 'pointer-events-none'
-        }`}
+        className="fixed inset-0 z-40 touch-none cursor-crosshair"
         role="application"
         aria-label="课堂画笔标注层"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={finishStroke}
         onPointerCancel={finishStroke}
+        onPointerLeave={() => setCursor(null)}
       />
+      )}
+
+      {active && cursor && (
+        <div
+          className="pointer-events-none fixed z-50 rounded-full border-2"
+          style={{
+            left: cursor.x,
+            top: cursor.y,
+            width: cursorSize,
+            height: cursorSize,
+            transform: 'translate(-50%, -50%)',
+            borderColor: tool === 'eraser' ? '#6b7280' : color,
+            backgroundColor: tool === 'eraser' ? 'rgba(255,255,255,0.35)' : color,
+            opacity: tool === 'eraser' ? 1 : 0.85,
+          }}
+          aria-hidden
+        />
+      )}
 
       {active && (
         <aside
-          className="fixed left-1/2 top-3 z-50 flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-classroom-border bg-white/95 p-2 shadow-card backdrop-blur"
+          className="fixed z-[80] w-[15.5rem] rounded-2xl border border-classroom-border bg-white/95 p-2.5 shadow-card backdrop-blur"
+          style={{ right: dock.x, top: dock.y }}
           aria-label="课堂画笔工具"
           onPointerDown={(event) => event.stopPropagation()}
         >
-          <button
-            type="button"
-            className={`whitespace-nowrap rounded-xl px-3 py-2 text-sm font-semibold transition ${
-              tool === 'pen' ? 'bg-accent text-white' : 'bg-classroom-playground text-text-primary'
-            }`}
-            onClick={() => setTool('pen')}
+          <div
+            className="mb-2 flex cursor-grab items-center justify-between active:cursor-grabbing"
+            onPointerDown={(event) => {
+              if ((event.target as HTMLElement).closest('button')) return;
+              event.currentTarget.setPointerCapture(event.pointerId);
+              dragRef.current = { ox: event.clientX, oy: event.clientY, px: dock.x, py: dock.y };
+            }}
+            onPointerMove={(event) => {
+              const drag = dragRef.current;
+              if (!drag) return;
+              setDock({
+                x: Math.max(8, drag.px - (event.clientX - drag.ox)),
+                y: Math.max(8, drag.py + (event.clientY - drag.oy)),
+              });
+            }}
+            onPointerUp={() => {
+              dragRef.current = null;
+            }}
           >
-            ✎ 画笔
-          </button>
-          <button
-            type="button"
-            className={`whitespace-nowrap rounded-xl px-3 py-2 text-sm font-semibold transition ${
-              tool === 'eraser' ? 'bg-accent text-white' : 'bg-classroom-playground text-text-primary'
-            }`}
-            onClick={() => setTool('eraser')}
-          >
-            ◇ 橡皮
-          </button>
+            <p className="text-xs text-text-secondary">拖这里挪开工具条 · Esc 退出</p>
+          </div>
 
-          <div className="flex gap-2 border-l border-classroom-border pl-2">
-            {COLORS.map((item) => (
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              className={`rounded-xl px-2 py-1.5 text-sm font-semibold ${
+                tool === 'pen' ? 'bg-accent text-white' : 'bg-classroom-playground text-text-primary'
+              }`}
+              onClick={() => setTool('pen')}
+            >
+              ✎ 画笔
+            </button>
+            <button
+              type="button"
+              className={`rounded-xl px-2 py-1.5 text-sm font-semibold ${
+                tool === 'eraser' ? 'bg-accent text-white' : 'bg-classroom-playground text-text-primary'
+              }`}
+              onClick={() => setTool('eraser')}
+            >
+              橡皮
+            </button>
+          </div>
+
+          <div className="mt-2 grid grid-cols-4 gap-1.5">
+            {COLORS.map((item) => {
+              const selected = color === item.value && tool === 'pen';
+              return (
+                <button
+                  key={item.value}
+                  type="button"
+                  className={`flex items-center justify-center gap-1 rounded-xl py-1.5 text-xs font-semibold ${
+                    selected ? 'ring-2 ring-accent' : 'ring-1 ring-classroom-border'
+                  }`}
+                  style={{ backgroundColor: item.value, color: '#fff' }}
+                  aria-label={item.label}
+                  aria-pressed={selected}
+                  onClick={() => {
+                    setColor(item.value);
+                    setTool('pen');
+                  }}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-2 grid grid-cols-3 gap-1.5">
+            {WIDTHS.map((item) => (
               <button
                 key={item.value}
                 type="button"
-                className={`h-6 w-6 rounded-full border-2 ${
-                  color === item.value && tool === 'pen' ? 'border-accent ring-2 ring-accent/30' : 'border-white'
+                className={`rounded-xl py-1.5 text-xs font-semibold ${
+                  width === item.value
+                    ? 'bg-text-primary text-white'
+                    : 'bg-classroom-playground text-text-primary'
                 }`}
-                style={{ backgroundColor: item.value }}
-                title={item.label}
-                aria-label={item.label}
-                onClick={() => {
-                  setColor(item.value);
-                  setTool('pen');
-                }}
-              />
+                onClick={() => setWidth(item.value)}
+              >
+                {item.label}
+              </button>
             ))}
           </div>
 
-          <label className="flex items-center gap-2 whitespace-nowrap text-xs text-text-secondary">
-            粗细
-            <input
-              type="range"
-              min="2"
-              max="12"
-              value={width}
-              onChange={(event) => setWidth(Number(event.target.value))}
-              className="w-28 accent-accent"
-            />
-          </label>
-
-          <div className="flex gap-2 border-l border-classroom-border pl-2">
+          <div className="mt-2 grid grid-cols-3 gap-1.5">
             <button
               type="button"
-              className="h-10 w-10 rounded-lg bg-classroom-playground text-base font-semibold text-text-primary disabled:opacity-40"
+              className="rounded-xl bg-classroom-playground py-1.5 text-xs font-semibold text-text-primary disabled:opacity-40"
               disabled={strokesRef.current.length === 0}
-              title="撤销上一笔"
-              aria-label="撤销上一笔"
               onClick={undo}
             >
-              ↶
+              撤销
             </button>
             <button
               type="button"
-              className="h-10 w-10 rounded-lg bg-classroom-playground text-sm font-semibold text-text-primary disabled:opacity-40"
+              className="rounded-xl bg-classroom-playground py-1.5 text-xs font-semibold text-text-primary disabled:opacity-40"
               disabled={strokesRef.current.length === 0}
-              title="清空全部标注"
-              aria-label="清空全部标注"
               onClick={clear}
             >
-              清
+              清空
+            </button>
+            <button
+              type="button"
+              className="rounded-xl bg-accent py-1.5 text-xs font-semibold text-white"
+              onClick={() => onActiveChange(false)}
+            >
+              完成
             </button>
           </div>
-
-          <button
-            type="button"
-            className="whitespace-nowrap rounded-xl bg-accent px-3 py-2 text-sm font-semibold text-white"
-            onClick={() => onActiveChange(false)}
-          >
-            完成
-          </button>
           <span className="sr-only" aria-live="polite">
             当前有 {revision} 次画笔操作
           </span>

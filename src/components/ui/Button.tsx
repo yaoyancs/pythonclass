@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
   children: ReactNode;
 }
 
@@ -15,6 +15,7 @@ const variants = {
 };
 
 const sizes = {
+  sm: 'px-3 py-1 text-sm font-medium',
   md: 'px-4 py-2 text-base font-medium',
   lg: 'px-6 py-3 text-lg font-semibold',
 };

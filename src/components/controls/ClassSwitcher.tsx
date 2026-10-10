@@ -6,9 +6,10 @@ interface ClassSwitcherProps {
   value: ClassId;
   onChange: (id: ClassId) => void;
   counts?: Record<string, number>;
+  size?: 'sm' | 'md';
 }
 
-export function ClassSwitcher({ classes, value, onChange, counts }: ClassSwitcherProps) {
+export function ClassSwitcher({ classes, value, onChange, counts, size = 'md' }: ClassSwitcherProps) {
   if (!classes.length) {
     return (
       <p className="text-sm text-highlight mb-4">尚未创建教学班，请先在「班级名单」中添加。</p>
@@ -25,7 +26,7 @@ export function ClassSwitcher({ classes, value, onChange, counts }: ClassSwitche
           <Button
             key={c.id}
             type="button"
-            size="md"
+            size={size}
             variant={active ? 'primary' : 'secondary'}
             onClick={() => onChange(c.id)}
           >

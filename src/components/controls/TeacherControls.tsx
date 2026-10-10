@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { useRosterSession } from '../../hooks/useRosterSession';
 import { AnalyticsPanel } from './AnalyticsPanel';
@@ -13,7 +13,7 @@ import { PerformancePanel } from './PerformancePanel';
 import { RosterManagePanel } from './RosterManagePanel';
 import { TeacherUnlockPanel } from './TeacherUnlockPanel';
 
-type Panel = 'none' | 'lesson' | 'page' | 'attendance' | 'performance' | 'roster' | 'analytics';
+type Panel = 'none' | 'attendance' | 'performance' | 'roster' | 'analytics';
 
 function syncLabel(status: ReturnType<typeof useTeacherAuth>['syncStatus']): string {
   if (status === 'syncing') return '同步中…';
@@ -22,7 +22,40 @@ function syncLabel(status: ReturnType<typeof useTeacherAuth>['syncStatus']): str
   return '';
 }
 
-function TeacherControlsUnlocked({
+/** 页面控制：跳转、初始化，不需要教师解锁 */
+function PageControls({ trailing }: { trailing?: ReactNode }) {
+  const { dispatch } = useSceneEngine();
+  const [panel, setPanel] = useState<'none' | 'lesson' | 'page'>('none');
+
+  return (
+    <>
+      <div className="flex flex-wrap justify-center items-center gap-1.5">
+        <Button variant="secondary" size="sm" onClick={() => setPanel('lesson')}>
+          跳转到某一讲
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => setPanel('page')}>
+          跳转到本讲某页
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            if (window.confirm('确定初始化本页？本页互动进度与代码将重置。')) {
+              dispatch({ type: 'RESTART_SCENE' });
+            }
+          }}
+        >
+          初始化本页
+        </Button>
+        {trailing}
+      </div>
+      {panel === 'lesson' && <JumpLessonPanel onClose={() => setPanel('none')} />}
+      {panel === 'page' && <JumpPagePanel onClose={() => setPanel('none')} />}
+    </>
+  );
+}
+
+function StudentControls({
   onLock,
   scheduleSync,
   syncStatus,
@@ -35,9 +68,10 @@ function TeacherControlsUnlocked({
   syncError: string | null;
   pushPackNow: () => Promise<void>;
 }) {
-  const { lesson, dispatch } = useSceneEngine();
-  const [expanded, setExpanded] = useState(true);
+  const { lesson } = useSceneEngine();
+  const [expanded, setExpanded] = useState(false);
   const [panel, setPanel] = useState<Panel>('none');
+  const [performanceMinimized, setPerformanceMinimized] = useState(false);
 
   const {
     classId,
@@ -79,33 +113,23 @@ function TeacherControlsUnlocked({
     return map;
   }, [rosterVersion, classes]);
 
-  const closePanel = () => setPanel('none');
+  const closePanel = () => {
+    setPanel('none');
+    setPerformanceMinimized(false);
+  };
   const classLabel = classId ? getClassLabel(classId) : '未选班';
 
   const controls: { label: string; action: () => void }[] = [
-    {
-      label: '跳转到某一讲',
-      action: () => setPanel('lesson'),
-    },
-    {
-      label: '跳转到本讲某页',
-      action: () => setPanel('page'),
-    },
-    {
-      label: '初始化本页',
-      action: () => {
-        if (window.confirm('确定初始化本页？本页互动进度与代码将重置。')) {
-          dispatch({ type: 'RESTART_SCENE' });
-        }
-      },
-    },
     {
       label: '考勤',
       action: () => setPanel('attendance'),
     },
     {
-      label: '提问与互动',
-      action: () => setPanel('performance'),
+      label: '抽点和主动回答',
+      action: () => {
+        setPerformanceMinimized(false);
+        setPanel('performance');
+      },
     },
     {
       label: '访问统计',
@@ -118,13 +142,13 @@ function TeacherControlsUnlocked({
   ];
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <Button variant="ghost" size="md" onClick={() => setExpanded((v) => !v)}>
-          教师控制台 · {classLabel} {expanded ? '▴' : '▾'}
+    <>
+      <div className="flex flex-wrap items-center justify-center gap-1.5">
+        <Button variant="ghost" size="sm" onClick={() => setExpanded((v) => !v)}>
+          学生管理 · {classLabel} {expanded ? '▴' : '▾'}
         </Button>
         <span
-          className={`text-sm ${
+          className={`text-xs ${
             syncStatus === 'error' ? 'text-error' : 'text-text-secondary'
           }`}
           title={syncError ?? undefined}
@@ -132,16 +156,16 @@ function TeacherControlsUnlocked({
           {syncLabel(syncStatus)}
         </span>
         {syncStatus === 'error' && (
-          <Button variant="ghost" size="md" type="button" onClick={() => void pushPackNow()}>
+          <Button variant="ghost" size="sm" type="button" onClick={() => void pushPackNow()}>
             重试同步
           </Button>
         )}
         <Button
           variant="ghost"
-          size="md"
+          size="sm"
           type="button"
           onClick={() => {
-            if (window.confirm('锁定教师台？本页将隐藏提问与互动（抽点/幸运草）等操作。')) {
+            if (window.confirm('锁定学生管理？考勤、抽点、名单等将需要重新解锁。页面跳转不受影响。')) {
               onLock();
             }
           }}
@@ -150,16 +174,17 @@ function TeacherControlsUnlocked({
         </Button>
       </div>
       {expanded && (
-        <div className="flex flex-col items-center gap-2 max-w-3xl">
+        <div className="basis-full flex flex-col items-center gap-1.5 pt-1">
           <ClassSwitcher
             classes={classes}
             value={classId}
             onChange={setClassId}
             counts={classCounts}
+            size="sm"
           />
           <div className="flex flex-wrap justify-center gap-2">
             {controls.map((c) => (
-              <Button key={c.label} variant="secondary" size="md" onClick={c.action}>
+              <Button key={c.label} variant="secondary" size="sm" onClick={c.action}>
                 {c.label}
               </Button>
             ))}
@@ -167,8 +192,6 @@ function TeacherControlsUnlocked({
         </div>
       )}
 
-      {panel === 'lesson' && <JumpLessonPanel onClose={closePanel} />}
-      {panel === 'page' && <JumpPagePanel onClose={closePanel} />}
       {panel === 'roster' && (
         <RosterManagePanel
           classes={classes}
@@ -201,7 +224,17 @@ function TeacherControlsUnlocked({
           onClose={closePanel}
         />
       )}
+      {panel === 'performance' && performanceMinimized && (
+        <button
+          type="button"
+          className="fixed top-20 right-6 z-[70] rounded-full bg-[#12211c] text-white px-5 py-3 text-base shadow-lift"
+          onClick={() => setPerformanceMinimized(false)}
+        >
+          展开抽点和主动回答
+        </button>
+      )}
       {panel === 'performance' && (
+        <div className={performanceMinimized ? 'hidden' : undefined}>
         <PerformancePanel
           classId={classId}
           classes={classes}
@@ -219,10 +252,12 @@ function TeacherControlsUnlocked({
           onMarkEarlyLeave={(id) => updateAttendance(id, 'early_leave')}
           onNeedRoster={() => setPanel(students.length ? 'attendance' : 'roster')}
           onClose={closePanel}
+          onMinimize={() => setPerformanceMinimized(true)}
         />
+        </div>
       )}
       {panel === 'analytics' && <AnalyticsPanel onClose={closePanel} />}
-    </div>
+    </>
   );
 }
 
@@ -230,31 +265,31 @@ export function TeacherControls() {
   const auth = useTeacherAuth();
   const [showUnlock, setShowUnlock] = useState(false);
 
-  if (!auth.unlocked) {
-    return (
-      <div className="flex flex-col items-center gap-2">
-        <Button variant="ghost" size="md" type="button" onClick={() => setShowUnlock(true)}>
-          教师解锁
-        </Button>
-        {showUnlock && (
-          <TeacherUnlockPanel
-            busy={auth.busy}
-            error={auth.error}
-            onSubmit={auth.unlock}
-            onClose={() => setShowUnlock(false)}
-          />
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <TeacherControlsUnlocked
+  const unlockButton = auth.unlocked ? (
+    <StudentControls
       onLock={() => void auth.lock()}
       scheduleSync={auth.scheduleSync}
       syncStatus={auth.syncStatus}
       syncError={auth.syncError}
       pushPackNow={auth.pushPackNow}
     />
+  ) : (
+    <Button variant="ghost" size="sm" type="button" onClick={() => setShowUnlock(true)}>
+      解锁学生管理
+    </Button>
+  );
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <PageControls trailing={unlockButton} />
+      {!auth.unlocked && showUnlock && (
+        <TeacherUnlockPanel
+          busy={auth.busy}
+          error={auth.error}
+          onSubmit={auth.unlock}
+          onClose={() => setShowUnlock(false)}
+        />
+      )}
+    </div>
   );
 }

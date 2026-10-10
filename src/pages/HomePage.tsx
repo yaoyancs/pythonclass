@@ -66,7 +66,9 @@ export function HomePage() {
   const ready = LECTURES.filter((lecture) => lecture.ready);
   const upcoming = LECTURES.filter((lecture) => !lecture.ready);
   const featured = ready.at(-1);
-  const earlierReady = featured ? ready.filter((lecture) => lecture.id !== featured.id) : [];
+  const earlierReady = featured
+    ? ready.filter((lecture) => lecture.id !== featured.id).slice().reverse()
+    : [];
 
   return (
     <div className="min-h-full classroom-grid">
@@ -117,24 +119,30 @@ export function HomePage() {
           </div>
         </div>
 
-        <section className="mt-10">
+        <section className="mt-6 grid grid-cols-2 gap-3">
+          <Link
+            to="/lesson/branch-contest"
+            className="group flex items-center gap-3 rounded-2xl border border-accent/40 bg-accent-muted px-4 py-3 transition-colors hover:border-accent"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="title-stage text-xl text-text-primary group-hover:text-accent transition-colors">
+                多分支条件控制
+              </p>
+              <p className="text-sm text-text-secondary">节选自《第3讲 条件控制》</p>
+            </div>
+            <span className="text-accent">→</span>
+          </Link>
           <Link
             to="/lesson/string-slicing"
-            className="group flex items-center gap-6 rounded-3xl border-2 border-accent/40 bg-accent-muted px-9 py-6 shadow-card transition-all hover:border-accent hover:-translate-y-0.5"
+            className="group flex items-center gap-3 rounded-2xl border border-accent/40 bg-accent-muted px-4 py-3 transition-colors hover:border-accent"
           >
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-accent text-2xl text-white">
-              ✦
-            </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold tracking-[0.18em] text-accent">
-                《Python程序设计》
+              <p className="title-stage text-xl text-text-primary group-hover:text-accent transition-colors">
+                字符串切片
               </p>
-              <p className="mt-1 title-stage text-3xl text-text-primary group-hover:text-accent transition-colors">
-                《字符串切片》
-              </p>
-             
+              <p className="text-sm text-text-secondary">节选自《第2讲 变量和基本数据类型》</p>
             </div>
-            <span className="text-2xl text-accent transition-transform group-hover:translate-x-1">→</span>
+            <span className="text-accent">→</span>
           </Link>
         </section>
 
@@ -146,7 +154,7 @@ export function HomePage() {
 
         {earlierReady.length > 0 && (
           <section className="mt-8">
-            <p className="text-sm font-semibold text-text-secondary mb-3">已就绪</p>
+            <p className="text-sm font-semibold text-text-secondary mb-3">已讲完</p>
             <ol className="space-y-3">
               {earlierReady.map((lecture) => (
                 <li key={lecture.id}>

@@ -15,15 +15,15 @@ const RANGE_STYLES = [
 ];
 
 export function StringCutStage({ content, sceneId }: Props) {
-  const { state, dispatch } = useSceneEngine();
+  const { dispatch } = useSceneEngine();
   const { phase, advance, done } = useStageAdvance(sceneId, 2);
   const sample = phase >= 1 ? content.shifted : content.fitted;
   const code = content.codes[Math.min(phase, 2)] ?? content.codes[0];
 
   useEffect(() => {
-    if (phase < 1 || state.sceneLocal.code === code) return;
+    if (phase < 1) return;
     dispatch({ type: 'UPDATE_CODE', code });
-  }, [phase, code, state.sceneLocal.code, dispatch]);
+  }, [phase, code, dispatch]);
 
   return (
     <div

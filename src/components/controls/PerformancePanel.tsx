@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ClassId, TeachingClass } from '../../data/classes';
 import type { AttendanceLog, SemesterLedger, SessionLedger, Student } from '../../types/roster';
 import { downloadTextFile } from '../../utils/csv';
@@ -18,6 +18,8 @@ import { TeacherPanel } from './TeacherPanel';
 
 type PerformanceTab = 'pick' | 'interact';
 
+const tabMemory = new Map<string, PerformanceTab>();
+
 interface PerformancePanelProps {
   classId: ClassId;
   classes: TeachingClass[];
@@ -35,6 +37,7 @@ interface PerformancePanelProps {
   onMarkEarlyLeave: (studentId: string) => void;
   onNeedRoster: () => void;
   onClose: () => void;
+  onMinimize: () => void;
 }
 
 export function PerformancePanel({
@@ -54,9 +57,19 @@ export function PerformancePanel({
   onMarkEarlyLeave,
   onNeedRoster,
   onClose,
+  onMinimize,
 }: PerformancePanelProps) {
   const metaLabel = getClassLabel(classId);
-  const [tab, setTab] = useState<PerformanceTab>('pick');
+  const viewKey = `${classId}:${session.sessionId}`;
+  const [tab, setTab] = useState<PerformanceTab>(() => tabMemory.get(viewKey) ?? 'pick');
+
+  useEffect(() => {
+    setTab(tabMemory.get(viewKey) ?? 'pick');
+  }, [viewKey]);
+
+  useEffect(() => {
+    tabMemory.set(viewKey, tab);
+  }, [viewKey, tab]);
   const [query, setQuery] = useState('');
 
   const rows = useMemo(
@@ -80,12 +93,12 @@ export function PerformancePanel({
 
   const exportSemester = () => {
     const csv = exportSemesterPerformanceCsv(students, semester, attendanceLog);
-    downloadTextFile(`提问与互动_${metaLabel}_学期.csv`, csv);
+    downloadTextFile(`抽点和主动回答_${metaLabel}_学期.csv`, csv);
   };
 
   const exportMeetings = () => {
     const csv = exportMeetingDetailCsv(students, classId);
-    downloadTextFile(`提问与互动_${metaLabel}_本堂明细.csv`, csv);
+    downloadTextFile(`抽点和主动回答_${metaLabel}_本堂明细.csv`, csv);
   };
 
   const dark = tab === 'pick';
@@ -101,8 +114,9 @@ export function PerformancePanel({
 
   return (
     <TeacherPanel
-      title={`提问与互动 · ${metaLabel}`}
+      title={`抽点和主动回答 · ${metaLabel}`}
       onClose={onClose}
+      onMinimize={onMinimize}
       wide
       variant={dark ? 'dark' : 'light'}
       initialWidth={1120}
@@ -155,6 +169,7 @@ export function PerformancePanel({
       {tab === 'pick' ? (
         <PickStudentContent
           pool={pool}
+          students={students}
           session={session}
           semester={semester}
           onPicked={onPicked}

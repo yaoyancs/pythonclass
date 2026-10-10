@@ -34,7 +34,7 @@ export const scenes: DraftScene[] = [
     code: {
       initial:
         'round_no = input("现在是第几轮：")\nnext_round = round_no + 1\nprint("下一轮是第", next_round, "轮")',
-      editable: false,
+      editable: true,
       resetToInitial: true,
     },
   },

@@ -11,11 +11,11 @@ function finalizeScene(
   title: string,
   partId?: string,
 ): Scene {
-  const { title: _ignored, ...rest } = draft;
+  const { title: draftTitle, ...rest } = draft;
   return {
     ...rest,
     index,
-    title,
+    title: draftTitle ?? title,
     ...(partId ? { partId } : {}),
   };
 }

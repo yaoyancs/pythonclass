@@ -45,6 +45,14 @@ export interface SceneImage {
   src: string;
   alt: string;
   caption?: string;
+  /** 连线用的标识 */
+  id?: string;
+}
+
+export interface GalleryLink {
+  from: string;
+  to: string;
+  color: string;
 }
 
 export interface InfoCard {
@@ -518,15 +526,9 @@ export interface IntFloatContent {
   equalNote: string;
 }
 
-/** 第 8 页：先认四个字面量，再看名字换指向后类型跟着变 */
+/** 第 8 页按点击推进，文案在 TypeProbeStage */
 export interface TypeProbeContent {
-  ask: string;
-  classNote: string;
-  nameNote: string;
-  quoteNote: string;
-  literalsCode: string;
-  nameCode: string;
-  literals: { value: string; type: string; read: string }[];
+  steps?: number;
 }
 
 /** 最终结论页 */
@@ -629,6 +631,20 @@ export interface StringForkContent {
 }
 
 /** 教学比赛微课堂：字符串切片的专用可视化场景 */
+export interface BranchContestContent {
+  mode:
+    | 'cover'
+    | 'conflict'
+    | 'trace'
+    | 'elif'
+    | 'lab'
+    | 'extend'
+    | 'values'
+    | 'summary'
+    | 'homework'
+    | 'thanks';
+}
+
 export interface StringSliceContent {
   mode:
     | 'cover'
@@ -658,6 +674,14 @@ export interface MarkedSpan {
 
 export interface SceneContent {
   headline?: string;
+  /** 点击右侧逐条出现，顺序即出现顺序 */
+  clickLines?: string[];
+  /** 两列表头对照，如自然语言与 Python 条件 */
+  compareTable?: {
+    leftHeader: string;
+    rightHeader: string;
+    rows: { left: string; right: string }[];
+  };
   body?: string;
   question?: string;
   bulletPoints?: string[];
@@ -677,6 +701,10 @@ export interface SceneContent {
   promptQuote?: string;
   emoji?: string;
   image?: SceneImage;
+  /** 投屏图片网格，按顺序排列 */
+  gallery?: SceneImage[];
+  /** 点击 from 后，用对应颜色连线到 to */
+  galleryLinks?: GalleryLink[];
   infoCards?: InfoCard[];
   schedule?: ScheduleBlock[];
   gradeItems?: GradeItem[];
@@ -735,6 +763,7 @@ export interface SceneContent {
   stringFork?: StringForkContent;
   codeBeats?: CodeBeatsContent;
   stringSlice?: StringSliceContent;
+  branchContest?: BranchContestContent;
 }
 
 export interface SceneCode {
@@ -757,6 +786,10 @@ export interface Scene {
   partId?: string;
   type: SceneType;
   layout: LayoutMode;
+  /** split 时编辑器位置。默认在右侧。 */
+  editorSide?: 'left' | 'right';
+  /** 只显示代码编辑器，不显示右侧讲稿。 */
+  editorOnly?: boolean;
   content: SceneContent;
   code?: SceneCode;
   prediction?: PredictionConfig;

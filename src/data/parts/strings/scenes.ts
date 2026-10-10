@@ -3,19 +3,6 @@ import type { DraftScene } from "../../../types/scene";
 /** 第 2 讲字符串：先掌握一排字符，再整理成一张确认单。不能改其中一格，要留下就改指向。 */
 export const scenes: DraftScene[] = [
   {
-    id: "scene-str-01",
-    type: "run",
-    layout: "split",
-    content: {
-      headline: "两种加号",
-    },
-    code: {
-      initial: 'print(1 + 2)\nprint("1" + "2")\nprint(type(1))\nprint(type("1"))',
-      editable: true,
-      resetToInitial: true,
-    },
-  },
-  {
     id: "scene-str-02",
     type: "run",
     layout: "split",

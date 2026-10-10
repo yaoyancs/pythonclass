@@ -6,7 +6,7 @@ export function OutputPanel() {
 
   if (!output) {
     return (
-      <div className="shrink-0 min-h-[128px] rounded-2xl bg-code-bg p-5">
+      <div className="h-full min-h-[128px] rounded-2xl bg-code-bg p-5">
         <p className="text-code-muted text-sm uppercase tracking-[0.18em] mb-2">输出</p>
         <p className="text-code-muted italic">运行代码后，输出将显示在这里</p>
       </div>
@@ -17,7 +17,7 @@ export function OutputPanel() {
   const errorText = output.error ? output.stderr || output.error.message : '';
 
   return (
-    <div className="shrink-0 min-h-[128px] rounded-2xl bg-code-bg p-5 space-y-3">
+    <div className="h-full min-h-[128px] space-y-3 rounded-2xl bg-code-bg p-5">
       <p className="text-code-muted text-sm uppercase tracking-[0.18em]">输出</p>
 
       {output.stdout && (

@@ -25,6 +25,7 @@ export function KeyboardShortcuts({
       switch (e.key) {
         case 'ArrowLeft':
           e.preventDefault();
+          if (window.__pyclassStageRetreat?.()) break;
           dispatch({ type: 'PREV_SCENE' });
           break;
         case 'ArrowRight':

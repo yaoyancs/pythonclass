@@ -9,13 +9,13 @@ interface Props {
 }
 
 export function StringTemplateStage({ content, sceneId }: Props) {
-  const { state, dispatch } = useSceneEngine();
+  const { dispatch } = useSceneEngine();
   const { phase, advance, done } = useStageAdvance(sceneId, 2);
 
   useEffect(() => {
-    if (phase < 2 || state.sceneLocal.code === content.formatCode) return;
+    if (phase < 2) return;
     dispatch({ type: 'UPDATE_CODE', code: content.formatCode });
-  }, [phase, content.formatCode, state.sceneLocal.code, dispatch]);
+  }, [phase, content.formatCode, dispatch]);
 
   return (
     <div

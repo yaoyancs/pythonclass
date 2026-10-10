@@ -2,6 +2,7 @@ import type { Lesson } from '../../types/scene';
 import { lectureMetaFromSpec, type LectureMeta } from '../course';
 import { buildAllLessons, CURRENT_OFFERING } from '../offerings';
 import { stringSlicingLesson } from './stringSlicing';
+import { branchContestLesson } from './branchContest';
 
 /** 首页与跳转讲次列表（来自当前学期开课表） */
 export const LECTURES: LectureMeta[] = CURRENT_OFFERING.lectures.map(lectureMetaFromSpec);
@@ -10,6 +11,7 @@ export const LECTURES: LectureMeta[] = CURRENT_OFFERING.lectures.map(lectureMeta
 export const LESSONS: Record<string, Lesson> = {
   ...buildAllLessons(),
   [stringSlicingLesson.id]: stringSlicingLesson,
+  [branchContestLesson.id]: branchContestLesson,
 };
 
 export function getLessonById(id: string): Lesson | undefined {

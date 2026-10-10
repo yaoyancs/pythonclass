@@ -20,13 +20,9 @@ export function TeacherUnlockPanel({ busy, error, onSubmit, onClose }: TeacherUn
   };
 
   return (
-    <TeacherPanel title="解锁教师台" onClose={onClose} initialWidth={420} initialHeight={320}>
-      <p className="text-text-secondary text-base">
-        请输入教师 PIN。请勿在投影上输入；教室 Wi‑Fi 下连续输错过多会暂时锁定该出口 IP。
-      </p>
-      <form className="mt-6 flex flex-col gap-4" onSubmit={submit}>
+    <TeacherPanel title="解锁教师台" onClose={onClose} initialWidth={420} initialHeight={280}>
+      <form className="flex flex-col gap-4" onSubmit={submit}>
         <label className="flex flex-col gap-2 text-sm text-text-secondary">
-          PIN
           <div className="relative">
             <input
               type="password"
