@@ -18,7 +18,9 @@ export function publishBeatPhase(phase: number) {
 
 export function subscribeBeatPhase(listener: () => void) {
   beatPhaseListeners.add(listener);
-  return () => beatPhaseListeners.delete(listener);
+  return () => {
+    beatPhaseListeners.delete(listener);
+  };
 }
 
 export function getBeatPhase() {

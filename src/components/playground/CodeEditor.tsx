@@ -12,6 +12,8 @@ interface CodeEditorProps {
   activeLine?: number;
   lineNote?: string;
   fontSize?: number;
+  /** 实验页当前行用荧光高亮。 */
+  fluo?: boolean;
   /** 第 8 页小结：代码整段用黄色。 */
   yellow?: boolean;
 }

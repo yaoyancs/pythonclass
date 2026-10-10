@@ -40,16 +40,6 @@ elif item == "旧报纸":
 else:
     print("暂未收录")`;
 
-const FULL = `item = input("请输入垃圾名称：")
-if item == "香蕉皮":
-    print("厨余垃圾")
-elif item == "旧报纸":
-    print("可回收物")
-elif item == "用过的纸巾":
-    print("其他垃圾")
-else:
-    print("暂未收录，请查询分类指南")`;
-
 interface BranchStep {
   label: string;
   result: '执行' | '跳过' | '不成立';

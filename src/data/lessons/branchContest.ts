@@ -3,9 +3,6 @@ import type { DraftScene, Lesson, Scene } from '../../types/scene';
 const BROKEN =
   'item = "香蕉皮"\nif item == "香蕉皮":\n    print("厨余垃圾")\nif item == "旧报纸":\n    print("可回收物")\nelse:\n    print("暂未收录")';
 
-const FIXED =
-  'item = "香蕉皮"\nif item == "香蕉皮":\n    print("厨余垃圾")\nelif item == "旧报纸":\n    print("可回收物")\nelse:\n    print("暂未收录")';
-
 const DRONE_WRONG =
   'distance = 1\nif distance <= 5:\n    print("减速并监测")\nelif distance <= 2:\n    print("紧急停止")\nelse:\n    print("继续前进")\nprint("避障决策完成。")';
 
