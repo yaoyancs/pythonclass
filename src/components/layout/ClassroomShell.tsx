@@ -5,6 +5,7 @@ import { ClassroomHeader } from './ClassroomHeader';
 import { ClassroomFooter } from './ClassroomFooter';
 import { TeachingStage } from '../stage/TeachingStage';
 import { PythonPlayground } from '../playground/PythonPlayground';
+import { PairedPlayground } from '../playground/PairedPlayground';
 import { KeyboardShortcuts } from '../controls/KeyboardShortcuts';
 import { AnnotationCanvas } from '../controls/AnnotationCanvas';
 
@@ -16,6 +17,7 @@ export function ClassroomShell() {
   useLessonAnalytics();
   const { dispatch, scene } = useSceneEngine();
   const editorOnly = Boolean(scene.editorOnly);
+  const paired = Boolean(scene.pairedCode);
   const isFullscreenLayout = scene.layout === 'fullscreen' && !editorOnly;
   const editorLeft = scene.editorSide === 'left';
   const mainRef = useRef<HTMLElement>(null);
@@ -91,7 +93,22 @@ export function ClassroomShell() {
             : { gridTemplateColumns: editorLeft ? `${100 - rightPct}% 6px ${rightPct}%` : `minmax(0, 1fr) 6px ${rightPct}%` }
         }
       >
-        {editorOnly ? (
+        {paired && !isFullscreenLayout ? (
+          <>
+            <div className="min-h-0 overflow-hidden">
+              <PythonPlayground />
+            </div>
+            <Splitter
+              isDragging={isDragging}
+              rightPct={rightPct}
+              setRightPct={setRightPct}
+              onPointerDown={handleSplitterPointerDown}
+            />
+            <div className="min-h-0 overflow-hidden">
+              <PairedPlayground />
+            </div>
+          </>
+        ) : editorOnly ? (
           <div className="min-h-0 overflow-hidden">
             <PythonPlayground />
           </div>

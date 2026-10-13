@@ -25,7 +25,13 @@ function applyHomework(scenes: Scene[], spec: LectureSpec): void {
   if (!homework) return;
   for (let i = 0; i < scenes.length; i++) {
     const scene = scenes[i]!;
-    if (scene.content.headline !== "课后作业") continue;
+    if (
+      scene.content.headline !== "课后作业" &&
+      scene.content.conditionPath?.mode !== "homework" &&
+      scene.content.loopPath?.mode !== "homework"
+    ) {
+      continue;
+    }
     scenes[i] = {
       ...scene,
       content: {

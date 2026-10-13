@@ -36,7 +36,12 @@ export function lectureHomeworkPath(id: string): string {
 }
 
 export function findHomeworkSceneIndex(lesson: Lesson): number {
-  return lesson.scenes.findIndex((scene) => scene.content.headline === '课后作业');
+  return lesson.scenes.findIndex(
+    (scene) =>
+      scene.content.headline === '课后作业' ||
+      scene.content.conditionPath?.mode === 'homework' ||
+      scene.content.loopPath?.mode === 'homework',
+  );
 }
 
 export function displaySubtitle(meta: Pick<LectureMeta, 'number' | 'title'>): string {

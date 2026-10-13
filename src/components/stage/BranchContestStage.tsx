@@ -293,7 +293,7 @@ function Conflict() {
         </div>
         {picked && (
           <p className={`mt-5 text-xl font-semibold ${picked.correct ? 'text-accent' : 'text-error'}`}>
-            {picked.correct ? '选对了。输出是两行。' : '再看左侧代码。答案是 B。'}
+            {picked.correct ? '输出两行。第二个 if 仍会判断，条件为 False，于是执行 else。' : '再看左侧代码。答案是 B。'}
           </p>
         )}
       </div>
@@ -310,7 +310,7 @@ interface TraceView {
 let traceView: TraceView = { prints: [] };
 const traceListeners = new Set<() => void>();
 
-function emitTrace(next: TraceView) {
+export function emitTrace(next: TraceView) {
   traceView = next;
   traceListeners.forEach((listener) => listener());
 }
@@ -373,7 +373,7 @@ function TracePanel() {
         </pre>
       )}
       {started && phase >= frames.length && frames.length > 0 && (
-        <p className="mt-4 text-2xl font-semibold text-violet-600">两个独立 if ≠ 一个多分支选择结构</p>
+        <p className="mt-4 text-2xl font-semibold text-violet-600">第一个条件成立后，后面的独立 if 仍会判断。</p>
       )}
     </div>
   );
@@ -381,16 +381,10 @@ function TracePanel() {
 
 const ELIF_SYNTAX = `if 条件1:
     语句块1
-elif 条件2: # elif理解为“否则，如果”
+elif 条件2:
     语句块2
-elif 条件3:
-    语句块3
-elif 条件4:
-    语句块4
-elif 条件5:
-    语句块5
 else:
-    默认语句块`;
+    语句块3`;
 
 function ElifFix({ sceneId }: { sceneId: string }) {
   const { dispatch } = useSceneEngine();
@@ -409,7 +403,7 @@ function ElifFix({ sceneId }: { sceneId: string }) {
       {phase === 0 && (
         <>
           <p className="text-2xl leading-relaxed text-text-primary">
-            如果我们希望程序找到一个合适的分类后，就不再继续判断，应该怎么修改？
+            某个条件成立后不再判断其余条件，使用 elif。
           </p>
           <button type="button" className="mt-8 text-lg font-semibold text-accent" onClick={advance}>
             下一步
@@ -418,8 +412,9 @@ function ElifFix({ sceneId }: { sceneId: string }) {
       )}
       {phase >= 1 && (
         <div>
-          <p className="text-2xl font-semibold text-text-primary">多分支语法</p>
+          <p className="text-2xl font-semibold text-text-primary">if ... elif ... else</p>
           <pre className="mt-4 whitespace-pre-wrap font-mono text-lg leading-8 text-text-primary">{ELIF_SYNTAX}</pre>
+          <p className="mt-4 text-xl text-text-secondary">自上而下判断。某个条件成立后，其余分支不再判断。elif 表示「否则，如果」。</p>
         </div>
       )}
     </div>

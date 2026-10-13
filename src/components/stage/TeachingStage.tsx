@@ -72,6 +72,8 @@ import { StringIdeaStage } from './StringIdeaStage';
 import { StringForkStage } from './StringForkStage';
 import { StringSliceStage } from './StringSliceStage';
 import { BranchContestStage } from './BranchContestStage';
+import { ConditionPathStage } from './ConditionPathStage';
+import { LoopPathStage } from './LoopPathStage';
 import { CodeBeatsStage } from './CodeBeatsStage';
 
 export function TeachingStage() {
@@ -142,6 +144,8 @@ export function TeachingStage() {
       content.stringFork ||
       content.stringSlice ||
       content.branchContest ||
+      content.conditionPath ||
+      content.loopPath ||
       content.codeBeats,
   );
   const hasSideImage = Boolean(content.image);
@@ -489,6 +493,10 @@ export function TeachingStage() {
             {content.branchContest && (
               <BranchContestStage content={content.branchContest} sceneId={scene.id} />
             )}
+            {content.conditionPath && (
+              <ConditionPathStage content={content.conditionPath} sceneId={scene.id} />
+            )}
+            {content.loopPath && <LoopPathStage content={content.loopPath} sceneId={scene.id} />}
             {content.codeBeats && (
               <CodeBeatsStage content={content.codeBeats} sceneId={scene.id} onPhase={setBeatPhase} />
             )}

@@ -20,11 +20,19 @@ import { scenes as campusLife02 } from "./campus-life-02/scenes";
 import { scenes as conclusionHomework } from "./conclusion-homework/scenes";
 import { scenes as wasteAsk } from "./waste-ask/scenes";
 import { scenes as wasteBranch } from "./waste-branch/scenes";
+import { scenes as wasteDual } from "./waste-dual/scenes";
 import { scenes as wasteElif } from "./waste-elif/scenes";
 import { scenes as weatherBool } from "./weather-bool/scenes";
 import { scenes as weatherNest } from "./weather-nest/scenes";
-import { scenes as passwordLab } from "./password-lab/scenes";
+import { scenes as wasteTernary } from "./waste-ternary/scenes";
 import { scenes as lesson03Close } from "./lesson03-close/scenes";
+import { scenes as loopWhy } from "./loop-why/scenes";
+import { scenes as loopWhile } from "./loop-while/scenes";
+import { scenes as loopFor } from "./loop-for/scenes";
+import { scenes as loopAcc } from "./loop-acc/scenes";
+import { scenes as loopJump } from "./loop-jump/scenes";
+import { scenes as loopNest } from "./loop-nest/scenes";
+import { scenes as lesson04Close } from "./lesson04-close/scenes";
 
 /** 全课知识块仓库：开课表通过 ref 引用 */
 export const PARTS: Record<string, ContentPart> = {
@@ -49,11 +57,19 @@ export const PARTS: Record<string, ContentPart> = {
   "conclusion-homework": { id: "conclusion-homework", scenes: conclusionHomework },
   "waste-ask": { id: "waste-ask", scenes: wasteAsk },
   "waste-branch": { id: "waste-branch", scenes: wasteBranch },
+  "waste-dual": { id: "waste-dual", scenes: wasteDual },
   "waste-elif": { id: "waste-elif", scenes: wasteElif },
   "weather-bool": { id: "weather-bool", scenes: weatherBool },
   "weather-nest": { id: "weather-nest", scenes: weatherNest },
-  "password-lab": { id: "password-lab", scenes: passwordLab },
+  "waste-ternary": { id: "waste-ternary", scenes: wasteTernary },
   "lesson03-close": { id: "lesson03-close", scenes: lesson03Close },
+  "loop-why": { id: "loop-why", scenes: loopWhy },
+  "loop-while": { id: "loop-while", scenes: loopWhile },
+  "loop-for": { id: "loop-for", scenes: loopFor },
+  "loop-acc": { id: "loop-acc", scenes: loopAcc },
+  "loop-jump": { id: "loop-jump", scenes: loopJump },
+  "loop-nest": { id: "loop-nest", scenes: loopNest },
+  "lesson04-close": { id: "lesson04-close", scenes: lesson04Close },
 };
 
 export function getPart(ref: string): ContentPart {

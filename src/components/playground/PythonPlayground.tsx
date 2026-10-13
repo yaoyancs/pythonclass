@@ -9,6 +9,8 @@ import { OutputPanel } from './OutputPanel';
 import { EngineStatus } from './EngineStatus';
 import { InputPrompt } from './InputPrompt';
 import { useExecTrace } from '../stage/BranchContestStage';
+import { PredictPanel } from '../stage/PredictPanel';
+import { RevealPanel } from '../stage/RevealPanel';
 
 export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
   const { state, dispatch, scene } = useSceneEngine();
@@ -20,9 +22,11 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
 
   const runEnabled = canRun(scene, state, isReady);
   const trace = useExecTrace();
-  const mode = scene.content.branchContest?.mode;
-  const tracing = mode === 'trace' || mode === 'lab' || mode === 'extend';
-  const hideRun = mode === 'trace' || mode === 'lab';
+  const mode = scene.content.branchContest?.mode ?? scene.content.conditionPath?.mode;
+  const tracing = mode === 'trace' || mode === 'lab' || mode === 'extend' || mode === 'walk';
+  const hideRun = scene.content.branchContest
+    ? mode === 'trace' || mode === 'lab'
+    : scene.content.conditionPath?.mode === 'lab' || scene.content.conditionPath?.mode === 'walk';
 
   const handleRun = useCallback(async () => {
     if (!runEnabled) return;
@@ -80,18 +84,27 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
   }
 
   const locked = (scene.prediction || scene.requiresPrediction) && !state.sceneLocal.predictionSubmitted;
-  const hideEditorHeading = state.lessonId === 'lesson03' || state.lessonId === 'branch-contest';
+  const hideEditorHeading =
+    state.lessonId === 'lesson03' || state.lessonId === 'lesson04' || state.lessonId === 'branch-contest';
 
   return (
     <section className={embedded ? 'flex h-full min-h-0 flex-col overflow-hidden' : 'grid h-full place-items-center overflow-hidden px-10 py-10'}>
       {/* 卡片包裹内容并垂直居中，代码少时不被拉伸成大片空白 */}
       <div className={`flex w-full flex-col gap-5 overflow-y-auto rounded-3xl bg-classroom-stage shadow-card ${embedded ? 'h-full min-h-0 p-5' : 'max-h-full p-7'}`}>
-        <div className={`flex items-center ${hideEditorHeading ? 'justify-end' : 'justify-between'}`}>
-          {!hideEditorHeading && (
+        {scene.pairedCode && (
+          <>
+            <PredictPanel />
+            <RevealPanel />
+          </>
+        )}
+        <div className={`flex items-center ${hideEditorHeading && !scene.pairedCode ? 'justify-end' : 'justify-between'}`}>
+          {scene.pairedCode ? (
+            <h3 className="text-xl font-semibold text-text-primary">{scene.pairedCode.peerLabel}</h3>
+          ) : !hideEditorHeading ? (
             <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-text-secondary">
               代码练习区
             </h3>
-          )}
+          ) : null}
           <EngineStatus />
         </div>
 
@@ -99,7 +112,7 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
           activeLine={tracing ? trace.line : undefined}
           lineNote={tracing ? trace.note : undefined}
           fontSize={24}
-          fluo={scene.content.branchContest?.mode === 'lab'}
+          fluo={mode === 'lab'}
           yellow={mode === 'summary'}
           onFocusChange={(focused) => dispatch({ type: 'SET_EDITOR_FOCUSED', value: focused })}
         />

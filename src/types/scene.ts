@@ -645,6 +645,55 @@ export interface BranchContestContent {
     | 'thanks';
 }
 
+/** 第 3 讲各知识点：与多分支竞赛同一套课堂节奏 */
+export interface ConditionPathContent {
+  topic: 'expr' | 'branch' | 'bool' | 'nest' | 'close' | 'check' | 'elif' | 'dual';
+  mode:
+    | 'cover'
+    | 'conflict'
+    | 'trace'
+    | 'syntax'
+    | 'lab'
+    | 'dual'
+    | 'extend'
+    | 'practice'
+    | 'walk'
+    | 'values'
+    | 'summary'
+    | 'homework'
+    | 'thanks'
+    | 'panel'
+    | 'and'
+    | 'or'
+    | 'not'
+    | 'debug'
+    | 'ternary'
+    | 'challenge'
+    | 'life'
+    | 'bool'
+    | 'combine'
+    | 'review'
+    | 'meet'
+    | 'indent'
+    | 'quiz'
+    | 'gap'
+    | 'paths'
+    | 'compare'
+    | 'elseBug'
+    | 'meaning'
+    | 'precedence'
+    | 'cmpBool'
+    | 'short'
+    | 'truthy'
+    | 'operand'
+    | 'essence'
+    | 'choose'
+    | 'chain'
+    | 'oneSide'
+    | 'assign'
+    | 'inputStr';
+}
+
 export interface StringSliceContent {
   mode:
     | 'cover'
@@ -764,6 +813,14 @@ export interface SceneContent {
   codeBeats?: CodeBeatsContent;
   stringSlice?: StringSliceContent;
   branchContest?: BranchContestContent;
+  conditionPath?: ConditionPathContent;
+  loopPath?: LoopPathContent;
+}
+
+/** 第 4 讲：循环。topic 是知识块，mode 是这一页的课堂动作。 */
+export interface LoopPathContent {
+  topic: 'why' | 'while' | 'for' | 'acc' | 'jump' | 'nest' | 'close';
+  mode: string;
 }
 
 export interface SceneCode {
@@ -790,6 +847,8 @@ export interface Scene {
   editorSide?: 'left' | 'right';
   /** 只显示代码编辑器，不显示右侧讲稿。 */
   editorOnly?: boolean;
+  /** 右侧再放一个独立编辑器，与左侧代码对照。 */
+  pairedCode?: { label: string; peerLabel: string; initial: string };
   content: SceneContent;
   code?: SceneCode;
   prediction?: PredictionConfig;

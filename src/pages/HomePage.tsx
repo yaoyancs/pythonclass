@@ -110,7 +110,21 @@ export function HomePage() {
               <span className="mx-3 text-classroom-border">·</span>
               共 {COURSE.totalLectures} 讲
               <span className="mx-3 text-classroom-border">·</span>
-              {COURSE.practiceNote}
+              {COURSE.practiceNote.split(/(PTA)/).map((part, index) =>
+                part === 'PTA' ? (
+                  <a
+                    key={index}
+                    href="https://pintia.cn/home"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-accent hover:underline underline-offset-4"
+                  >
+                    PTA
+                  </a>
+                ) : (
+                  part
+                ),
+              )}
               <span className="mx-3 text-classroom-border">·</span>
               <Link to="/outline" className="text-accent hover:underline underline-offset-4">
                 教学日历
