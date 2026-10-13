@@ -691,7 +691,8 @@ export interface ConditionPathContent {
     | 'chain'
     | 'oneSide'
     | 'assign'
-    | 'inputStr';
+    | 'inputStr'
+    | 'inputItem';
 }
 
 export interface StringSliceContent {

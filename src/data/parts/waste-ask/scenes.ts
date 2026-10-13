@@ -122,6 +122,17 @@ export const scenes: DraftScene[] = [
     code: code('if "香蕉皮":\n    print("非空字符串当作真")\nif "":\n    print("空字符串当作真")\nelse:\n    print("空字符串当作假")\nif 0:\n    print("0 当作真")\nelse:\n    print("0 当作假")'),
   },
   {
+    id: "scene-expr-input-item",
+    title: "输入处理",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: { conditionPath: { topic: "expr", mode: "inputItem" } },
+    code: code(
+      'item = input("请输入垃圾名称：")\n\nif item:\n    print("已收到输入，准备进行分类")\nelse:\n    print("你还没有输入垃圾名称")',
+    ),
+  },
+  {
     id: "scene-expr-operand",
     title: "真假决定去留，返回操作数",
     type: "explain",

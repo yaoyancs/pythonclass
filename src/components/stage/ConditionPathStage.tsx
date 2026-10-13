@@ -120,12 +120,8 @@ function ExprLife() {
   );
 }
 
-function ExprBool({ sceneId }: { sceneId: string }) {
+function ExprBool() {
   const { dispatch } = useSceneEngine();
-  const { phase, advance } = useStageAdvance(sceneId, 1);
-  const item: string = '香蕉皮';
-  const first = item === '香蕉皮';
-  const second = item === '易拉罐';
   const base = `item = "香蕉皮"\nprint(item == "香蕉皮")\nprint(item == "易拉罐")`;
   useEffect(() => {
     dispatch({ type: 'UPDATE_CODE', code: base, clearOutput: true });
@@ -133,34 +129,10 @@ function ExprBool({ sceneId }: { sceneId: string }) {
   return (
     <div>
       <h2 className="title-stage text-3xl text-text-primary">比较表达式的值</h2>
-      {phase === 0 && (
-        <Choice
-          question='item 的值是「香蕉皮」。两行 print 依次输出什么？'
-          options={[
-            { id: 'tf', label: 'True，然后 False', correct: true },
-            { id: 'ft', label: 'False，然后 True', correct: false },
-            { id: 'tt', label: '都是 True', correct: false },
-          ]}
-          okText="比较表达式的值是布尔值：成立为 True，不成立为 False。"
-          badText="第一行比较的是香蕉皮，第二行比较的是易拉罐。"
-        />
-      )}
-      {phase >= 1 && (
-        <ul className="mt-5 space-y-3 text-xl">
-          <li className="flex justify-between rounded-2xl bg-white px-4 py-3">
-            <span className="font-mono">item == "香蕉皮"</span>
-            <span className="font-semibold text-accent">{String(first)}</span>
-          </li>
-          <li className="flex justify-between rounded-2xl bg-white px-4 py-3">
-            <span className="font-mono">item == "易拉罐"</span>
-            <span className="font-semibold text-highlight">{String(second)}</span>
-          </li>
-        </ul>
-      )}
-      {phase >= 1 && (
-        <p className="mt-5 text-2xl font-semibold text-violet-600">比较表达式的值是 True 或 False。</p>
-      )}
-      {phase === 0 && <Next onClick={advance}>运行并对照</Next>}
+      <ul className="mt-5 space-y-3 text-xl">
+        <li className="rounded-2xl bg-white px-4 py-3 font-mono">item == "香蕉皮"</li>
+        <li className="rounded-2xl bg-white px-4 py-3 font-mono">item == "易拉罐"</li>
+      </ul>
     </div>
   );
 }
@@ -236,9 +208,9 @@ function ExprCombine() {
   return (
     <div>
       <h2 className="title-stage text-3xl text-text-primary">运算顺序</h2>
-      <p className="mt-3 text-xl text-text-secondary">not 先于 and，and 先于 or。括号中的表达式先计算。</p>
+      <p className="mt-3 text-xl text-text-secondary">not 先于 and，and 先于 or。</p>
       <Choice
-        question="is_banana 为 True，is_can 与 is_paper 为 False。is_banana and not (is_can or is_paper) 的值是？"
+        question="is_banana and not (is_can or is_paper) 的值是？"
         options={[
           { id: 'true', label: 'True', correct: true },
           { id: 'false', label: 'False', correct: false },
@@ -294,6 +266,14 @@ function ExprTruthy() {
         okText="非空字符串、非零数字当作真。空字符串和 0 当作假。"
         badText="先运行左侧，看哪一句 print 出现了。"
       />
+    </div>
+  );
+}
+
+function ExprInputItem() {
+  return (
+    <div>
+      <h2 className="title-stage text-3xl text-text-primary">为什么这里可以直接写 if item:，而不必写 if item != ""？</h2>
     </div>
   );
 }
@@ -555,6 +535,8 @@ function BranchTrace({ sceneId }: { sceneId: string }) {
 }
 
 function ExprChain() {
+  const { state } = useSceneEngine();
+  const ran = state.sceneLocal.runCount > 0;
   return (
     <div>
       <h2 className="title-stage text-3xl text-text-primary">连着写，和拆开写一样吗？</h2>
@@ -567,6 +549,13 @@ function ExprChain() {
         okText="链式比较就是两项比较用 and 连起来。18 既不小于 15，也小于 30。"
         badText="先看 18 是否大于等于 15，再看它是否小于 30。"
       />
+      {ran && (
+        <p className="mt-5 text-xl font-semibold leading-relaxed text-error">
+          链式比较：适合表达“一个数在某个区间内”。
+          <br />
+          and逻辑运算：适合表达“多个条件必须同时满足”。
+        </p>
+      )}
     </div>
   );
 }
@@ -591,7 +580,6 @@ function ExprOneSide() {
 function BranchAssign() {
   return (
     <div>
-      <h2 className="title-stage text-3xl text-text-primary">条件里写成一个等号</h2>
       <Choice
         question="if battery = 15 能运行吗？"
         options={[
@@ -1606,7 +1594,7 @@ export function ConditionPathStage({ content, sceneId }: Props) {
   const { topic, mode } = content;
   if (topic === 'expr') {
     if (mode === 'life') return <ExprLife />;
-    if (mode === 'bool') return <ExprBool sceneId={sceneId} />;
+    if (mode === 'bool') return <ExprBool />;
     if (mode === 'and') return <ExprAnd />;
     if (mode === 'or') return <ExprOr />;
     if (mode === 'not') return <ExprNot />;
@@ -1616,6 +1604,7 @@ export function ConditionPathStage({ content, sceneId }: Props) {
     if (mode === 'oneSide') return <ExprOneSide />;
     if (mode === 'short') return <ExprShort sceneId={sceneId} />;
     if (mode === 'truthy') return <ExprTruthy />;
+    if (mode === 'inputItem') return <ExprInputItem />;
     if (mode === 'operand') return <ExprOperand sceneId={sceneId} />;
     if (mode === 'ternary') return <ExprTernary sceneId={sceneId} />;
     if (mode === 'essence') return <ExprEssence sceneId={sceneId} />;
