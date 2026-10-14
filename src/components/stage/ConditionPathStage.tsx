@@ -222,32 +222,148 @@ function ExprCombine() {
   );
 }
 
+const PRICE_AND = (count: number, swapped = false) =>
+  `total = 100\ncount = ${count}\n\nif ${
+    swapped ? 'total / count > 20 and count != 0' : 'count != 0 and total / count > 20'
+  }:\n    print("平均价格超过20元")\nelse:\n    print("不满足判断条件")`;
+
+const PRICE_OR = (count: number) =>
+  `total = 100\ncount = ${count}\n\nif count == 0 or total / count > 20:\n    print("需要进一步处理")\nelse:\n    print("平均价格不超过20元")`;
+
 function ExprShort({ sceneId }: { sceneId: string }) {
-  const { phase, advance } = useStageAdvance(sceneId, 1);
+  const { dispatch } = useSceneEngine();
+  const { phase, advance } = useStageAdvance(sceneId, 4);
+  const [swapped, setSwapped] = useState(true);
+  const [op, setOp] = useState<'and' | 'or'>('and');
+  const [count, setCount] = useState(0);
+  const code =
+    phase <= 1
+      ? PRICE_AND(0)
+      : phase === 2
+        ? PRICE_OR(0)
+        : phase === 3
+          ? PRICE_AND(0, swapped)
+          : op === 'and'
+            ? PRICE_AND(count)
+            : PRICE_OR(count);
+
+  useEffect(() => {
+    dispatch({ type: 'UPDATE_CODE', code, clearOutput: true });
+  }, [code, dispatch]);
+
   return (
     <div>
-      <h2 className="title-stage text-3xl text-text-primary">右边还会执行吗？</h2>
+      <h2 className="title-stage text-3xl text-text-primary">
+        {phase <= 1 ? '计算平均价格：为什么没有报错？' : phase === 2 ? 'or：左边为真，还要算第二个吗？' : phase === 3 ? '交换两个条件的顺序' : '短路求值实验室'}
+      </h2>
       {phase === 0 && (
         <Choice
-          question='False and print("执行了") 会打印「执行了」吗？'
+          question="count = 0，条件里写了 total / count。运行后会报错吗？"
           options={[
-            { id: 'no', label: '不会', correct: true },
-            { id: 'yes', label: '会', correct: false },
+            { id: 'no', label: '不会报错', correct: true },
+            { id: 'yes', label: '会报 ZeroDivisionError', correct: false },
           ]}
-          okText="and 的左边已经是 False，右边不再计算。"
-          badText="先看左边：False 已经能决定 and 的结果。"
+          okText="先运行左边。输出是「不满足判断条件」，没有除零错误。"
+          badText="先预测，再运行。看输出是普通文字，还是 ZeroDivisionError。"
         />
       )}
-      {phase >= 1 && (
+      {phase === 1 && (
+        <ol className="mt-4 space-y-3 text-xl">
+          <li className="rounded-2xl bg-white px-4 py-3">1. count != 0 → False</li>
+          <li className="rounded-2xl bg-white px-4 py-3 text-text-secondary line-through">2. total / count &gt; 20 → 跳过，不做 100 ÷ 0</li>
+          <li className="rounded-2xl bg-white px-4 py-3">整个条件是 False，执行 else</li>
+        </ol>
+      )}
+      {phase === 2 && (
         <div>
-          <ul className="mt-4 space-y-3 text-xl">
-            <li className="rounded-2xl bg-white px-4 py-3">False and … ：左边为假，右边不执行。</li>
-            <li className="rounded-2xl bg-white px-4 py-3">True or … ：左边为真，右边不执行。</li>
-          </ul>
-          <p className="mt-5 text-xl font-semibold text-violet-600">用左边的真假决定右边还要不要算。</p>
+          <p className="mt-3 text-xl text-text-secondary">数量为 0，或者平均价格超过 20 元，都要进一步处理。</p>
+          <ol className="mt-4 space-y-3 text-xl">
+            <li className="rounded-2xl bg-white px-4 py-3">1. count == 0 → True</li>
+            <li className="rounded-2xl bg-white px-4 py-3 text-text-secondary line-through">2. total / count &gt; 20 → 跳过</li>
+            <li className="rounded-2xl bg-white px-4 py-3">结果已经为真，执行 if，输出「需要进一步处理」</li>
+          </ol>
         </div>
       )}
-      {phase < 1 && <Next onClick={advance}>再看 or</Next>}
+      {phase === 3 && (
+        <div>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setSwapped(false)}
+              className={`rounded-2xl border px-3 py-3 text-lg ${!swapped ? 'border-accent bg-accent-muted' : 'border-classroom-border bg-white'}`}
+            >
+              先判断，再除
+            </button>
+            <button
+              type="button"
+              onClick={() => setSwapped(true)}
+              className={`rounded-2xl border px-3 py-3 text-lg ${swapped ? 'border-error bg-error/10' : 'border-classroom-border bg-white'}`}
+            >
+              先除，再判断
+            </button>
+          </div>
+          <div className="mt-4">
+            <Choice
+              key={String(swapped)}
+              question="count 仍是 0。这种顺序会报错吗？"
+              options={[
+                { id: 'yes', label: '会报错', correct: swapped },
+                { id: 'no', label: '不会报错', correct: !swapped },
+              ]}
+              okText={
+                swapped
+                  ? '会报 ZeroDivisionError。还没检查除数，就先做了除法。'
+                  : '不会报错。先确认 count != 0，再做除法。'
+              }
+              badText="先运行左边，看有没有 ZeroDivisionError。"
+            />
+          </div>
+        </div>
+      )}
+      {phase >= 4 && (
+        <div>
+          <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-classroom-playground p-1.5">
+            <button
+              type="button"
+              onClick={() => setOp('and')}
+              className={`rounded-xl py-3 text-lg font-semibold ${op === 'and' ? 'bg-white shadow-card' : 'text-text-secondary'}`}
+            >
+              and
+            </button>
+            <button
+              type="button"
+              onClick={() => setOp('or')}
+              className={`rounded-xl py-3 text-lg font-semibold ${op === 'or' ? 'bg-white shadow-card' : 'text-text-secondary'}`}
+            >
+              or
+            </button>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {[0, 2, 10].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setCount(n)}
+                className={`rounded-2xl border px-2 py-3 text-lg ${count === n ? 'border-accent bg-accent-muted' : 'border-classroom-border bg-white'}`}
+              >
+                {n} 件
+              </button>
+            ))}
+          </div>
+          <p className="mt-4 rounded-2xl bg-white px-4 py-3 font-mono text-lg">
+            {op === 'and' ? 'count != 0 and total / count > 20' : 'count == 0 or total / count > 20'}
+          </p>
+          <p className="mt-5 text-xl font-semibold text-violet-600">
+            and 遇假就停，or 遇真就停。停掉的是后面的表达式，不是整个程序。
+          </p>
+          <p className="mt-3 text-lg text-text-secondary">先确认前提，再做依赖这个前提的计算。短路不是用来把错误藏起来。</p>
+        </div>
+      )}
+      {phase < 4 && (
+        <Next onClick={advance}>
+          {phase === 0 ? '看执行过程' : phase === 1 ? '再看 or' : phase === 2 ? '交换条件顺序' : '自己改一改'}
+        </Next>
+      )}
     </div>
   );
 }

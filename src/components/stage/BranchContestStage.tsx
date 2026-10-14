@@ -553,7 +553,11 @@ else:
     print("继续前进")
 print("本次避障决策完成，继续执行后续任务。")`;
 
-function DroneScene() {
+function DroneScene({
+  lead,
+}: {
+  lead: [string, string, string];
+}) {
   const { state, dispatch } = useSceneEngine();
   const [intro, setIntro] = useState(true);
   const [running, setRunning] = useState(false);
@@ -595,9 +599,9 @@ function DroneScene() {
   if (intro) {
     return (
       <div className="flex h-full min-h-0 flex-col justify-center gap-6">
-        <p className="text-2xl leading-relaxed text-text-primary">刚才用 elif 解决了垃圾分类里重复判断的问题。</p>
-        <p className="text-2xl font-semibold leading-relaxed text-text-primary">掌握了 elif，程序就一定能作出正确选择吗？</p>
-        <p className="text-2xl leading-relaxed text-text-primary">接下来把同样的多分支用到要求更高的场景：无人机自主避障。</p>
+        <p className="text-2xl leading-relaxed text-text-primary">{lead[0]}</p>
+        <p className="text-2xl font-semibold leading-relaxed text-text-primary">{lead[1]}</p>
+        <p className="text-2xl leading-relaxed text-text-primary">{lead[2]}</p>
         <button type="button" className="text-left text-lg font-semibold text-accent" onClick={() => setIntro(false)}>
           进入避障
         </button>
@@ -857,7 +861,25 @@ export function BranchContestStage({ content, sceneId }: Props) {
     case 'lab':
       return <Lab />;
     case 'extend':
-      return <DroneScene />;
+      return (
+        <DroneScene
+          lead={[
+            '刚才用 elif 解决了垃圾分类里重复判断的问题。',
+            '掌握了 elif，程序就一定能作出正确选择吗？',
+            '接下来把同样的多分支用到要求更高的场景：无人机自主避障。',
+          ]}
+        />
+      );
+    case 'drone':
+      return (
+        <DroneScene
+          lead={[
+            '例 1 用多分支按商品编号选出一种商品。',
+            '条件都写对了，判断顺序不对，结果仍然会错。',
+            '例 2：无人机自主避障。',
+          ]}
+        />
+      );
     case 'values':
       return <Values />;
     case 'summary':

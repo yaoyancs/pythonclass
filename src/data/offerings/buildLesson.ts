@@ -1,8 +1,8 @@
 import type { DraftScene, LectureSpec, Lesson, Scene } from "../../types/scene";
 import { getPart } from "../parts";
 
-function subtitleFor(spec: Pick<LectureSpec, "number" | "title">): string {
-  return `第 ${spec.number} 讲 · ${spec.title}`;
+function subtitleFor(spec: Pick<LectureSpec, "number" | "title" | "label">): string {
+  return `第 ${spec.label ?? spec.number} 讲 · ${spec.title}`;
 }
 
 function finalizeScene(
@@ -50,7 +50,7 @@ function catalogScene(spec: LectureSpec): DraftScene {
     type: "explain",
     layout: "fullscreen",
     content: {
-      body: `第 ${spec.number} 讲 · ${spec.title}　共 ${spec.hours} 课时`,
+      body: `第 ${spec.label ?? spec.number} 讲 · ${spec.title}　共 ${spec.hours} 课时`,
       catalog: spec.parts.map((p) => ({ index: p.id, title: p.title })),
     },
   };

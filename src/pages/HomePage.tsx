@@ -3,12 +3,27 @@ import { useState } from 'react';
 import {
   COURSE,
   lectureHomeworkPath,
+  lectureLabel,
   lecturePath,
   type LectureMeta,
 } from '../data/course';
 import { LECTURES } from '../data/lessons';
 import { CURRENT_OFFERING } from '../data/offerings';
 import { HomeTeacherBar } from '../components/controls/HomeTeacherBar';
+
+function groupSharedNumber(lectures: LectureMeta[]): LectureMeta[][] {
+  const rows: LectureMeta[][] = [];
+  for (const lecture of lectures) {
+    const last = rows[rows.length - 1];
+    if (last && last[0]?.number === lecture.number) {
+      last.push(lecture);
+      last.sort((a, b) => Number(Boolean(a.label)) - Number(Boolean(b.label)));
+    } else {
+      rows.push([lecture]);
+    }
+  }
+  return rows;
+}
 
 function ReadyLectureLink({
   lecture,
@@ -36,7 +51,7 @@ function ReadyLectureLink({
               featured ? 'text-4xl' : 'text-2xl'
             }`}
           >
-            第 {lecture.number} 讲　{lecture.title}
+            第 {lectureLabel(lecture)} 讲　{lecture.title}
           </p>
         </div>
         <span className="text-accent text-xl shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
@@ -170,9 +185,17 @@ export function HomePage() {
           <section className="mt-8">
             <p className="text-sm font-semibold text-text-secondary mb-3">已讲完</p>
             <ol className="space-y-3">
-              {earlierReady.map((lecture) => (
-                <li key={lecture.id}>
-                  <ReadyLectureLink lecture={lecture} />
+              {groupSharedNumber(earlierReady).map((row) => (
+                <li key={row.map((lecture) => lecture.id).join('-')}>
+                  {row.length === 1 ? (
+                    <ReadyLectureLink lecture={row[0]!} />
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      {row.map((lecture) => (
+                        <ReadyLectureLink key={lecture.id} lecture={lecture} />
+                      ))}
+                    </div>
+                  )}
                 </li>
               ))}
             </ol>
@@ -192,7 +215,7 @@ export function HomePage() {
                     to={lecturePath(lecture.id)}
                     className="flex items-baseline gap-4 rounded-2xl border border-dashed border-classroom-border px-6 py-3 text-text-secondary hover:text-text-primary hover:border-accent/30 transition-colors"
                   >
-                    <span className="shrink-0">第 {lecture.number} 讲</span>
+                    <span className="shrink-0">第 {lectureLabel(lecture)} 讲</span>
                     <span className="title-stage">{lecture.title}</span>
                     <span className="text-sm">{lecture.blurb}</span>
                   </Link>

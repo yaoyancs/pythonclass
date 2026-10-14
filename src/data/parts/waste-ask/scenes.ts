@@ -110,7 +110,9 @@ export const scenes: DraftScene[] = [
     layout: "split",
     editorSide: "left",
     content: { conditionPath: { topic: "expr", mode: "short" } },
-    code: code('print(False and print("执行了"))\nprint(True or print("执行了"))'),
+    code: code(
+      'total = 100\ncount = 0\n\nif count != 0 and total / count > 20:\n    print("平均价格超过20元")\nelse:\n    print("不满足判断条件")',
+    ),
   },
   {
     id: "scene-expr-truthy",

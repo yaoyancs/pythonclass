@@ -23,7 +23,13 @@ export interface LectureMeta {
   hours: number;
   /** 是否已有可上课内容；false 时进入占位页 */
   ready: boolean;
+  /** 封面显示的讲次编号，缺省用 number */
+  label?: string;
   homework?: LectureHomework;
+}
+
+export function lectureLabel(meta: Pick<LectureMeta, 'number' | 'label'>): string {
+  return meta.label ?? String(meta.number);
 }
 
 export function lecturePath(id: string): string {
@@ -44,8 +50,8 @@ export function findHomeworkSceneIndex(lesson: Lesson): number {
   );
 }
 
-export function displaySubtitle(meta: Pick<LectureMeta, 'number' | 'title'>): string {
-  return `第 ${meta.number} 讲 · ${meta.title}`;
+export function displaySubtitle(meta: Pick<LectureMeta, 'number' | 'title' | 'label'>): string {
+  return `第 ${lectureLabel(meta)} 讲 · ${meta.title}`;
 }
 
 export function lectureMetaFromSpec(spec: LectureSpec): LectureMeta {
@@ -56,6 +62,7 @@ export function lectureMetaFromSpec(spec: LectureSpec): LectureMeta {
     blurb: spec.blurb,
     hours: spec.hours,
     ready: spec.ready,
+    label: spec.label,
     homework: spec.homework,
   };
 }

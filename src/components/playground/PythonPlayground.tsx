@@ -85,7 +85,10 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
 
   const locked = (scene.prediction || scene.requiresPrediction) && !state.sceneLocal.predictionSubmitted;
   const hideEditorHeading =
-    state.lessonId === 'lesson03' || state.lessonId === 'lesson04' || state.lessonId === 'branch-contest';
+    state.lessonId === 'lesson03' ||
+    state.lessonId === 'lesson03-2' ||
+    state.lessonId === 'lesson04' ||
+    state.lessonId === 'branch-contest';
 
   return (
     <section className={embedded ? 'flex h-full min-h-0 flex-col overflow-hidden' : 'grid h-full place-items-center overflow-hidden px-10 py-10'}>

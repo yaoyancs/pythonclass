@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { lecturePath } from '../../data/course';
+import { lectureLabel, lecturePath } from '../../data/course';
 import { LECTURES } from '../../data/lessons';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { TeacherPanel } from './TeacherPanel';
@@ -33,9 +33,9 @@ export function JumpLessonPanel({ onClose }: JumpLessonPanelProps) {
                 }}
               >
                 <span className="tabular-nums text-accent mr-3">
-                  {String(lec.number).padStart(2, '0')}
+                  {lectureLabel(lec)}
                 </span>
-                <span className="title-kai text-xl">第 {lec.number} 讲　{lec.title}</span>
+                <span className="title-kai text-xl">第 {lectureLabel(lec)} 讲　{lec.title}</span>
                 {!lec.ready && (
                   <span className="ml-3 text-sm text-highlight">筹备中</span>
                 )}

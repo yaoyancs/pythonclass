@@ -639,6 +639,7 @@ export interface BranchContestContent {
     | 'elif'
     | 'lab'
     | 'extend'
+    | 'drone'
     | 'values'
     | 'summary'
     | 'homework'
@@ -816,6 +817,29 @@ export interface SceneContent {
   branchContest?: BranchContestContent;
   conditionPath?: ConditionPathContent;
   loopPath?: LoopPathContent;
+  vendPath?: VendPathContent;
+}
+
+export interface VendGuideOption {
+  id: string;
+  label: string;
+  correct: boolean;
+}
+
+/** 第 3-2 讲：左侧代码，右侧引导问题与结论。 */
+export interface VendPathContent {
+  mode: 'guide' | 'trace' | 'paths' | 'values' | 'summary' | 'thanks';
+  title?: string;
+  question?: string;
+  options?: VendGuideOption[];
+  okText?: string;
+  badText?: string;
+  conclusion?: string;
+  rows?: { name: string; detail: string }[];
+  /** 右侧任务背景，按段显示 */
+  lead?: string[];
+  image?: { src: string; alt: string };
+  tasks?: { index: string; title: string; body: string }[];
 }
 
 /** 第 4 讲：循环。topic 是知识块，mode 是这一页的课堂动作。 */
@@ -901,6 +925,8 @@ export interface LectureSpec {
   blurb: string;
   hours: number;
   ready: boolean;
+  /** 封面讲次编号。同一 number 的并列版本用它区分，如「3-2」。 */
+  label?: string;
   /** 开场导读 part id 列表（不含目录页；目录由 buildLesson 自动插入） */
   prelude?: string[];
   parts: LecturePartRef[];

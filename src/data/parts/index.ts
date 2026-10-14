@@ -26,6 +26,15 @@ import { scenes as weatherBool } from "./weather-bool/scenes";
 import { scenes as weatherNest } from "./weather-nest/scenes";
 import { scenes as wasteTernary } from "./waste-ternary/scenes";
 import { scenes as lesson03Close } from "./lesson03-close/scenes";
+import { scenes as vendOpen } from "./vend-open/scenes";
+import { scenes as vendBool } from "./vend-bool/scenes";
+import { scenes as vendIf } from "./vend-if/scenes";
+import { scenes as vendDual } from "./vend-dual/scenes";
+import { scenes as vendElif } from "./vend-elif/scenes";
+import { scenes as vendNest } from "./vend-nest/scenes";
+import { scenes as vendTernary } from "./vend-ternary/scenes";
+import { scenes as vendCave } from "./vend-cave/scenes";
+import { scenes as vendClose } from "./vend-close/scenes";
 import { scenes as loopWhy } from "./loop-why/scenes";
 import { scenes as loopWhile } from "./loop-while/scenes";
 import { scenes as loopFor } from "./loop-for/scenes";
@@ -63,6 +72,15 @@ export const PARTS: Record<string, ContentPart> = {
   "weather-nest": { id: "weather-nest", scenes: weatherNest },
   "waste-ternary": { id: "waste-ternary", scenes: wasteTernary },
   "lesson03-close": { id: "lesson03-close", scenes: lesson03Close },
+  "vend-open": { id: "vend-open", scenes: vendOpen },
+  "vend-bool": { id: "vend-bool", scenes: vendBool },
+  "vend-if": { id: "vend-if", scenes: vendIf },
+  "vend-dual": { id: "vend-dual", scenes: vendDual },
+  "vend-elif": { id: "vend-elif", scenes: vendElif },
+  "vend-nest": { id: "vend-nest", scenes: vendNest },
+  "vend-ternary": { id: "vend-ternary", scenes: vendTernary },
+  "vend-cave": { id: "vend-cave", scenes: vendCave },
+  "vend-close": { id: "vend-close", scenes: vendClose },
   "loop-why": { id: "loop-why", scenes: loopWhy },
   "loop-while": { id: "loop-while", scenes: loopWhile },
   "loop-for": { id: "loop-for", scenes: loopFor },
