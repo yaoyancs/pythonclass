@@ -16,16 +16,6 @@ else:
     print("不是水仙花数")
 `;
 
-const SCAN = `n = 100
-while n <= 999:
-    a = n // 100
-    b = n // 10 % 10
-    c = n % 10
-    if a**3 + b**3 + c**3 == n:
-        print(n)
-    n = n + 1
-`;
-
 const FOR_SCAN = `for n in range(100, 1000):
     a = n // 100
     b = n // 10 % 10
