@@ -6,6 +6,10 @@ function stringScenes() {
   return lesson02.scenes.filter((scene) => scene.partId === '04');
 }
 
+function fStringScenes() {
+  return lesson02.scenes.filter((scene) => scene.partId === '05');
+}
+
 function codesInOrder(scenes: Scene[]) {
   return scenes.flatMap((scene) => [
     scene.code?.initial ?? '',
@@ -31,6 +35,8 @@ describe('lesson02 string methods', () => {
       '分词',
       '拼接',
       '键盘读入',
+    ]);
+    expect(fStringScenes().map((scene) => scene.content.headline ?? '')).toEqual([
       '加号的麻烦',
       'f-string',
       '花括号里能算',

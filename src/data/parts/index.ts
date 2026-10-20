@@ -14,6 +14,7 @@ import { scenes as typeWhy } from "./type-why/scenes";
 import { scenes as typeInspect } from "./type-inspect/scenes";
 import { scenes as numbersIntFloat } from "./numbers-int-float/scenes";
 import { scenes as strings } from "./strings/scenes";
+import { scenes as fString } from "./f-string/scenes";
 import { scenes as typeCast } from "./type-cast/scenes";
 import { scenes as boolCompare } from "./bool-compare/scenes";
 import { scenes as campusLife02 } from "./campus-life-02/scenes";
@@ -60,6 +61,7 @@ export const PARTS: Record<string, ContentPart> = {
   "type-inspect": { id: "type-inspect", scenes: typeInspect },
   "numbers-int-float": { id: "numbers-int-float", scenes: numbersIntFloat },
   strings: { id: "strings", scenes: strings },
+  "f-string": { id: "f-string", scenes: fString },
   "type-cast": { id: "type-cast", scenes: typeCast },
   "bool-compare": { id: "bool-compare", scenes: boolCompare },
   "campus-life-02": { id: "campus-life-02", scenes: campusLife02 },

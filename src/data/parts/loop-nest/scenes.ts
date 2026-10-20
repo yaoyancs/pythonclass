@@ -6,46 +6,49 @@ const code = (initial: string) => ({
   resetToInitial: true,
 });
 
-const GRID =
-  "for row in range(1, 3):\n    for col in range(1, 4):\n        print(row, col)\n";
+const SEATS = `for row in range(1, 6):
+    for seat in range(1, 7):
+        print("第", row, "排，第", seat, "座")
+`;
 
-/** 嵌套：外层每走一轮，内层都要把自己的序列走完。 */
+/** 嵌套：先确定一排，再把这一排的座位走完。 */
 export const scenes: DraftScene[] = [
   {
-    id: "scene-nest-grid",
-    title: "外层一轮，内层一轮",
+    id: "scene-nest-find",
+    title: "第 3 排第 5 座",
     type: "explain",
     layout: "fullscreen",
-    content: { loopPath: { topic: "nest", mode: "grid" } },
+    content: { loopPath: { topic: "nest", mode: "find" } },
   },
   {
-    id: "scene-nest-trace",
+    id: "scene-nest-repeat",
+    title: "两层重复",
+    type: "explain",
+    layout: "fullscreen",
+    content: { loopPath: { topic: "nest", mode: "repeat" } },
+  },
+  {
+    id: "scene-nest-code",
     title: "两层 for",
     type: "explain",
     layout: "split",
-    editorSide: "left",
-    content: { loopPath: { topic: "nest", mode: "trace" } },
-    code: code(GRID),
+    content: { loopPath: { topic: "nest", mode: "code" } },
+    code: code(SEATS),
   },
   {
-    id: "scene-nest-practice",
-    title: "随堂练习",
-    type: "challenge",
+    id: "scene-nest-gen",
+    title: "座位编号",
+    type: "explain",
+    layout: "fullscreen",
+    content: { loopPath: { topic: "nest", mode: "gen" } },
+  },
+  {
+    id: "scene-nest-show",
+    title: "嵌套代码",
+    type: "explain",
     layout: "split",
-    editorSide: "left",
-    content: { loopPath: { topic: "nest", mode: "practice" } },
-    code: code("# 打印九九乘法表中 1×1 到 3×3 的左下三角\n# 每一行形如：1×1=1    或    2×1=2  2×2=4\n"),
-    hints: [
-      { level: 1, text: "外层是被乘数 i，从 1 到 3。内层乘数 j 不超过 i。" },
-      { level: 2, text: "内层用 end=\"  \" 留在同一行，内层结束后 print() 换行。" },
-      {
-        level: 3,
-        text: 'for i in range(1, 4):\n    for j in range(1, i + 1):\n        print(f"{j}×{i}={j * i}", end="  ")\n    print()',
-      },
-    ],
-    reveal: {
-      title: "对照",
-      body: "三行：1×1=1；2×1=2  2×2=4；3×1=3  3×2=6  3×3=9。内层终点写成 i 会少掉每行最后一个。",
-    },
+    editorOnly: true,
+    content: { loopPath: { topic: "nest", mode: "show" } },
+    code: code(SEATS),
   },
 ];

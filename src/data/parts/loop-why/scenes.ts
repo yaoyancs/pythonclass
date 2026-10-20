@@ -6,29 +6,49 @@ const code = (initial: string) => ({
   resetToInitial: true,
 });
 
-/** 重复：同一条语句要做很多次时，复制粘贴会随着次数一起膨胀。 */
+const ONCE = `secret = 37
+guess = int(input("输入一个整数："))
+#  =37 猜中了， > 37 大了, < 37 小了
+
+
+
+
+`;
+
+const REVIEWED = `secret = 37
+guess = int(input("输入一个整数："))
+if guess == secret:
+    print("猜中")
+elif guess > secret:
+    print("大了")
+else:
+    print("小了")
+`;
+
+/** 导入：先复习分支，再用新需求说明一次判断不够。 */
 export const scenes: DraftScene[] = [
   {
     id: "scene-loop-why-01",
-    title: "同一句话写三遍",
+    title: "分支判断",
     type: "explain",
-    layout: "fullscreen",
-    content: { loopPath: { topic: "why", mode: "copy" } },
+    layout: "split",
+    content: { loopPath: { topic: "why", mode: "once" } },
+    code: code(ONCE),
   },
   {
     id: "scene-loop-why-02",
-    title: "次数一变",
+    title: "重复读入",
     type: "explain",
     layout: "split",
-    editorSide: "left",
-    content: { loopPath: { topic: "why", mode: "count" } },
-    code: code('print("请打卡")\nprint("请打卡")\nprint("请打卡")\n'),
+    content: { loopPath: { topic: "why", mode: "until" } },
+    code: code(REVIEWED),
   },
   {
     id: "scene-loop-why-03",
-    title: "循环要记住什么",
+    title: "次数上限",
     type: "explain",
-    layout: "fullscreen",
-    content: { loopPath: { topic: "why", mode: "parts" } },
+    layout: "split",
+    content: { loopPath: { topic: "why", mode: "limit" } },
+    code: code(REVIEWED),
   },
 ];

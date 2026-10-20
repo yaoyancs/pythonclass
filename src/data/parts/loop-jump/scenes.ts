@@ -9,51 +9,187 @@ const code = (initial: string) => ({
 /** break 离开整个循环；continue 跳过本轮剩余语句，进入下一轮。 */
 export const scenes: DraftScene[] = [
   {
+    id: "scene-jump-aisle",
+    title: "第 3 座不出售",
+    type: "explain",
+    layout: "split",
+    content: { loopPath: { topic: "jump", mode: "aisle" } },
+    code: code(`for row in range(1, 6):
+    for seat in range(1, 7):
+        if seat == 3:
+            continue
+        print("第", row, "排，第", seat, "座")
+`),
+  },
+  {
     id: "scene-jump-break",
     title: "break",
     type: "explain",
     layout: "split",
-    editorSide: "left",
     content: { loopPath: { topic: "jump", mode: "break" } },
-    code: code('for item in ["香蕉皮", "过期药品", "易拉罐"]:\n    if item == "过期药品":\n        print("遇到有害垃圾，停止分拣")\n        break\n    print(item)\n'),
+    code: code(`for row in range(1, 6):
+    for seat in range(1, 7):
+        if seat == 3:
+            break
+        print("第", row, "排，第", seat, "座")
+`),
   },
   {
     id: "scene-jump-continue",
-    title: "continue",
+    title: "break 与 continue",
+    type: "explain",
+    layout: "fullscreen",
+    content: { loopPath: { topic: "jump", mode: "continue" } },
+  },
+  {
+    id: "scene-jump-read-break",
+    title: "阅读分析代码",
     type: "explain",
     layout: "split",
-    editorSide: "left",
-    content: { loopPath: { topic: "jump", mode: "continue" } },
-    code: code('for n in range(1, 6):\n    if n == 3:\n        continue\n    print(n)\n'),
+    editorOnly: true,
+    content: { loopPath: { topic: "jump", mode: "read" } },
+    code: code(`for i in range(3):
+    password = input("请输入密码：")
+    if password == "123456":
+        print("登录成功")
+        break
+    print("密码错误")
+
+print("本次登录验证结束")
+`),
   },
   {
-    id: "scene-jump-place",
-    title: "放在 print 后面",
-    type: "debug",
+    id: "scene-jump-read-continue",
+    title: "阅读分析代码",
+    type: "explain",
     layout: "split",
-    editorSide: "left",
-    content: { loopPath: { topic: "jump", mode: "place" } },
-    code: code('for n in range(1, 6):\n    print(n)\n    if n == 3:\n        continue\n'),
+    editorOnly: true,
+    content: { loopPath: { topic: "jump", mode: "read" } },
+    code: code(`for i in range(3):
+    password = input("请输入密码：")
+    if password == "123456":
+        print("登录成功")
+        continue
+    print("密码错误")
+
+print("本次登录验证结束")
+`),
   },
   {
-    id: "scene-jump-practice",
-    title: "随堂练习",
+    id: "scene-jump-read-order",
+    title: "阅读分析代码",
+    type: "explain",
+    layout: "split",
+    editorOnly: true,
+    content: { loopPath: { topic: "jump", mode: "read" } },
+    code: code(`for i in range(3):
+    password = input("请输入密码：")
+    if password == "123456":
+        print("登录成功")
+    print("密码错误")
+    break
+
+print("本次登录验证结束")
+`),
+  },
+  {
+    id: "scene-jump-read-total",
+    title: "阅读分析代码",
+    type: "explain",
+    layout: "split",
+    editorOnly: true,
+    content: { loopPath: { topic: "jump", mode: "read" } },
+    code: code(`total = 0
+
+while True:
+    price = int(input("请输入商品价格："))
+
+    if price < 0:
+        continue
+
+    if price == 0:
+        break
+
+    total += price
+
+print("总金额：", total)
+`),
+  },
+  {
+    id: "scene-jump-read-board",
+    title: "阅读分析代码",
+    type: "explain",
+    layout: "split",
+    editorOnly: true,
+    content: { loopPath: { topic: "jump", mode: "read" } },
+    code: code(`total = 0
+
+while True:
+    n = int(input("本站上车人数："))
+
+    if n < 0:
+        break
+
+    if n == 0:
+        continue
+
+    total += n
+
+print("上车总人数：", total)
+`),
+  },
+  {
+    id: "scene-jump-read-zero",
+    title: "阅读分析代码",
+    type: "explain",
+    layout: "split",
+    editorOnly: true,
+    content: { loopPath: { topic: "jump", mode: "read" } },
+    code: code(`while True:
+    n = int(input("请输入整数，输入0结束："))
+
+    if n == 0:
+        break
+
+    print("输入的数字是：", n)
+`),
+  },
+  {
+    id: "scene-jump-check",
+    title: "综合练习",
     type: "challenge",
     layout: "split",
-    editorSide: "left",
-    content: { loopPath: { topic: "jump", mode: "practice" } },
-    code: code('for n in range(1, 8):\n    # 遇到 5 就停止\n    # 偶数不打印\n    # 其余数字各打印一行\n    print(n)\n'),
+    content: { loopPath: { topic: "jump", mode: "check" } },
+    code: code("# 编写程序，判断用户输入的密码是否同时包含英文字母和数字\n"),
     hints: [
-      { level: 1, text: "先判断是不是 5，用 break 离开循环。再判断偶数，用 continue 跳过打印。" },
-      { level: 2, text: "偶数写成 n % 2 == 0。print 要放在两个判断之后。" },
+      { level: 1, text: "用 for ch in password 逐个看字符。用两个变量记下有没有见过字母、有没有见过数字。" },
+      { level: 2, text: "数字：'0' <= ch <= '9'。字母再分小写和大写。" },
       {
         level: 3,
-        text: "for n in range(1, 8):\n    if n == 5:\n        break\n    if n % 2 == 0:\n        continue\n    print(n)",
+        text: "password = input(\"请输入密码：\")\nhas_letter = False\nhas_digit = False\nfor ch in password:\n    if '0' <= ch <= '9':\n        has_digit = True\n    elif 'a' <= ch <= 'z' or 'A' <= ch <= 'Z':\n        has_letter = True\nif has_letter and has_digit:\n    print(\"符合要求\")\nelse:\n    print(\"不符合要求\")",
       },
     ],
     reveal: {
       title: "对照",
-      body: "打印 1 和 3。5 触发 break，后面的 6、7 不再看。2 和 4 被 continue 跳过。",
+      body: "abc123、Py2026 符合要求。python 只有字母，123456 只有数字，不符合。",
+    },
+  },
+  {
+    id: "scene-jump-close",
+    title: "Python 循环小结",
+    type: "explain",
+    layout: "fullscreen",
+    content: { loopPath: { topic: "jump", mode: "close" } },
+  },
+  {
+    id: "scene-jump-homework",
+    title: "本讲作业",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      headline: "课后作业",
+      loopPath: { topic: "jump", mode: "homework" },
+      bulletPoints: [],
     },
   },
 ];
