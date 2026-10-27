@@ -1,6 +1,6 @@
 import type { DraftScene } from "../../../types/scene";
 
-/** 顺序、分支、循环系统归纳。给学生看的课件，从本讲第 52 页起。 */
+/** 顺序、分支、循环系统归纳。给学生看的课件，从本讲第 48 页起。 */
 export const scenes: DraftScene[] = [
   {
     id: "scene-wrap-overview",

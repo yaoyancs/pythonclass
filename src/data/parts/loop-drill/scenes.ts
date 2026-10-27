@@ -89,69 +89,6 @@ print(total)
 print(max_money)
 `;
 
-const TRUCK = `n, m = map(int, input().split())
-
-count = 0
-total = 0
-
-for i in range(n):
-    w = int(input())
-
-    if w == 0:
-        continue
-
-    if total + w > m:
-        break
-
-    count += 1
-    total += w
-
-print(count)
-print(total)
-`;
-
-const TRUCK_NEST = `n, m = map(int, input().split())
-
-count = 0
-total = 0
-
-for i in range(n):
-    w = int(input())
-
-    if w > 0:
-        if total + w > m:
-            break
-
-        count += 1
-        total += w
-
-print(count)
-print(total)
-`;
-
-const TRUCK_WHILE = `n, m = map(int, input().split())
-
-count = 0
-total = 0
-i = 0
-
-while i < n:
-    w = int(input())
-    i += 1
-
-    if w == 0:
-        continue
-
-    if total + w > m:
-        break
-
-    count += 1
-    total += w
-
-print(count)
-print(total)
-`;
-
 const CHECKOUT = `n = int(input())
 
 for i in range(n):
@@ -202,7 +139,24 @@ for i in range(n):
     print(total)
 `;
 
-/** 循环综合练习。每页一道题，从本讲第 38 页起。 */
+const VOWEL = `s = input()
+count = 0
+for ch in s:
+    if ch in "aeiouAEIOU":
+        count += 1
+print(count)
+`;
+
+const VOWEL_INDEX = `s = input()
+count = 0
+for i in range(len(s)):
+    ch = s[i]
+    if ch in "aeiouAEIOU":
+        count += 1
+print(count)
+`;
+
+/** 循环综合练习：订单统计、顾客结账、字符串元音统计。 */
 export const scenes: DraftScene[] = [
   {
     id: "scene-drill-order",
@@ -277,80 +231,14 @@ export const scenes: DraftScene[] = [
     code: code(ORDER_MATH),
   },
   {
-    id: "scene-drill-truck",
-    title: "练习2: 配送装车",
+    id: "scene-drill-checkout",
+    title: "练习2: 顾客结账",
     type: "challenge",
     layout: "split",
     editorSide: "left",
     content: {
       loopDrill: {
         index: "2",
-        title: "配送车装载统计",
-        situation: [
-          "一辆配送车最大载重为 m 千克，现有 n 个包裹需要按顺序装车。",
-        ],
-        task: "每个包裹的重量为 w，装车规则如下：",
-        rules: [
-          "w = 0：表示包裹破损，跳过该包裹。",
-          "w > 0：若装入后不超载，则装车。",
-          "若装入当前包裹会超载，则立即停止装车，不再处理后续包裹。",
-        ],
-        goal: "请统计成功装车的包裹数量和总重量。",
-        inputFormat: "第一行输入两个整数 n 和 m（1 ≤ n ≤ 1000，1 ≤ m ≤ 10000）。接下来 n 行，每行一个整数 w（0 ≤ w ≤ 10000）。",
-        outputFormat: "分两行输出成功装车的包裹数量和总重量。",
-        sampleInput: "7 100\n20\n0\n35\n15\n40\n10\n5",
-        sampleOutput: "3\n70",
-        sampleNote:
-          "第2个包裹破损，直接跳过；第1、3、4个包裹成功装车，总重量为70千克。第5个包裹重40千克，装入后将超载，因此停止装车。",
-      },
-    },
-    code: code("n, m = map(int, input().split())\n"),
-    hints: [
-      { level: 1, text: "循环开始前，装车数量和总重量都写成 0。w 为 0 时跳过这一次，不要停止整个装车过程。" },
-      { level: 2, text: "先判断 total + w 会不会超过 m。会超载就 break；不会超载才把数量加 1、总重量加上 w。" },
-      { level: 3, text: TRUCK },
-    ],
-    reveal: {
-      title: "对照",
-      body: "依次装入 20、35、15，总重量 70。下一个 40 会超载，用 break 停止。后面的 10 和 5 不再处理。破损的 0 用 continue 跳过。",
-    },
-  },
-  {
-    id: "scene-drill-truck-code",
-    title: "练习2: 先跳过再判断",
-    type: "explain",
-    layout: "split",
-    editorOnly: true,
-    content: {},
-    code: code(TRUCK),
-  },
-  {
-    id: "scene-drill-truck-nest",
-    title: "练习2: 先判断完好",
-    type: "explain",
-    layout: "split",
-    editorOnly: true,
-    content: {},
-    code: code(TRUCK_NEST),
-  },
-  {
-    id: "scene-drill-truck-while",
-    title: "练习2: while 实现",
-    type: "explain",
-    layout: "split",
-    editorOnly: true,
-    content: {},
-    code: code(TRUCK_WHILE),
-  },
-  {
-    id: "scene-drill-checkout",
-    title: "练习3: 顾客结账",
-    type: "challenge",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      loopDrill: {
-        index: "3",
         title: "超市顾客结账统计",
         situation: [
           "某超市有 n 名顾客依次结账。每名顾客购买的商品数量不同，收银员逐件扫描商品条码，直到该顾客的所有商品扫描完毕。",
@@ -381,7 +269,7 @@ export const scenes: DraftScene[] = [
   },
   {
     id: "scene-drill-checkout-code",
-    title: "练习3: 扫完再结账",
+    title: "练习2: 扫完再结账",
     type: "explain",
     layout: "split",
     editorOnly: true,
@@ -390,7 +278,7 @@ export const scenes: DraftScene[] = [
   },
   {
     id: "scene-drill-checkout-while",
-    title: "练习3: while + while",
+    title: "练习2: while + while",
     type: "explain",
     layout: "split",
     editorOnly: true,
@@ -399,7 +287,7 @@ export const scenes: DraftScene[] = [
   },
   {
     id: "scene-drill-checkout-for",
-    title: "练习3: for + for",
+    title: "练习2: for + for",
     type: "explain",
     layout: "split",
     editorOnly: true,
@@ -408,70 +296,82 @@ export const scenes: DraftScene[] = [
   },
   {
     id: "scene-drill-checkout-flows",
-    title: "练习3: 三种流程图",
+    title: "练习2: 三种流程图",
     type: "explain",
     layout: "fullscreen",
     content: {
       loopDrillFlows: {
-        title: "练习3：三种嵌套写法流程图",
+        title: "练习2：三种嵌套写法流程图",
         charts: [
           {
             title: "for + while",
-            nodes: [
-              { kind: "start", text: "开始" },
-              { kind: "process", text: "读入 n" },
-              { kind: "process", text: "外层 for：处理一名顾客" },
-              { kind: "process", text: "total = 0" },
-              { kind: "process", text: "内层 while True：读入 price" },
-              {
-                kind: "decision",
-                text: "price\n== 0?",
-                yes: "打印 total，下一位顾客",
-                no: "total += price，继续扫码",
-              },
-              { kind: "end", text: "结束" },
-            ],
+            image: "/lesson04/drill-flow-for-while.svg?v=2",
           },
           {
             title: "while + while",
-            nodes: [
-              { kind: "start", text: "开始" },
-              { kind: "process", text: "读入 n，i = 0" },
-              {
-                kind: "decision",
-                text: "i < n?",
-                yes: "total = 0，进入扫码",
-                no: "全部顾客处理完",
-              },
-              { kind: "process", text: "内层 while True：读入 price" },
-              {
-                kind: "decision",
-                text: "price\n== 0?",
-                yes: "打印 total，i += 1",
-                no: "total += price，继续扫码",
-              },
-              { kind: "end", text: "结束" },
-            ],
+            image: "/lesson04/drill-flow-while-while.svg?v=2",
           },
           {
             title: "for + for",
-            nodes: [
-              { kind: "start", text: "开始" },
-              { kind: "process", text: "读入 n" },
-              { kind: "process", text: "外层 for：处理一名顾客" },
-              { kind: "process", text: "total = 0" },
-              { kind: "process", text: "内层 for j in range(101)" },
-              {
-                kind: "decision",
-                text: "price\n== 0?",
-                yes: "break 内层，打印 total",
-                no: "total += price，继续扫码",
-              },
-              { kind: "end", text: "结束" },
-            ],
+            image: "/lesson04/drill-flow-for-for.svg?v=2",
           },
         ],
       },
     },
+  },
+  {
+    id: "scene-drill-vowel",
+    title: "练习3: 元音统计",
+    type: "challenge",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      loopDrill: {
+        index: "3",
+        title: "统计字符串中的元音",
+        situation: [
+          "循环不只用于数字。字符串也可以逐个取出字符，用同样的累加思路做统计。",
+        ],
+        task: "读入一行字符串，统计其中元音字母的个数。",
+        rules: [
+          "元音字母指 a、e、i、o、u，大小写都计入。",
+          "其他字母、数字、空格和标点都不计入。",
+        ],
+        goal: "输出元音字母的个数。",
+        inputFormat: "一行字符串（长度不超过 100）。",
+        outputFormat: "一个整数，表示元音个数。",
+        sampleInput: "Hello",
+        sampleOutput: "2",
+        sampleNote: "H e l l o 中，e 与 o 是元音，共 2 个。再自验：Python → 1。",
+      },
+    },
+    code: code("s = input()\n"),
+    hints: [
+      { level: 1, text: "先准备 count = 0。用 for 把字符串里的每个字符依次取出来。" },
+      { level: 2, text: "判断当前字符是不是元音：可以写成 if ch == \"a\" or ch == \"e\" or ...，大小写都要写上；也可以 if ch in \"aeiouAEIOU\"。" },
+      { level: 3, text: VOWEL },
+    ],
+    reveal: {
+      title: "对照",
+      body: "for ch in s 每次给出一个字符。遇到元音就 count += 1。Hello 里 e、o 各一次，输出 2。",
+    },
+  },
+  {
+    id: "scene-drill-vowel-code",
+    title: "练习3: 对照代码",
+    type: "explain",
+    layout: "split",
+    editorOnly: true,
+    content: {},
+    code: code(VOWEL),
+  },
+  {
+    id: "scene-drill-vowel-index",
+    title: "练习3: 下标写法",
+    type: "explain",
+    layout: "split",
+    editorOnly: true,
+    content: {},
+    code: code(VOWEL_INDEX),
   },
 ];

@@ -7,6 +7,8 @@ interface CodeEditorProps {
   onFocusChange?: (focused: boolean) => void;
   /** 占满父容器，而不是按行数收缩 */
   fill?: boolean;
+  /** 固定高度（px）。并列对照时两侧用同一高度。 */
+  heightPx?: number;
   readOnly?: boolean;
   /** 1-based */
   activeLine?: number;
@@ -50,6 +52,7 @@ const defineTheme: BeforeMount = (monaco) => {
 export function CodeEditor({
   onFocusChange,
   fill = false,
+  heightPx,
   readOnly = false,
   activeLine,
   lineNote,
@@ -112,7 +115,7 @@ export function CodeEditor({
   return (
     <div
       className={`overflow-hidden bg-code-bg ${fill ? 'min-h-0 flex-1' : 'shrink-0 rounded-2xl'}`}
-      style={fill ? undefined : { height: `${height}px` }}
+      style={fill ? undefined : { height: `${heightPx ?? height}px` }}
     >
       <Editor
         height="100%"

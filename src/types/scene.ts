@@ -883,7 +883,9 @@ export interface LoopDrillFlowNode {
 
 export interface LoopDrillFlowChart {
   title: string;
-  nodes: LoopDrillFlowNode[];
+  /** 静态流程图（优先）。有图时不再用 nodes 线性排布。 */
+  image?: string;
+  nodes?: LoopDrillFlowNode[];
 }
 
 /** 练习题多种嵌套写法的流程图对照 */

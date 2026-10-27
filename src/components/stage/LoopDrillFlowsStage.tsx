@@ -45,26 +45,41 @@ function Node({ node }: { node: LoopDrillFlowNode }) {
 
 function Chart({ chart }: { chart: LoopDrillFlowChart }) {
   return (
-    <div className="flex h-full flex-col rounded-3xl border border-classroom-border bg-classroom-playground/60 px-3 py-4">
-      <h3 className="text-center text-xl font-semibold text-accent">{chart.title}</h3>
-      <div className="mt-3 flex flex-1 flex-col items-stretch justify-start">
-        {chart.nodes.map((node, index) => (
-          <div key={`${chart.title}-${index}-${node.text}`}>
-            {index > 0 && <Arrow />}
-            <Node node={node} />
+    <div className="flex h-full min-h-0 flex-col rounded-3xl border border-classroom-border bg-classroom-playground/60 px-3 py-4">
+      {chart.image ? (
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+          <img
+            src={chart.image}
+            alt={`${chart.title}：外层与内层嵌套，并标出回流`}
+            className="max-h-full max-w-full object-contain"
+          />
+        </div>
+      ) : (
+        <>
+          <h3 className="text-center text-xl font-semibold text-accent">{chart.title}</h3>
+          <div className="mt-3 flex flex-1 flex-col items-stretch justify-start">
+            {(chart.nodes ?? []).map((node, index) => (
+              <div key={`${chart.title}-${index}-${node.text}`}>
+                {index > 0 && <Arrow />}
+                <Node node={node} />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </div>
   );
 }
 
-/** 练习3：三种嵌套写法流程图并排对照。 */
+/** 练习2：三种嵌套写法流程图并排对照。 */
 export function LoopDrillFlowsStage({ content }: { content: LoopDrillFlowsContent }) {
   return (
     <div className="flex h-full flex-col">
       <h2 className="title-stage text-center text-3xl text-text-primary">{content.title}</h2>
-      <div className="mt-4 grid min-h-0 flex-1 grid-cols-3 gap-4">
+      <p className="mt-2 text-center text-lg text-text-secondary">
+        蓝色虚线框＝外层循环，橙色实线框＝内层循环；两侧箭头＝回流
+      </p>
+      <div className="mt-3 grid min-h-0 flex-1 grid-cols-3 gap-4">
         {content.charts.map((chart) => (
           <Chart key={chart.title} chart={chart} />
         ))}

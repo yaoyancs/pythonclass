@@ -7,81 +7,59 @@ const code = (initial: string) => ({
 });
 
 const QUEUE = `queue = [
-    (1, "周宁"),
-    (2, "李想"),
-    (3, "赵敏"),
-    (4, "陈一"),
+    "周宁",
+    "李想",
+    "赵敏",
+    "陈一",
 ]`;
 
-/** 改号票、插入急诊、叫号、弃号、清空，以及抄给导诊台的那一份。 */
+function practice(
+  id: string,
+  title: string,
+  headline: string,
+  body: string,
+  initial: string,
+  hint: [string, string, string],
+  reveal: string,
+  expectedOutput: string,
+): DraftScene {
+  return {
+    id,
+    title,
+    type: "challenge",
+    layout: "split",
+    editorSide: "left",
+    content: { headline, body },
+    code: code(initial),
+    hints: [
+      { level: 1, text: hint[0] },
+      { level: 2, text: hint[1] },
+      { level: 3, text: hint[2] },
+    ],
+    reveal: { title: "对照", body: reveal },
+    expectedOutput,
+  };
+}
+
+/** 删除与修改。 */
 export const scenes: DraftScene[] = [
   {
-    id: "list-edit-assign",
-    title: "录错姓名",
-    type: "run",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      headline: "换掉这一条号票",
-      markedPoints: [
-        [{ text: "3 号写成了赵敏，实际是赵明。号码不变，整条换成 (3, \"赵明\")。" }],
-        [
-          { text: "queue[2] = ...", mark: true },
-          { text: " 按位置替换一项。一条号票不能再追加第三栏。" },
-        ],
-        [
-          { text: "queue[1:3] = [...]", mark: true },
-          { text: " 把下标 1、2 这两位换成新的一段。新一段可以更短，后面的人往前靠。" },
-        ],
-      ],
-    },
-    code: code(`${QUEUE}
-queue[2] = (3, "赵明")
-print(queue[2])
-queue[1:3] = [(7, "钱程")]
-print(queue)`),
-  },
-  {
-    id: "list-edit-insert",
-    title: "急诊插入",
-    type: "run",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      headline: "加到指定位置，不是队尾",
-      markedPoints: [
-        [
-          { text: "insert(0, 号票)", mark: true },
-          { text: " 把急诊放到最前。原来的队头变成下标 1。" },
-        ],
-        [{ text: "append 只会加到队尾。急诊若 append，就要等普通人全部叫完。" }],
-        [{ text: "插入之后，后面每个人的位置都加 1。号票上的号码不变。" }],
-      ],
-    },
-    code: code(`${QUEUE}
-queue.insert(0, (8, "林夏"))
-print(queue)
-print(queue[0])
-print(queue[1])`),
-  },
-  {
     id: "list-edit-pop",
-    title: "叫号和撤销队尾",
+    title: "pop",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "拿走某一位，还要拿到这张号票",
+      headline: "pop 删除一项并返回该项",
       markedPoints: [
         [
           { text: "pop(0)", mark: true },
-          { text: " 叫走队头，并把这张号票交给护士去报。后面的人前移。" },
+          { text: " 删除下标 0，并返回该项。其后各项前移。" },
         ],
         [
           { text: "pop()", mark: true },
-          { text: " 不写下标时，撤销队尾。最后一位挂错号，用它拿回来。" },
+          { text: " 不写下标时，删除并返回最后一项。" },
         ],
-        [{ text: "拿走之后，位置变了，留下的人号码不变。" }],
       ],
     },
     code: code(`${QUEUE}
@@ -89,53 +67,73 @@ current = queue.pop(0)
 print(current)
 print(queue[0])
 undone = queue.pop()
-print(undone)
-print(queue)`),
+print(undone)`),
   },
+  practice(
+    "list-edit-pop-ex",
+    "练习：pop",
+    "删除并返回第一项",
+    "删除第一项并打印该项，再打印新的第一项。",
+    `${QUEUE}
+`,
+    ["删除并取得该项，用 pop。", "第一项的下标是 0。", "current = queue.pop(0)\nprint(current)\nprint(queue[0])"],
+    "pop(0) 返回被删项。原下标 1 成为新的第一项。",
+    "周宁\n李想",
+  ),
   {
     id: "list-edit-remove",
-    title: "弃号",
+    title: "remove 与 del",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "知道是谁，或知道在第几位",
+      headline: "remove 按值删除，del 按下标删除",
       markedPoints: [
         [
-          { text: "remove", mark: true },
-          { text: " 按整条号票划掉，不返回号票。相同号票只划掉第一条。" },
+          { text: "remove(x)", mark: true },
+          { text: " 删除第一个等于 x 的项，不返回该项。" },
         ],
         [
           { text: "del queue[i]", mark: true },
-          { text: " 按位置划掉。不需要把号票取回来时报号。" },
+          { text: " 删除下标 i，不返回该项。" },
         ],
-        [{ text: "叫号要用这张票，用 pop。弃号只是从队伍消失，用 remove 或 del。" }],
+        [{ text: "需要拿到被删项时用 pop。" }],
       ],
     },
     code: code(`${QUEUE}
-queue.remove((2, "李想"))
+queue.remove("李想")
 print(queue)
 del queue[0]
 print(queue)`),
   },
+  practice(
+    "list-edit-remove-ex",
+    "练习：remove",
+    "按值删除一项",
+    "删除 \"李想\"，并打印 queue。",
+    `${QUEUE}
+`,
+    ["已知的是值，不是下标。", "remove 的参数须与该项完全相同。", "queue.remove(\"李想\")\nprint(queue)"],
+    "remove 删除第一个相等项，不返回该项。",
+    "['周宁', '赵敏', '陈一']",
+  ),
   {
     id: "list-edit-clear",
-    title: "午休清空",
+    title: "clear",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "下午从空队伍重新开始",
+      headline: "clear 清空原列表，= [] 另建空列表",
       markedPoints: [
         [
-          { text: "clear", mark: true },
-          { text: " 去掉全部号票。queue 还是原来的那支队伍，只是变成空的。" },
+          { text: "clear()", mark: true },
+          { text: " 删除全部项。列表对象不变，其他指向它的名字一起变空。" },
         ],
         [
           { text: "queue = []", mark: true },
-          { text: " 是另建一支空队伍。已经抄走的名单若仍指着旧队伍，不会跟着变。" },
+          { text: " 让名字指向新建的空列表。原列表不受影响。" },
         ],
-        [{ text: "午休时诊室这块屏要清空，用 clear。下午新来的人再 append。" }],
       ],
     },
     code: code(`${QUEUE}
@@ -143,42 +141,54 @@ screen = queue
 queue.clear()
 print(queue)
 print(screen)
-queue.append((11, "下午周宁"))
+queue.append("下午周宁")
 print(queue)`),
   },
+  practice(
+    "list-edit-clear-ex",
+    "练习：clear",
+    "清空后再追加",
+    "清空 queue，再追加 \"下午周宁\"，并打印 queue。",
+    `${QUEUE}
+`,
+    ["清空原列表用 clear。", "清空后再 append。", "queue.clear()\nqueue.append(\"下午周宁\")\nprint(queue)"],
+    "clear 删除全部项。随后 append 的是清空后的第一项。",
+    "['下午周宁']",
+  ),
   {
-    id: "list-edit-copy",
-    title: "抄给导诊台",
+    id: "list-edit-assign",
+    title: "按下标替换",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "导诊划掉一位，诊室原队还在",
+      headline: "用下标指出位置，赋值替换一项或一段",
       markedPoints: [
         [
-          { text: "board = queue", mark: true },
-          { text: " 两个名字指向同一支队伍。导诊 pop 一位，诊室也少一位。" },
+          { text: "queue[2] = x", mark: true },
+          { text: " 替换下标 2 的那一项。" },
         ],
         [
-          { text: "queue.copy()", mark: true },
-          { text: " 和 queue[:] 都抄出一支新队伍。改抄件，原队不变。" },
+          { text: "queue[1:3] = [...]", mark: true },
+          { text: " 替换下标 1、2。新段更短时，后面的项前移。" },
         ],
-        [{ text: "号票本身不再拆开改写，所以抄这一层就够。抄件里仍是原来的那些号票。" }],
       ],
     },
     code: code(`${QUEUE}
-alias = queue
-alias.pop(0)
-print(queue)
-queue = [
-    (1, "周宁"),
-    (2, "李想"),
-    (3, "赵敏"),
-    (4, "陈一"),
-]
-board = queue.copy()
-board.pop(0)
-print(queue)
-print(board)`),
+queue[2] = "赵明"
+print(queue[2])
+queue[1:3] = ["钱程"]
+print(queue)`),
   },
+  practice(
+    "list-edit-assign-ex",
+    "练习：替换",
+    "替换下标 2",
+    "将下标 2 替换为 \"赵明\"，并打印该项。",
+    `${QUEUE}
+`,
+    ["用下标赋值替换一项。", "新值是要写入的那一项。", "queue[2] = \"赵明\"\nprint(queue[2])"],
+    "queue[2] = x 只替换该下标，其余项不变。",
+    "赵明",
+  ),
 ];

@@ -21,6 +21,9 @@ const defineTheme: BeforeMount = (monaco) => {
   });
 };
 
+/** 与左侧 PythonPlayground 并列时保持同宽同高。 */
+const PAIRED_EDITOR_HEIGHT = 520;
+
 export function PairedPlayground() {
   const { scene } = useSceneEngine();
   const paired = scene.pairedCode;
@@ -49,10 +52,10 @@ export function PairedPlayground() {
   const errorText = output?.error ? output.stderr || output.error.message : '';
 
   return (
-    <section className="grid h-full place-items-center overflow-hidden px-6 py-6">
+    <section className="grid h-full place-items-center overflow-hidden px-10 py-10">
       <div className="flex max-h-full w-full flex-col gap-5 overflow-y-auto rounded-3xl bg-classroom-stage p-7 shadow-card">
         <h3 className="text-xl font-semibold text-text-primary">{paired.label}</h3>
-        <div className="overflow-hidden rounded-2xl bg-code-bg" style={{ height: 280 }}>
+        <div className="shrink-0 overflow-hidden rounded-2xl bg-code-bg" style={{ height: PAIRED_EDITOR_HEIGHT }}>
           <Editor
             height="100%"
             defaultLanguage="python"
@@ -61,12 +64,13 @@ export function PairedPlayground() {
             value={code}
             onChange={(value) => setCode(value ?? '')}
             options={{
-              fontSize: 22,
+              fontSize: 24,
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
               padding: { top: 18, bottom: 18 },
               wordWrap: 'on',
               tabSize: 4,
+              scrollbar: { horizontalScrollbarSize: 8, verticalScrollbarSize: 8 },
             }}
           />
         </div>

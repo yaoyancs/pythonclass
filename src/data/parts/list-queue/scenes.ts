@@ -7,158 +7,269 @@ const code = (initial: string) => ({
 });
 
 const QUEUE = `queue = [
-    (1, "周宁"),
-    (2, "李想"),
-    (3, "赵敏"),
-    (4, "陈一"),
+    "周宁",
+    "李想",
+    "赵敏",
+    "陈一",
 ]`;
 
-/** 第 6 讲列表：校医院候诊。先交代这一上午要做的事，再建队伍。 */
+function practice(
+  id: string,
+  title: string,
+  headline: string,
+  body: string,
+  initial: string,
+  hint: [string, string, string],
+  reveal: string,
+  expectedOutput: string,
+): DraftScene {
+  return {
+    id,
+    title,
+    type: "challenge",
+    layout: "split",
+    editorSide: "left",
+    content: { headline, body },
+    code: code(initial),
+    hints: [
+      { level: 1, text: hint[0] },
+      { level: 2, text: hint[1] },
+      { level: 3, text: hint[2] },
+    ],
+    reveal: { title: "对照", body: reveal },
+    expectedOutput,
+  };
+}
+
+/** 导入、容器、认识列表、创建与增加。 */
 export const scenes: DraftScene[] = [
   {
-    id: "list-q-task",
-    title: "这一上午要做的事",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "候诊队伍和各小时人数都要留着",
-      markedPoints: [
-        [{ text: "夜班交出一份已经在等的名单。上午还会有人取号，另一诊室也可能整队并过来。" }],
-        [{ text: "屏幕要按位置看人、只显示前几位、查某人还在不在、叫号、弃号、插入急诊、午休清空。" }],
-        [{ text: "导诊台要抄一份当前队伍，划掉一个人不能把原队一起改掉。" }],
-        [{ text: "另外记下 8 点到 11 点每个小时的候诊人数，闭诊后算总数、最忙的一小时，并排出一份名次。时间顺序的原表还要留着。" }],
-      ],
-    },
-  },
-  {
     id: "list-q-lose",
-    title: "一个变量留不住队伍",
+    title: "导入",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "下一位到来，上一位就没了",
+      headline: "多人取号，如何存？",
+      body: "银行业务窗口陆续来了周宁、李想、赵敏。用变量 current 存储。",
       markedPoints: [
-        [
-          { text: "current", mark: true },
-          { text: " 每次被下一张号票盖住。周宁、李想都留不住。" },
-        ],
-        [{ text: "号码和姓名要一起走。只留姓名，叫号时不知道报几号。" }],
-        [{ text: "人会陆续到来，不能事先写成 ticket1、ticket2、ticket3。" }],
+        [{ text: "连续赋值后，前一个人的姓名被盖掉。" }],
+        [{ text: "要同时保留整支队伍，需要能装一堆数据的类型。" }],
       ],
     },
-    code: code(`current = (1, "周宁")
-current = (2, "李想")
-current = (3, "赵敏")
+    code: code(`current = "周宁"
+current = "李想"
+current = "赵敏"
 print(current)`),
   },
   {
-    id: "list-q-literal",
-    title: "夜班交出的名单",
+    id: "list-q-container",
+    title: "容器类型",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      headline: "一堆数据，需要容器",
+      body: "窗口要同时记住多人。一个变量只留最后一次赋值，装不下整支队伍。",
+      bulletPoints: [
+        "容器用来存放一组数据，而不是单个值",
+        "常见容器：列表、元组、集合、字典",
+        "本讲先学列表：有序、可改",
+        "集合与字典见第 7 讲；元组另议",
+      ],
+    },
+  },
+  {
+    id: "list-q-what",
+    title: "认识列表",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      headline: "列表：有序、可改的一串数据",
+      body: "银行排队可以写成一份名单。名单里的项有先后，也可以后来增删改。",
+      bulletPoints: [
+        "用方括号 [] 书写",
+        "项与项之间用逗号分隔",
+        "本讲用姓名字符串作为每一项",
+      ],
+      preview: "下一节：怎样创建列表",
+    },
+  },
+  {
+    id: "list-q-create",
+    title: "创建列表",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "人已经在，直接写成一队",
+      headline: "[] 建空列表，[a, b] 写入已有项",
       markedPoints: [
-        [{ text: "方括号里按先来后到写下号票，这是列表字面量。顺序就是等待顺序。" }],
         [
-          { text: "(号码, 姓名)", mark: true },
-          { text: " 是一条号票。两项绑在一起，作为列表中的一项。" },
+          { text: "[]", mark: true },
+          { text: " 创建空列表。" },
         ],
         [
-          { text: "queue = []", mark: true },
-          { text: " 是还没有人的空队伍。下午开诊就从空列表开始。" },
+          { text: '["周宁", "李想"]', mark: true },
+          { text: " 用已有元素创建列表。" },
         ],
+        [{ text: "创建后，名单里已经有人，顺序就是书写顺序。" }],
       ],
     },
-    code: code(`${QUEUE}
+    code: code(`queue = []
 print(queue)
-afternoon = []
-print(afternoon)`),
+queue = ["周宁", "李想"]
+print(queue)`),
   },
+  {
+    id: "list-look-hours",
+    title: "list 与 *",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "list 由序列建立列表，* 重复项",
+      markedPoints: [
+        [
+          { text: "list(range(8, 12))", mark: true },
+          { text: " 得到 [8, 9, 10, 11]。止点不包含。" },
+        ],
+        [
+          { text: "[0] * 4", mark: true },
+          { text: " 得到四项，初值都是 0。各项可以分别赋值。" },
+        ],
+        [{ text: "下标表示第几格，不表示格中的数值。" }],
+      ],
+    },
+    code: code(`hours = list(range(8, 12))
+counts = [0] * 4
+print(hours)
+print(counts)
+counts[0] = 3
+counts[1] = 5
+counts[2] = 5
+counts[3] = 2
+print(counts)`),
+  },
+  practice(
+    "list-look-hours-ex",
+    "练习：*",
+    "重复初值后再赋值",
+    "建立含 4 个 0 的列表，将下标 0 改为 3，并打印该列表。",
+    "",
+    ["重复项使用 *。", "第一项的下标是 0。", "counts = [0] * 4\ncounts[0] = 3\nprint(counts)"],
+    "[0] * 4 得到四项 0。再对下标 0 赋值。",
+    "[3, 0, 0, 0]",
+  ),
   {
     id: "list-q-append",
-    title: "新取号的人",
+    title: "append",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "来一位，加到队尾",
+      headline: "append 追加到末尾",
       markedPoints: [
         [
-          { text: "append", mark: true },
-          { text: " 加的是一条号票。先来的仍在前面。" },
+          { text: "append(x)", mark: true },
+          { text: " 把 x 加到末尾，原有顺序不变。" },
         ],
-        [{ text: "人数事先不定，所以在已有名单后面追加，而不是重写整个字面量。" }],
-        [{ text: "下标是现在的位置。号票上的号码写在记录里面，两边各记各的。" }],
+        [{ text: "可在空列表上连续 append，逐个加人。" }],
       ],
     },
-    code: code(`${QUEUE}
-queue.append((5, "孙可"))
+    code: code(`queue = []
+queue.append("周宁")
+queue.append("李想")
 print(queue)
-print(queue[0])
-print(queue[-1])`),
+queue = ["周宁", "李想"]
+queue.append("赵敏")
+print(queue)`),
   },
+  practice(
+    "list-q-append-ex",
+    "练习：append",
+    "追加到末尾",
+    "将 \"孙可\" 追加到 queue 末尾，并打印 queue。",
+    `${QUEUE}
+`,
+    ["追加到末尾用 append。", "参数是要加入的那一项。", "queue.append(\"孙可\")\nprint(queue)"],
+    "append 加在末尾，原有四项的相对顺序不变。",
+    "['周宁', '李想', '赵敏', '陈一', '孙可']",
+  ),
   {
-    id: "list-q-extend",
-    title: "另一诊室整队并过来",
+    id: "list-edit-insert",
+    title: "insert",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "接上的是一条条号票",
+      headline: "insert 插入到指定下标",
       markedPoints: [
         [
-          { text: "extend", mark: true },
-          { text: " 把另一支队伍里的号票逐条接上。" },
+          { text: "insert(i, x)", mark: true },
+          { text: " 把 x 插入下标 i，其后各项下标加 1。" },
         ],
         [
           { text: "append", mark: true },
-          { text: " 若加的是整支队伍，队伍会变成一项。里面又嵌着一支队伍，无法按号票叫号。" },
+          { text: " 只能加到末尾，不能指定位置。" },
         ],
-        [{ text: "两个诊室仍要分开叫时，把两支队伍放进一个列表。rooms[1][0] 是二诊室队头。" }],
       ],
     },
     code: code(`${QUEUE}
-other = [(5, "孙可"), (6, "吴迪")]
-joined = queue.copy()
-joined.extend(other)
-print(joined)
-nested = queue.copy()
-nested.append(other)
-print(nested)
-rooms = [queue, other]
-print(rooms[1][0])`),
+queue.insert(0, "林夏")
+print(queue[0])
+print(queue[1])`),
   },
+  practice(
+    "list-edit-insert-ex",
+    "练习：insert",
+    "插入到下标 0",
+    "将 \"林夏\" 插入下标 0，并打印新的第一项。",
+    `${QUEUE}
+`,
+    ["insert 的第一个参数是下标。", "第一项的下标是 0。", "queue.insert(0, \"林夏\")\nprint(queue[0])"],
+    "insert(0, x) 使 x 成为第一项，原第一项下标变为 1。",
+    "林夏",
+  ),
   {
-    id: "list-q-plus",
-    title: "合并出一支新队",
+    id: "list-edit-extend",
+    title: "extend 与 +",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "原队还要留底",
+      headline: "extend 就地追加多项，+ 得到新列表",
       markedPoints: [
+        [
+          { text: "extend(other)", mark: true },
+          { text: " 把 other 中的各项依次加到末尾。" },
+        ],
+        [
+          { text: "append(other)", mark: true },
+          { text: " 把 other 整体作为一项加入。" },
+        ],
         [
           { text: "queue + other", mark: true },
-          { text: " 得到一支新队伍。queue 和 other 都不变。" },
-        ],
-        [
-          { text: "extend", mark: true },
-          { text: " 改的是自己。原队不需要留下时才用它。" },
-        ],
-        [
-          { text: "+", mark: true },
-          { text: " 的两边都是列表。一条号票要先放进列表再相加。" },
+          { text: " 返回新列表，不修改 queue。" },
         ],
       ],
     },
     code: code(`${QUEUE}
-other = [(5, "孙可"), (6, "吴迪")]
-merged = queue + other
-print(merged)
+other = ["孙可", "吴迪"]
+queue.extend(other)
 print(queue)
-print(other)`),
+fresh = ["周宁", "李想"]
+print(fresh + other)
+print(fresh)`),
   },
+  practice(
+    "list-edit-extend-ex",
+    "练习：extend",
+    "逐项接到末尾",
+    "将 other 的各项接到 queue 末尾，打印 queue 的项数。",
+    `${QUEUE}
+other = ["孙可", "吴迪"]
+`,
+    ["逐项追加用 extend。", "append(other) 只增加一项。", "queue.extend(other)\nprint(len(queue))"],
+    "extend 使项数增加 other 的长度，结果为 6。",
+    "6",
+  ),
 ];

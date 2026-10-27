@@ -700,6 +700,50 @@ function JumpQuestion({ question, src, alt }: { question: string; src: string; a
   );
 }
 
+function JumpStillBrief() {
+  return (
+    <div className="flex h-full flex-col justify-center">
+      <h2 className="title-stage text-3xl text-text-primary">功能简介</h2>
+      <p className="mt-5 text-xl leading-relaxed text-text-secondary">
+        按顺序处理 5 个包裹，统计装车件数和总重量。
+      </p>
+      <ul className="mt-6 space-y-3 text-xl leading-relaxed text-text-primary">
+
+        <li>重量为小于等于0 时提示「破损」，不装车</li>
+        <li>输出已经装车件数与总重量</li>
+      </ul>
+      
+    </div>
+  );
+}
+
+function JumpForElse() {
+  return (
+    <Task
+      title="任务：本趟有没有 30kg？"
+      items={[
+        "按顺序检查每个包裹重量。",
+        "找到 30 就提示「找到」，并结束查找。",
+        "全部查完都没有，才提示「本趟没有」。",
+        "else 对齐 for，不是对齐 if：没有被 break 打断时才执行。",
+      ]}
+    />
+  );
+}
+
+function JumpWhileElse() {
+  return (
+    <Task
+      title="任务：最多猜 3 次"
+      items={[
+        "猜中就提示「猜中」，并结束循环。",
+        "3 次都没猜中，才提示「机会用完」。",
+        "规则与 for 的 else 相同：没有 break 才走 else。",
+      ]}
+    />
+  );
+}
+
 function CloseValues() {
   return (
     <div className="mx-auto flex h-full w-full max-w-5xl flex-col">
@@ -733,7 +777,7 @@ function CloseSummary() {
     'for 依次取出序列中的每一项；range 含起点、不含终点',
     '嵌套：外层每走一轮，内层都要走完，再回到外层',
     'break 终止它所在的那一层循环',
-    'continue 跳过本次循环剩下的语句；只筛选时用 if 就够',
+    'continue 跳过本次剩余语句；只筛一项时 if 够用，多处中途跳过用 continue',
     'for / while 的 else：没有被 break 打断时才执行',
   ];
   return (
@@ -806,34 +850,27 @@ export function LoopPathStage({ content, sceneId }: Props) {
   }
   if (topic === 'jump') {
     if (mode === 'row') return <JumpRow />;
-    if (mode === 'still') {
-      return (
-        <JumpQuestion
-          question="输入 -5 时，为什么还在统计？"
-          src="/lesson04/continue-still.svg"
-          alt="成绩无效之后，仍会执行正在统计成绩和统计完成"
-        />
-      );
-    }
+    if (mode === 'still') return <JumpStillBrief />;
     if (mode === 'skip') {
       return (
         <JumpQuestion
-          question="continue 之后，这次剩下的语句还执行吗？"
+          question="continue 之后，这次装车还执行吗？"
           src="/lesson04/continue-skip.svg"
-          alt="continue 跳过正在统计成绩和统计完成，进入下一次输入"
+          alt="continue 跳过件数加一和本件已装车，进入下一个包裹"
         />
       );
     }
     if (mode === 'use') {
       return (
         <JumpQuestion
-          question="-1 结束录入，-5 只跳过这一次。各用哪一句？"
+          question="0 跳过、超载停止。各用哪一句？"
           src="/lesson04/continue-use.svg"
-          alt="-1 用 break 结束录入，-5 用 continue 跳过这一次，85 正常统计"
+          alt="重量 0 用 continue 跳过，超载用 break 停止，正常重量装车成功"
         />
       );
     }
-    if (mode === 'forElse' || mode === 'whileElse') return null;
+    if (mode === 'forElse') return <JumpForElse />;
+    if (mode === 'whileElse') return <JumpWhileElse />;
   }
   if (topic === 'close') {
     if (mode === 'values') return <CloseValues />;

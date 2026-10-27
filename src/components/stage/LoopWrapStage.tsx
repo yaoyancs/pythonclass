@@ -24,25 +24,6 @@ function Box({ children }: { children: string }) {
   );
 }
 
-function Diamond({ text, yes, no }: { text: string; yes: string; no: string }) {
-  return (
-    <div className="mx-auto w-full max-w-[16rem]">
-      <div className="relative mx-auto flex h-20 w-20 items-center justify-center">
-        <div className="absolute inset-1 rotate-45 rounded-md border-2 border-accent bg-white" />
-        <p className="relative z-10 whitespace-pre-line px-1 text-center text-sm font-semibold leading-tight">{text}</p>
-      </div>
-      <div className="mt-2 grid grid-cols-2 gap-2 text-center text-sm">
-        <p className="rounded-xl bg-accent-muted px-2 py-1.5 leading-snug">
-          <span className="font-semibold text-accent">是</span>　{yes}
-        </p>
-        <p className="rounded-xl bg-white px-2 py-1.5 leading-snug">
-          <span className="font-semibold text-accent">否</span>　{no}
-        </p>
-      </div>
-    </div>
-  );
-}
-
 function Code({ children }: { children: string }) {
   return (
     <pre className="mt-3 overflow-x-auto rounded-2xl bg-code-bg px-5 py-4 font-mono text-lg leading-relaxed text-code-text">
@@ -97,33 +78,29 @@ function Flows() {
           </div>
           <p className="mt-auto pt-4 text-center text-base text-text-secondary">从上到下，依次执行</p>
         </div>
+
         <div className="flex flex-col rounded-3xl border border-classroom-border bg-classroom-playground/60 px-3 py-4">
-          <h3 className="text-center text-xl font-semibold text-accent">分支结构</h3>
-          <div className="mt-3 space-y-0">
-            <Pill>开始</Pill>
-            <Arrow />
-            <Box>读入成绩 score</Box>
-            <Arrow />
-            <Diamond text={'score\n≥ 60?'} yes="输出：合格" no="输出：不合格" />
-            <Arrow />
-            <Pill>结束</Pill>
+          <h3 className="shrink-0 text-center text-xl font-semibold text-accent">分支结构</h3>
+          <div className="mt-2 flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+            <img
+              src="/lesson04/branch-flow.svg?v=1"
+              alt="分支结构流程图：按成绩是否及格分叉后汇合到结束"
+              className="max-h-full max-w-full object-contain"
+            />
           </div>
-          <p className="mt-auto pt-4 text-center text-base text-text-secondary">按条件选择一条路径</p>
+          <p className="mt-auto shrink-0 pt-2 text-center text-base text-text-secondary">二选一，再汇合到结束</p>
         </div>
+
         <div className="flex flex-col rounded-3xl border border-classroom-border bg-classroom-playground/60 px-3 py-4">
-          <h3 className="text-center text-xl font-semibold text-accent">循环结构</h3>
-          <div className="mt-3 space-y-0">
-            <Pill>开始</Pill>
-            <Arrow />
-            <Box>初始化（如 i = 1）</Box>
-            <Arrow />
-            <Diamond text={'条件\n成立?'} yes="执行循环体" no="离开循环" />
-            <Arrow />
-            <Box>更新状态（如 i += 1）</Box>
-            <p className="py-1 text-center text-base font-semibold text-accent">↑ 回到条件判断</p>
-            <Pill>结束</Pill>
+          <h3 className="shrink-0 text-center text-xl font-semibold text-accent">循环结构</h3>
+          <div className="mt-2 flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+            <img
+              src="/lesson04/loop-flow.svg?v=2"
+              alt="循环结构流程图：更新后沿左侧橙色箭头回流到条件判断，否则结束"
+              className="max-h-full max-w-full object-contain"
+            />
           </div>
-          <p className="mt-auto pt-2 text-center text-base text-text-secondary">条件成立就重复执行</p>
+          <p className="mt-auto shrink-0 pt-2 text-center text-base text-text-secondary">橙色箭头：更新后回流再判断</p>
         </div>
       </div>
     </div>
@@ -294,12 +271,12 @@ function LoopModel() {
           <Code>{`# break：结束当前这一层循环
 # continue：跳过本次剩余语句
 # for / while 的 else：没有 break 才执行
-for x in [1, 3, 5, 9]:
-    if x == 7:
-        print("找到了")
+for w in [10, 0, 20, 40]:
+    if w == 30:
+        print("找到 30kg")
         break
 else:
-    print("没有找到")`}</Code>
+    print("本趟没有")`}</Code>
         </div>
         <div>
           <p className="text-lg font-semibold text-accent">常见任务模型</p>

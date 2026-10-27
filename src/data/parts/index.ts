@@ -46,6 +46,8 @@ import { scenes as loopDrill } from "./loop-drill/scenes";
 import { scenes as loopWrap } from "./loop-wrap/scenes";
 import { scenes as lesson04Close } from "./lesson04-close/scenes";
 import { scenes as listQueue } from "./list-queue/scenes";
+import { scenes as listEdit } from "./list-edit/scenes";
+import { scenes as listLookup } from "./list-lookup/scenes";
 
 /** 全课知识块仓库：开课表通过 ref 引用 */
 export const PARTS: Record<string, ContentPart> = {
@@ -96,6 +98,8 @@ export const PARTS: Record<string, ContentPart> = {
   "loop-wrap": { id: "loop-wrap", scenes: loopWrap },
   "lesson04-close": { id: "lesson04-close", scenes: lesson04Close },
   "list-queue": { id: "list-queue", scenes: listQueue },
+  "list-edit": { id: "list-edit", scenes: listEdit },
+  "list-lookup": { id: "list-lookup", scenes: listLookup },
 };
 
 export function getPart(ref: string): ContentPart {

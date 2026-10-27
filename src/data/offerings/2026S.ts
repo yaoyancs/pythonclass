@@ -143,10 +143,14 @@ export const offering2026S: Offering = {
       id: "lesson06",
       number: 6,
       title: "列表与元组",
-      blurb: "管理一组数据",
+      blurb: "先学会用列表管理一组数据",
       hours: 3,
       ready: true,
-      parts: [{ id: "01", title: "候诊队列", ref: "list-queue" }],
+      parts: [
+        { id: "01", title: "容器与创建增加", ref: "list-queue" },
+        { id: "02", title: "删除与修改", ref: "list-edit" },
+        { id: "03", title: "查询拷贝排序", ref: "list-lookup" },
+      ],
     },
     {
       id: "lesson07",
@@ -178,7 +182,7 @@ export const offering2026S: Offering = {
     {
       id: "lesson10",
       number: 10,
-      title: "第三方库和Python生态",
+      title: "Python与大模型",
       blurb: "选用库完成实际任务",
       hours: 3,
       ready: false,

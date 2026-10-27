@@ -4,7 +4,7 @@ test('home lists all lectures', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Python 程序设计' })).toBeVisible();
   await expect(page.getByText('第 1 讲　Python概述')).toBeVisible();
-  await expect(page.getByText('第 10 讲　第三方库和Python生态')).toBeVisible();
+  await expect(page.getByText('第 10 讲　Python与大模型')).toBeVisible();
 });
 
 test('opens lecture from home', async ({ page }) => {

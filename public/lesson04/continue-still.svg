@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420">
   <rect width="640" height="420" rx="28" fill="#F4F7FB"/>
   <rect x="168" y="36" width="304" height="64" rx="16" fill="#FFFFFF" stroke="#D5DDE8"/>
-  <text x="320" y="76" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#1B3A6B">输入 -5</text>
+  <text x="320" y="76" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#1B3A6B">?? 0</text>
   <path d="M320 100 V128" stroke="#1B3A6B" stroke-width="3"/>
   <rect x="168" y="128" width="304" height="64" rx="16" fill="#FFFFFF" stroke="#D5DDE8"/>
-  <text x="320" y="168" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#1B3A6B">成绩无效</text>
+  <text x="320" y="168" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#1B3A6B">??</text>
   <path d="M320 192 V228" stroke="#C45C26" stroke-width="3"/>
   <rect x="148" y="228" width="344" height="64" rx="16" fill="#FFF4EC" stroke="#C45C26" stroke-width="3"/>
-  <text x="320" y="268" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#C45C26">正在统计成绩</text>
+  <text x="320" y="268" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#C45C26">????</text>
   <path d="M320 292 V328" stroke="#C45C26" stroke-width="3"/>
   <rect x="148" y="328" width="344" height="64" rx="16" fill="#FFF4EC" stroke="#C45C26" stroke-width="3"/>
-  <text x="320" y="368" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#C45C26">统计完成</text>
+  <text x="320" y="368" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#C45C26">?????</text>
 </svg>

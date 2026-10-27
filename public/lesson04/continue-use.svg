@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420">
   <rect width="640" height="420" rx="28" fill="#F4F7FB"/>
   <rect x="36" y="36" width="140" height="96" rx="16" fill="#FFFFFF" stroke="#D5DDE8"/>
-  <text x="106" y="94" text-anchor="middle" font-size="36" font-family="PingFang SC, sans-serif" fill="#1B3A6B">-1</text>
-  <text x="230" y="94" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#1B3A6B">break</text>
-  <rect x="330" y="36" width="274" height="96" rx="16" fill="#FDECEC" stroke="#B42318"/>
-  <text x="467" y="94" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#B42318">结束录入</text>
+  <text x="106" y="94" text-anchor="middle" font-size="36" font-family="PingFang SC, sans-serif" fill="#1B3A6B">0</text>
+  <text x="230" y="94" text-anchor="middle" font-size="24" font-family="PingFang SC, sans-serif" fill="#1F7A4D">continue</text>
+  <rect x="330" y="36" width="274" height="96" rx="16" fill="#E7F6EE" stroke="#1F7A4D"/>
+  <text x="467" y="94" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#1F7A4D">跳过这一件</text>
   <rect x="36" y="162" width="140" height="96" rx="16" fill="#FFFFFF" stroke="#D5DDE8"/>
-  <text x="106" y="220" text-anchor="middle" font-size="36" font-family="PingFang SC, sans-serif" fill="#1B3A6B">-5</text>
-  <text x="230" y="220" text-anchor="middle" font-size="24" font-family="PingFang SC, sans-serif" fill="#1F7A4D">continue</text>
-  <rect x="330" y="162" width="274" height="96" rx="16" fill="#E7F6EE" stroke="#1F7A4D"/>
-  <text x="467" y="220" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#1F7A4D">跳过这一次</text>
+  <text x="106" y="220" text-anchor="middle" font-size="36" font-family="PingFang SC, sans-serif" fill="#1B3A6B">40</text>
+  <text x="230" y="220" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#1B3A6B">break</text>
+  <rect x="330" y="162" width="274" height="96" rx="16" fill="#FDECEC" stroke="#B42318"/>
+  <text x="467" y="220" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#B42318">超载，停止装车</text>
   <rect x="36" y="288" width="140" height="96" rx="16" fill="#FFFFFF" stroke="#D5DDE8"/>
-  <text x="106" y="346" text-anchor="middle" font-size="36" font-family="PingFang SC, sans-serif" fill="#1B3A6B">85</text>
-  <text x="230" y="346" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#1B3A6B">统计</text>
+  <text x="106" y="346" text-anchor="middle" font-size="36" font-family="PingFang SC, sans-serif" fill="#1B3A6B">20</text>
+  <text x="230" y="346" text-anchor="middle" font-size="28" font-family="PingFang SC, sans-serif" fill="#1B3A6B">装车</text>
   <rect x="330" y="288" width="274" height="96" rx="16" fill="#FFFFFF" stroke="#1B3A6B"/>
-  <text x="467" y="346" text-anchor="middle" font-size="26" font-family="PingFang SC, sans-serif" fill="#1B3A6B">人数、总分、及格</text>
+  <text x="467" y="346" text-anchor="middle" font-size="26" font-family="PingFang SC, sans-serif" fill="#1B3A6B">件数加一、累加重量</text>
 </svg>

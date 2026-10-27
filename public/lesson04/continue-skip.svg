@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420">
   <rect width="640" height="420" rx="28" fill="#F4F7FB"/>
   <rect x="36" y="48" width="250" height="64" rx="16" fill="#FFFFFF" stroke="#D5DDE8"/>
-  <text x="161" y="88" text-anchor="middle" font-size="26" font-family="PingFang SC, sans-serif" fill="#1B3A6B">成绩无效</text>
+  <text x="161" y="88" text-anchor="middle" font-size="26" font-family="PingFang SC, sans-serif" fill="#1B3A6B">破损</text>
   <path d="M161 112 V148" stroke="#1B3A6B" stroke-width="3"/>
   <rect x="36" y="148" width="250" height="64" rx="16" fill="#E7F6EE" stroke="#1F7A4D" stroke-width="3"/>
   <text x="161" y="188" text-anchor="middle" font-size="26" font-family="PingFang SC, sans-serif" fill="#1F7A4D">continue</text>
   <path d="M286 180 H470" stroke="#1F7A4D" stroke-width="3"/>
   <path d="M458 168 L486 180 L458 192" fill="#1F7A4D"/>
   <rect x="354" y="250" width="250" height="56" rx="16" fill="#F3F4F6" stroke="#C5CDD8"/>
-  <text x="479" y="286" text-anchor="middle" font-size="24" font-family="PingFang SC, sans-serif" fill="#98A2B3">正在统计成绩</text>
+  <text x="479" y="286" text-anchor="middle" font-size="24" font-family="PingFang SC, sans-serif" fill="#98A2B3">件数加一</text>
   <rect x="354" y="322" width="250" height="56" rx="16" fill="#F3F4F6" stroke="#C5CDD8"/>
-  <text x="479" y="358" text-anchor="middle" font-size="24" font-family="PingFang SC, sans-serif" fill="#98A2B3">统计完成</text>
+  <text x="479" y="358" text-anchor="middle" font-size="24" font-family="PingFang SC, sans-serif" fill="#98A2B3">本件已装车</text>
   <rect x="390" y="48" width="214" height="64" rx="16" fill="#E7F6EE" stroke="#1F7A4D" stroke-width="3"/>
-  <text x="497" y="88" text-anchor="middle" font-size="26" font-family="PingFang SC, sans-serif" fill="#1F7A4D">下一次输入</text>
+  <text x="497" y="88" text-anchor="middle" font-size="26" font-family="PingFang SC, sans-serif" fill="#1F7A4D">下一个包裹</text>
 </svg>

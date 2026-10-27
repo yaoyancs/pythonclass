@@ -115,6 +115,7 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
           activeLine={tracing ? trace.line : undefined}
           lineNote={tracing ? trace.note : undefined}
           fontSize={24}
+          heightPx={scene.pairedCode ? 520 : undefined}
           fluo={mode === 'lab'}
           yellow={mode === 'summary'}
           onFocusChange={(focused) => dispatch({ type: 'SET_EDITOR_FOCUSED', value: focused })}
