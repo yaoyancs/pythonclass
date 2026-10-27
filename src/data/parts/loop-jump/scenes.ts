@@ -51,7 +51,51 @@ print(f"总分：{total}")
 print(f"及格人数：{passed}")
 `;
 
-/** 九九表用 break 结束这一行。体测成绩用问题和配图引出 continue。 */
+const FOR_ELSE = `# for ... else：循环没有被 break 打断时，才会执行 else
+
+target = 7
+for x in [1, 3, 5, 9]:
+    if x == target:
+        print("找到了")
+        break
+else:
+    print("没有找到")
+
+print("---")
+
+# 改成能找到的情况：target = 5
+target = 5
+for x in [1, 3, 5, 9]:
+    if x == target:
+        print("找到了")
+        break
+else:
+    print("没有找到")
+`;
+
+const WHILE_ELSE = `# while ... else：循环没有被 break 打断时，才会执行 else
+
+n = 1
+while n <= 3:
+    print(n)
+    n += 1
+else:
+    print("循环正常结束")
+
+print("---")
+
+# 中途 break 后，else 不会执行
+n = 1
+while n <= 5:
+    if n == 3:
+        break
+    print(n)
+    n += 1
+else:
+    print("循环正常结束")
+`;
+
+/** 九九表用 break 结束这一行。体测成绩用问题和配图引出 continue。再看 for/while 的 else。 */
 export const scenes: DraftScene[] = [
   {
     id: "scene-jump-row",
@@ -85,5 +129,23 @@ export const scenes: DraftScene[] = [
     layout: "split",
     content: { loopPath: { topic: "jump", mode: "use" } },
     code: code(USE),
+  },
+  {
+    id: "scene-jump-for-else",
+    title: "for else",
+    type: "explain",
+    layout: "split",
+    editorOnly: true,
+    content: { loopPath: { topic: "jump", mode: "forElse" } },
+    code: code(FOR_ELSE),
+  },
+  {
+    id: "scene-jump-while-else",
+    title: "while else",
+    type: "explain",
+    layout: "split",
+    editorOnly: true,
+    content: { loopPath: { topic: "jump", mode: "whileElse" } },
+    code: code(WHILE_ELSE),
   },
 ];

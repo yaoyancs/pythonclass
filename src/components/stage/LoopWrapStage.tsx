@@ -290,18 +290,16 @@ function LoopModel() {
       <Title>循环控制与常见任务模型</Title>
       <div className="mt-5 grid grid-cols-2 gap-6">
         <div>
-          <p className="text-lg font-semibold text-accent">break 与 continue</p>
+          <p className="text-lg font-semibold text-accent">break、continue 与 else</p>
           <Code>{`# break：结束当前这一层循环
-for i in range(1, 11):
-    if i == 5:
-        break
-    print(i)
-
 # continue：跳过本次剩余语句
-for i in range(1, 11):
-    if i % 2 == 0:
-        continue
-    print(i)`}</Code>
+# for / while 的 else：没有 break 才执行
+for x in [1, 3, 5, 9]:
+    if x == 7:
+        print("找到了")
+        break
+else:
+    print("没有找到")`}</Code>
         </div>
         <div>
           <p className="text-lg font-semibold text-accent">常见任务模型</p>

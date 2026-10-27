@@ -734,6 +734,7 @@ function CloseSummary() {
     '嵌套：外层每走一轮，内层都要走完，再回到外层',
     'break 终止它所在的那一层循环',
     'continue 跳过本次循环剩下的语句；只筛选时用 if 就够',
+    'for / while 的 else：没有被 break 打断时才执行',
   ];
   return (
     <div className="flex h-full flex-col justify-center">
@@ -832,6 +833,7 @@ export function LoopPathStage({ content, sceneId }: Props) {
         />
       );
     }
+    if (mode === 'forElse' || mode === 'whileElse') return null;
   }
   if (topic === 'close') {
     if (mode === 'values') return <CloseValues />;
