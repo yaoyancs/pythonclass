@@ -817,6 +817,12 @@ export interface SceneContent {
   branchContest?: BranchContestContent;
   conditionPath?: ConditionPathContent;
   loopPath?: LoopPathContent;
+  /** 循环综合练习：一页一道编程题 */
+  loopDrill?: LoopDrillContent;
+  /** 循环综合练习：多种写法流程图对照 */
+  loopDrillFlows?: LoopDrillFlowsContent;
+  /** 第 4&5 讲末：顺序、分支、循环系统归纳 */
+  loopWrap?: LoopWrapContent;
   vendPath?: VendPathContent;
 }
 
@@ -846,6 +852,61 @@ export interface VendPathContent {
 export interface LoopPathContent {
   topic: 'why' | 'while' | 'for' | 'acc' | 'jump' | 'nest' | 'close';
   mode: string;
+}
+
+/** 循环综合练习的一道题。输入输出按样例原样展示。 */
+export interface LoopDrillContent {
+  index: string;
+  title: string;
+  image?: { src: string; alt: string };
+  /** 真实情境，按段显示 */
+  situation?: string[];
+  problem?: string;
+  task: string;
+  rules: string[];
+  goal: string;
+  inputFormat?: string;
+  outputFormat?: string;
+  sampleInput: string;
+  sampleOutput: string;
+  sampleNote?: string;
+}
+
+export interface LoopDrillFlowNode {
+  kind: 'start' | 'process' | 'decision' | 'end';
+  text: string;
+  /** 判断框的「是」分支说明 */
+  yes?: string;
+  /** 判断框的「否」分支说明 */
+  no?: string;
+}
+
+export interface LoopDrillFlowChart {
+  title: string;
+  nodes: LoopDrillFlowNode[];
+}
+
+/** 练习题多种嵌套写法的流程图对照 */
+export interface LoopDrillFlowsContent {
+  title: string;
+  charts: LoopDrillFlowChart[];
+}
+
+/** 三种基本结构归纳。mode 决定这一页展示什么。 */
+export interface LoopWrapContent {
+  mode:
+    | 'overview'
+    | 'flows'
+    | 'sequence'
+    | 'branch'
+    | 'branchKey'
+    | 'loop'
+    | 'loopModel'
+    | 'combine'
+    | 'choose'
+    | 'quality'
+    | 'table'
+    | 'goals';
 }
 
 export interface SceneCode {
@@ -925,8 +986,10 @@ export interface LectureSpec {
   blurb: string;
   hours: number;
   ready: boolean;
-  /** 封面讲次编号。同一 number 的并列版本用它区分，如「3-2」。 */
+  /** 封面讲次编号。同一 number 的并列版本用它区分，如「3-2」。跨讲合并时写「4&5」。 */
   label?: string;
+  /** 这一条占用的讲次数。4&5 讲写 2，日历上连续两周都显示这一条。 */
+  span?: number;
   /** 开场导读 part id 列表（不含目录页；目录由 buildLesson 自动插入） */
   prelude?: string[];
   parts: LecturePartRef[];

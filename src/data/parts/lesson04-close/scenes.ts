@@ -22,8 +22,11 @@ export const scenes: DraftScene[] = [
     layout: "fullscreen",
     content: {
       headline: "课后作业",
+      image: { src: "/lesson04/lab-check.jpg", alt: "学生在机房逐台检查设备" },
       loopPath: { topic: "close", mode: "homework" },
-      bulletPoints: [],
+      bulletPoints: [
+        "实验室设备巡检。输入教室数量。每间教室逐台输入设备状态：1 表示正常，0 表示故障，-1 表示这间教室检查结束。输出每间教室的正常设备数和故障设备数，以及全校故障设备总数。故障设备要计入。",
+      ],
     },
   },
   {

@@ -25,8 +25,15 @@ else:
     print("小了")
 `;
 
-/** 导入：先复习分支，再用新需求说明一次判断不够。 */
+/** 导入：三种基本结构里，今天只展开循环；再用猜数字说明一次判断不够。 */
 export const scenes: DraftScene[] = [
+  {
+    id: "scene-loop-why-00",
+    title: "三种基本结构",
+    type: "explain",
+    layout: "fullscreen",
+    content: { loopPath: { topic: "why", mode: "map" } },
+  },
   {
     id: "scene-loop-why-01",
     title: "分支判断",

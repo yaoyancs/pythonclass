@@ -83,11 +83,11 @@ export const scenes: DraftScene[] = [
     hints: [
       { level: 1, text: "条件写成密码还不正确。正确密码是 123456。" },
       { level: 2, text: "input 放在循环体内。密码正确时条件变为 False，循环停止。" },
-      { level: 3, text: 'password = ""\nwhile password != "python":\n    password = input("请输入密码：")' },
+      { level: 3, text: 'password = ""\nwhile password != "123456":\n    password = input("请输入密码：")' },
     ],
     reveal: {
       title: "对照",
-      body: 'while password != "123456" 在密码不正确时继续读入。输入 python 后条件为 False，停止输入。',
+      body: 'while password != "123456" 在密码不正确时继续读入。输入 123456 后条件为 False，停止输入。',
     },
   },
 ];

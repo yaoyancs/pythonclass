@@ -42,7 +42,10 @@ import { scenes as loopFor } from "./loop-for/scenes";
 import { scenes as loopAcc } from "./loop-acc/scenes";
 import { scenes as loopJump } from "./loop-jump/scenes";
 import { scenes as loopNest } from "./loop-nest/scenes";
+import { scenes as loopDrill } from "./loop-drill/scenes";
+import { scenes as loopWrap } from "./loop-wrap/scenes";
 import { scenes as lesson04Close } from "./lesson04-close/scenes";
+import { scenes as listQueue } from "./list-queue/scenes";
 
 /** 全课知识块仓库：开课表通过 ref 引用 */
 export const PARTS: Record<string, ContentPart> = {
@@ -89,7 +92,10 @@ export const PARTS: Record<string, ContentPart> = {
   "loop-acc": { id: "loop-acc", scenes: loopAcc },
   "loop-jump": { id: "loop-jump", scenes: loopJump },
   "loop-nest": { id: "loop-nest", scenes: loopNest },
+  "loop-drill": { id: "loop-drill", scenes: loopDrill },
+  "loop-wrap": { id: "loop-wrap", scenes: loopWrap },
   "lesson04-close": { id: "lesson04-close", scenes: lesson04Close },
+  "list-queue": { id: "list-queue", scenes: listQueue },
 };
 
 export function getPart(ref: string): ContentPart {

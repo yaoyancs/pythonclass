@@ -20,6 +20,7 @@ export function ClassroomShell() {
   const paired = Boolean(scene.pairedCode);
   const isFullscreenLayout = scene.layout === 'fullscreen' && !editorOnly;
   const editorLeft = scene.editorSide === 'left';
+  const drill = Boolean(scene.content.loopDrill);
   const mainRef = useRef<HTMLElement>(null);
   const [rightPct, setRightPct] = useState(DEFAULT_RIGHT_PCT);
   const [isDragging, setIsDragging] = useState(false);
@@ -41,8 +42,10 @@ export function ClassroomShell() {
   }, []);
 
   useEffect(() => {
-    if (editorLeft) setRightPct(42);
-  }, [editorLeft, scene.id]);
+    if (paired) setRightPct(50);
+    else if (drill) setRightPct(58);
+    else if (editorLeft) setRightPct(42);
+  }, [paired, drill, editorLeft, scene.id]);
 
   const handleSplitterPointerDown = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
     e.preventDefault();

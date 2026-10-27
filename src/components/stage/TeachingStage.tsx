@@ -75,6 +75,9 @@ import { BranchContestStage } from './BranchContestStage';
 import { ConditionPathStage } from './ConditionPathStage';
 import { VendPathStage } from './VendPathStage';
 import { LoopPathStage } from './LoopPathStage';
+import { LoopDrillStage } from './LoopDrillStage';
+import { LoopDrillFlowsStage } from './LoopDrillFlowsStage';
+import { LoopWrapStage } from './LoopWrapStage';
 import { CodeBeatsStage } from './CodeBeatsStage';
 
 export function TeachingStage() {
@@ -147,6 +150,9 @@ export function TeachingStage() {
       content.branchContest ||
       content.conditionPath ||
       content.loopPath ||
+      content.loopDrill ||
+      content.loopDrillFlows ||
+      content.loopWrap ||
       content.vendPath ||
       content.codeBeats,
   );
@@ -499,7 +505,11 @@ export function TeachingStage() {
               <ConditionPathStage content={content.conditionPath} sceneId={scene.id} />
             )}
             {content.loopPath && <LoopPathStage content={content.loopPath} sceneId={scene.id} />}
+            {content.loopDrill && <LoopDrillStage content={content.loopDrill} />}
+            {content.loopDrillFlows && <LoopDrillFlowsStage content={content.loopDrillFlows} />}
+            {content.loopWrap && <LoopWrapStage content={content.loopWrap} />}
             {content.vendPath && <VendPathStage content={content.vendPath} sceneId={scene.id} />}
+
             {content.codeBeats && (
               <CodeBeatsStage content={content.codeBeats} sceneId={scene.id} onPhase={setBeatPhase} />
             )}

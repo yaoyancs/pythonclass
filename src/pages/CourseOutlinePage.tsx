@@ -17,15 +17,20 @@ function sessionLine(session: CalendarSession): string {
 function Slot({
   label,
   session,
+  mark,
 }: {
   label: string;
   session?: CalendarSession;
+  mark?: string;
 }) {
   return (
     <div className="mt-3">
       <p className="text-xs font-semibold tracking-[0.16em] text-accent">{label}</p>
       {session ? (
-        <p className="mt-1 text-text-primary">{sessionLine(session)}</p>
+        <p className="mt-1 text-text-primary">
+          {sessionLine(session)}
+          {mark && <span className="ml-2 font-semibold text-error">{mark}</span>}
+        </p>
       ) : (
         <p className="mt-1 text-text-secondary">本周无{label}</p>
       )}
@@ -111,7 +116,7 @@ export function CourseOutlinePage() {
                     to={lecturePath(week.lecture.id)}
                     className="text-lg text-accent hover:underline underline-offset-4"
                   >
-                    第 {week.lecture.number} 讲　{week.lecture.title}
+                    第 {week.lecture.label ?? week.lecture.number} 讲　{week.lecture.title}
                   </Link>
                 ) : null}
               </div>
@@ -126,7 +131,7 @@ export function CourseOutlinePage() {
                     >
                       <p className="font-medium text-text-primary">{cls.name}</p>
                       <Slot label="理论" session={cls.theory} />
-                      <Slot label="实验" session={cls.lab} />
+                      <Slot label="实验" session={cls.lab} mark={week.labMark} />
                     </div>
                   ))}
                 </div>

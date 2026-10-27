@@ -32,6 +32,28 @@ function Task({ title, items }: { title: string; items: string[] }) {
   );
 }
 
+function WhyMap() {
+  const rows = [
+    ['顺序结构', '语句按书写顺序，从上到下逐行执行'],
+    ['分支结构', '先求条件。条件为 True 走一条语句块，为 False 走另一条'],
+    ['循环结构', '条件成立就重复执行语句块，直到条件不再成立'],
+  ];
+  return (
+    <div className="flex h-full flex-col justify-center">
+      <p className="text-center text-3xl font-semibold">程序的三种基本结构</p>
+      <ul className="mx-auto mt-8 w-full max-w-4xl space-y-3">
+        {rows.map(([name, line]) => (
+          <li key={name} className="rounded-2xl bg-white px-6 py-4 text-xl">
+            <span className="font-semibold">{name}</span>
+            <span className="text-text-secondary">　{line}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-8 text-center text-2xl font-semibold">顺序和分支已经学过。这一讲展开循环结构。</p>
+    </div>
+  );
+}
+
 function WhyOnce() {
   return (
     <Task
@@ -73,11 +95,13 @@ function WhyLimit() {
 function WhileSyntax() {
   return (
     <div>
-      <h2 className="title-stage text-4xl text-text-primary">while</h2>
-      <p className="mt-4 text-xl leading-relaxed text-text-secondary">
-        先看条件。条件为 True，执行缩进的语句块，再回到条件。条件为 False，跳过语句块，执行后面的语句。
+      <h2 className="title-stage text-4xl text-text-primary">while 循环</h2>
+      <pre className="mt-5 rounded-3xl bg-white px-6 py-5 font-mono text-3xl leading-relaxed">{`while <条件>:
+    <语句块>`}</pre>
+      <p className="mt-5 text-xl leading-relaxed text-text-secondary">
+        先判断条件。条件为 True，执行语句块，再回到条件。条件为 False，离开循环，执行后面的语句。
       </p>
-      <p className="mt-6 text-2xl font-semibold">冒号后面是循环体，靠缩进圈定。</p>
+      <p className="mt-4 text-2xl font-semibold">语句块写在冒号后面，靠缩进圈定。</p>
     </div>
   );
 }
@@ -146,7 +170,7 @@ function WhilePractice() {
     <div>
       <h2 className="title-stage text-4xl text-text-primary">密码验证</h2>
       <p className="mt-4 text-xl leading-relaxed text-text-secondary">
-        用户输入密码，如果输，提示重新输入，直到输对为止。
+        反复读入密码。密码不正确就再读一次，直到输入 123456。
       </p>
     </div>
   );
@@ -605,211 +629,73 @@ function AccPractice() {
   );
 }
 
-function JumpBreak() {
+function NestFind() {
+  const rows = Array.from({ length: 9 }, (_, index) => {
+    const i = index + 1;
+    return Array.from({ length: i }, (_, jndex) => {
+      const j = jndex + 1;
+      return `${j}×${i}=${j * i}`;
+    }).join('  ');
+  });
   return (
     <div>
-      <h2 className="title-stage text-3xl text-text-primary">break 离开它所在的这一层循环</h2>
-      <p className="mt-4 text-xl">右侧把上一页的 continue 换成了 break。每一排生成到第 3 座就停，第 4、5、6 座不再打印。</p>
-      <p className="mt-3 text-xl">停掉的是内层。外层还在，下一排会重新从第 1 座开始，再到第 3 座离开内层。</p>
-      <p className="mt-3 text-xl">continue 只跳过这一座。break 把这一层循环剩下的轮次都丢掉。</p>
-    </div>
-  );
-}
-
-function JumpAisle() {
-  return (
-    <div>
-      <h2 className="title-stage text-3xl text-text-primary">每一排的第 3 座不出售。怎样生成所有可出售的座位编号？</h2>
-      <p className="mt-4 text-xl">先确定一排，再看这一排的每个座位。座号是 3 时，continue 跳过这一座，继续生成后面的座位。</p>
-      <p className="mt-3 text-xl">这里不能用 break。break 会离开内层循环，这一排第 4、5、6 座也不再生成。</p>
-    </div>
-  );
-}
-
-function JumpCompare({ sceneId }: { sceneId: string }) {
-  const advance = useStageAdvance(sceneId, 6);
-  const step = advance.phase;
-  return (
-    <div>
-      <h2 className="title-stage text-3xl text-text-primary">同一排，遇到第 3 座</h2>
-      <p className="mt-1 text-lg text-text-secondary">按 → 看下一座。绿色是生成的座位，第 3 座两种写法走法不同。</p>
-      <div className="mt-5 grid grid-cols-2 gap-4">
-        {(['continue', 'break'] as const).map((kind) => (
-          <div key={kind} className="rounded-3xl bg-white px-4 py-4">
-            <p className="font-mono text-xl font-semibold">{kind}</p>
-            <div className="mt-3 grid grid-cols-6 gap-2">
-              {[1, 2, 3, 4, 5, 6].map((seat) => {
-                const reached = step >= seat;
-                const skipped = kind === 'continue' && seat === 3 && reached;
-                const stopped = kind === 'break' && seat >= 3 && step >= 3;
-                const sold = reached && !skipped && !stopped;
-                return (
-                  <div
-                    key={seat}
-                    className={`rounded-xl py-3 text-center font-mono text-xl ${
-                      sold ? 'bg-emerald-600 text-white' : skipped ? 'bg-amber-400 text-white' : stopped && seat === 3 ? 'bg-red-500 text-white' : 'bg-classroom-stage text-text-secondary'
-                    }`}
-                  >
-                    {seat}
-                  </div>
-                );
-              })}
-            </div>
-            <p className="mt-3 text-lg">
-              {step === 0
-                ? '尚未开始'
-                : kind === 'continue'
-                  ? '跳过第 3 座，第 4、5、6 座继续生成'
-                  : step < 3
-                    ? '还没遇到第 3 座'
-                    : '在第 3 座离开循环，后面不再看'}
-            </p>
-          </div>
+      <h2 className="title-stage text-3xl text-text-primary">编程实现乘法表打印，需要告诉计算机哪些规则？</h2>
+      <ul className="mt-5 space-y-1">
+        {rows.map((line) => (
+          <li key={line} className="rounded-xl bg-white px-4 py-1.5 font-mono text-xl">{line}</li>
         ))}
-      </div>
-    </div>
-  );
-}
-
-function JumpCheck() {
-  return (
-    <div>
-      <p className="text-lg font-semibold text-accent">综合练习</p>
-      <h2 className="title-stage mt-2 text-3xl text-text-primary">编写程序，判断用户输入的密码是否同时包含英文字母和数字</h2>
-      <ul className="mt-4 space-y-2 text-xl">
-        <li className="rounded-2xl bg-white px-5 py-3">abc123、Py2026：符合要求</li>
-        <li className="rounded-2xl bg-white px-5 py-3">python、123456：不符合要求</li>
       </ul>
-      <p className="mt-4 text-lg text-text-secondary">在右侧编写并运行。只检查组成，不代表真实系统的全部密码要求。</p>
     </div>
   );
 }
 
-function JumpClose() {
-  const lines = [
-    ['while', '密码不对就继续读，直到可以停'],
-    ['for', '逐个取出字符串里的字符'],
-    ['continue', '跳过本轮剩下的语句，处理下一个'],
-    ['break', '结果已经确定，提前离开循环'],
-  ];
+function NestScale() {
   return (
     <div>
-      <h2 className="title-stage text-3xl text-text-primary">Python 循环</h2>
-      <div className="mt-4 space-y-2">
-        {lines.map(([name, line]) => (
-          <p key={name} className="rounded-2xl bg-white px-5 py-3 text-xl">
-            <span className="font-mono font-semibold">{name}</span>　{line}
-          </p>
-        ))}
-      </div>
+      <h2 className="title-stage text-4xl text-text-primary">生成任意规模的乘法表</h2>
+      <p className="mt-4 text-xl">输入 n，输出前 n 行。</p>
+      <p className="mt-4 rounded-2xl bg-white px-5 py-4 font-mono text-xl leading-relaxed">输入 3：1×1=1；1×2=2  2×2=4；1×3=3  2×3=6  3×3=9</p>
     </div>
   );
 }
 
-function SeatMap({
-  highlight,
-  doneCount,
-}: {
-  highlight?: { row: number; seat: number };
-  doneCount?: number;
-}) {
+function NestReverse() {
   return (
     <div>
-      <p className="text-center text-lg tracking-[0.4em] text-text-secondary">银幕</p>
-      <div className="mx-auto mt-2 h-2 w-2/3 rounded-full bg-text-primary/80" />
-      <div className="mt-4 space-y-2">
-        {[1, 2, 3, 4, 5].map((row) => (
-          <div key={row} className="flex items-center gap-2">
-            <span className="w-14 text-sm text-text-secondary">第{row}排</span>
-            <div className="grid flex-1 grid-cols-6 gap-2">
-              {[1, 2, 3, 4, 5, 6].map((seat) => {
-                const index = (row - 1) * 6 + seat;
-                const target = highlight?.row === row && highlight.seat === seat;
-                const done = doneCount != null && index <= doneCount;
-                const current = doneCount != null && index === doneCount;
-                return (
-                  <div
-                    key={seat}
-                    className={`rounded-xl py-2 text-center font-mono text-lg ${
-                      current ? 'bg-accent text-white' : target || done ? 'bg-emerald-600 text-white' : 'bg-white'
-                    }`}
-                  >
-                    {seat}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
+      <h2 className="title-stage text-4xl text-text-primary">输出倒三角形乘法表</h2>
+      <p className="mt-4 text-xl">先输出第 9 行，最后输出第 1 行。</p>
+      <p className="mt-4 rounded-2xl bg-white px-5 py-4 font-mono text-xl leading-relaxed">第一行从 1×9=9 到 9×9=81。最后一行是 1×1=1。</p>
     </div>
   );
 }
 
-function NestFind({ sceneId }: { sceneId: string }) {
-  const advance = useStageAdvance(sceneId, 2);
+function NestLimit() {
+  return (
+    <div>
+      <h2 className="title-stage text-4xl text-text-primary">只输出乘积不超过 20 的算式</h2>
+      <p className="mt-4 text-xl">乘积大于 20 的不打印。</p>
+      <ul className="mt-4 space-y-2 text-xl">
+        <li className="rounded-2xl bg-white px-5 py-3">第 5 行停在 4×5=20</li>
+        <li className="rounded-2xl bg-white px-5 py-3">第 9 行停在 2×9=18</li>
+      </ul>
+    </div>
+  );
+}
+
+function JumpRow() {
+  return (
+    <div>
+      <h2 className="title-stage text-4xl text-text-primary">乘积超过 20，结束这一行</h2>
+      <p className="mt-4 text-xl">下一行继续。</p>
+    </div>
+  );
+}
+
+function JumpQuestion({ question, src, alt }: { question: string; src: string; alt: string }) {
   return (
     <div className="flex h-full flex-col">
-      <h2 className="title-stage text-3xl text-text-primary">电影票写着第 3 排第 5 座，你怎样找到它？</h2>
-      <div className="mt-3 grid min-h-0 flex-1 grid-cols-[0.72fr_1.28fr] gap-4">
-        <img src="/lesson04/movie-ticket.jpg" alt="电影票，第3排第5座" className="h-full max-h-[28rem] w-full rounded-3xl object-cover" />
-        <img src="/lesson04/cinema-seats.jpg" alt="座位分布图，第3排第5座为绿色" className="h-full max-h-[28rem] w-full rounded-3xl object-cover" />
-      </div>
-      {advance.phase >= 1 && <p className="mt-3 text-xl">先找到第 3 排，再在这一排找到第 5 座。</p>}
-      {advance.phase >= 2 && <p className="mt-2 text-xl">要生成全部座位编号：先确定一排，再依次处理这一排的每一个座位。</p>}
-      {advance.phase < 2 && <p className="mt-3 text-lg text-text-secondary">按 → 继续问。</p>}
-    </div>
-  );
-}
-
-function NestRepeat({ sceneId }: { sceneId: string }) {
-  const advance = useStageAdvance(sceneId, 3);
-  return (
-    <div>
-      <h2 className="title-stage text-3xl text-text-primary">5 排，每排 6 个座位</h2>
-      {advance.phase >= 1 && <p className="mt-4 rounded-2xl bg-white px-5 py-3 text-xl">第一排：依次生成第 1 座到第 6 座。</p>}
-      {advance.phase >= 2 && <p className="mt-3 rounded-2xl bg-white px-5 py-3 text-xl">第二排：还是第 1 座到第 6 座，只是排号换成 2。</p>}
-      {advance.phase >= 3 && (
-        <p className="mt-3 text-xl">已经能用一个 for 生成一排。让「生成一排」再重复 5 次，就是循环嵌套。</p>
-      )}
-      {advance.phase < 3 && <p className="mt-3 text-lg text-text-secondary">按 → 看下一问。</p>}
-    </div>
-  );
-}
-
-function NestCode() {
-  return (
-    <div>
-      <h2 className="title-stage text-3xl text-text-primary">外层取排号，内层把这一排的座位走完</h2>
-      <ul className="mt-4 space-y-2 text-xl">
-        <li className="rounded-2xl bg-white px-5 py-3">row 依次取出 1 到 5。</li>
-        <li className="rounded-2xl bg-white px-5 py-3">seat 在每一排取出 1 到 6。</li>
-        <li className="rounded-2xl bg-white px-5 py-3">外层每换一个排号，内层都重新从 1 走到 6。</li>
-      </ul>
-      <p className="mt-3 text-lg text-text-secondary">右侧代码可以改，也可以运行。</p>
-    </div>
-  );
-}
-
-function NestGen({ sceneId }: { sceneId: string }) {
-  const advance = useStageAdvance(sceneId, 30);
-  const count = advance.phase;
-  const row = count === 0 ? null : Math.floor((count - 1) / 6) + 1;
-  const seat = count === 0 ? null : ((count - 1) % 6) + 1;
-  return (
-    <div>
-      <div className="flex items-baseline justify-between">
-        <h2 className="title-stage text-3xl text-text-primary">座位编号生成器</h2>
-        <p className="text-lg text-text-secondary">{count} / 30 个座位</p>
-      </div>
-      <div className="mt-3">
-        <SeatMap doneCount={count} />
-      </div>
-      <p className="mt-3 text-xl">当前排号：{row ?? '—'}　当前座号：{seat ?? '—'}</p>
-      <div className="flex gap-6">
-        <Next onClick={() => advance.advance()}>生成下一个座位</Next>
-        <button type="button" className="mt-6 text-lg text-text-secondary" onClick={() => advance.reset()}>重置</button>
-      </div>
+      <h2 className="title-stage text-3xl leading-snug text-text-primary">{question}</h2>
+      <img src={src} alt={alt} className="mt-4 max-h-[16rem] w-full object-contain" />
     </div>
   );
 }
@@ -839,14 +725,15 @@ function CloseValues() {
 
 function CloseSummary() {
   const keys = [
-    '循环分开「做什么」和「做多少次」',
-    'while：先判断条件，成立才执行循环体',
-    '循环体要让条件有机会变成 False',
-    'for 依次取出序列中的每一项',
-    'range(起点, 终点, 步长)：含起点，不含终点',
-    '累加和计数：初值在循环前，更新在循环中',
-    'break 离开循环，continue 跳过本轮剩余语句',
-    '嵌套时，外层每走一轮，内层都要走完',
+    '顺序结构：按书写顺序逐行执行',
+    '分支结构：按条件选择一条路径',
+    '循环结构：条件成立就重复执行语句块',
+    'while <条件>: 先判断，为 True 才执行语句块',
+    '语句块里要让条件有机会变成 False',
+    'for 依次取出序列中的每一项；range 含起点、不含终点',
+    '嵌套：外层每走一轮，内层都要走完，再回到外层',
+    'break 终止它所在的那一层循环',
+    'continue 跳过本次循环剩下的语句；只筛选时用 if 就够',
   ];
   return (
     <div className="flex h-full flex-col justify-center">
@@ -879,6 +766,7 @@ function Thanks() {
 export function LoopPathStage({ content, sceneId }: Props) {
   const { topic, mode } = content;
   if (topic === 'why') {
+    if (mode === 'map') return <WhyMap />;
     if (mode === 'once') return <WhyOnce />;
     if (mode === 'until') return <WhyUntil />;
     if (mode === 'limit') return <WhyLimit />;
@@ -909,18 +797,41 @@ export function LoopPathStage({ content, sceneId }: Props) {
     if (mode === 'count') return <AccCount />;
     if (mode === 'practice') return <AccPractice />;
   }
-  if (topic === 'jump') {
-    if (mode === 'aisle') return <JumpAisle />;
-    if (mode === 'break') return <JumpBreak />;
-    if (mode === 'continue') return <JumpCompare sceneId={sceneId} />;
-    if (mode === 'check') return <JumpCheck />;
-    if (mode === 'close') return <JumpClose />;
-  }
   if (topic === 'nest') {
-    if (mode === 'find') return <NestFind sceneId={sceneId} />;
-    if (mode === 'repeat') return <NestRepeat sceneId={sceneId} />;
-    if (mode === 'code') return <NestCode />;
-    if (mode === 'gen') return <NestGen sceneId={sceneId} />;
+    if (mode === 'find') return <NestFind />;
+    if (mode === 'scale') return <NestScale />;
+    if (mode === 'reverse') return <NestReverse />;
+    if (mode === 'limit') return <NestLimit />;
+  }
+  if (topic === 'jump') {
+    if (mode === 'row') return <JumpRow />;
+    if (mode === 'still') {
+      return (
+        <JumpQuestion
+          question="输入 -5 时，为什么还在统计？"
+          src="/lesson04/continue-still.svg"
+          alt="成绩无效之后，仍会执行正在统计成绩和统计完成"
+        />
+      );
+    }
+    if (mode === 'skip') {
+      return (
+        <JumpQuestion
+          question="continue 之后，这次剩下的语句还执行吗？"
+          src="/lesson04/continue-skip.svg"
+          alt="continue 跳过正在统计成绩和统计完成，进入下一次输入"
+        />
+      );
+    }
+    if (mode === 'use') {
+      return (
+        <JumpQuestion
+          question="-1 结束录入，-5 只跳过这一次。各用哪一句？"
+          src="/lesson04/continue-use.svg"
+          alt="-1 用 break 结束录入，-5 用 continue 跳过这一次，85 正常统计"
+        />
+      );
+    }
   }
   if (topic === 'close') {
     if (mode === 'values') return <CloseValues />;

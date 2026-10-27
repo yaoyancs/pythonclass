@@ -80,10 +80,12 @@ export function HomePage() {
   const [logoAvailable, setLogoAvailable] = useState(true);
   const ready = LECTURES.filter((lecture) => lecture.ready);
   const upcoming = LECTURES.filter((lecture) => !lecture.ready);
-  const featured = ready.at(-1);
-  const earlierReady = featured
-    ? ready.filter((lecture) => lecture.id !== featured.id).slice().reverse()
-    : [];
+  const currentNumber = ready.at(-1)?.number;
+  const current = ready
+    .filter((lecture) => lecture.number === currentNumber)
+    .slice()
+    .sort((a, b) => Number(Boolean(a.label)) - Number(Boolean(b.label)));
+  const earlierReady = ready.filter((lecture) => lecture.number !== currentNumber).slice().reverse();
 
   return (
     <div className="min-h-full classroom-grid">
@@ -175,9 +177,17 @@ export function HomePage() {
           </Link>
         </section>
 
-        {featured && (
+        {current.length > 0 && (
           <section className="mt-12">
-            <ReadyLectureLink lecture={featured} featured />
+            {current.length === 1 ? (
+              <ReadyLectureLink lecture={current[0]!} featured />
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {current.map((lecture) => (
+                  <ReadyLectureLink key={lecture.id} lecture={lecture} featured />
+                ))}
+              </div>
+            )}
           </section>
         )}
 

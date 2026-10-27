@@ -14,6 +14,11 @@ export const HOLIDAY_WEEKS: Record<number, string> = {
 /** 有课但不上实验的周次（实验顺延到后续周） */
 export const NO_LAB_WEEKS = new Set([9]);
 
+/** 实验时段的特别标注，显示在实验时间旁边 */
+export const LAB_MARKS: Record<number, string> = {
+  8: "期中考试",
+};
+
 export interface ClassSchedule {
   id: "1" | "2";
   name: string;
@@ -71,7 +76,8 @@ export interface ClassWeekSlots {
 export interface CalendarWeek {
   week: number;
   holiday?: string;
-  lecture?: Pick<LectureSpec, "id" | "number" | "title">;
+  lecture?: Pick<LectureSpec, "id" | "number" | "title" | "label">;
+  labMark?: string;
   classes: ClassWeekSlots[];
 }
 
@@ -101,16 +107,19 @@ function sessionOn(week: number, dayOffset: number, time: string, place: string)
 }
 
 function lectureByNumber(
-  lectures: Pick<LectureSpec, "id" | "number" | "title">[],
+  lectures: Pick<LectureSpec, "id" | "number" | "title" | "label" | "span">[],
   number: number,
-): Pick<LectureSpec, "id" | "number" | "title"> | undefined {
-  const spec = lectures.find((item) => item.number === number);
+): Pick<LectureSpec, "id" | "number" | "title" | "label"> | undefined {
+  const spec = lectures.find((item) => {
+    const span = item.span ?? 1;
+    return number >= item.number && number < item.number + span;
+  });
   if (!spec) return undefined;
-  return { id: spec.id, number: spec.number, title: spec.title };
+  return { id: spec.id, number: spec.number, title: spec.title, label: spec.label };
 }
 
 export function buildCalendarWeeks(
-  lectures: Pick<LectureSpec, "id" | "number" | "title">[],
+  lectures: Pick<LectureSpec, "id" | "number" | "title" | "label" | "span">[],
 ): CalendarWeek[] {
   const weeks: CalendarWeek[] = [];
   let lectureNumber = 0;
@@ -133,6 +142,7 @@ export function buildCalendarWeeks(
     weeks.push({
       week,
       lecture: hasTheory ? lectureByNumber(lectures, lectureNumber) : undefined,
+      labMark: hasLab ? LAB_MARKS[week] : undefined,
       classes: CLASS_SCHEDULES.map((cls) => ({
         name: cls.name,
         theory: hasTheory
