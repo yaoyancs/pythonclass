@@ -104,4 +104,13 @@ while index < len(songs):
 ('周杰伦', 11, ['music'])
 ('周杰伦', 11, ['music', 'coding'])`,
   },
+  {
+    id: "tuple-walk-homework",
+    title: "课后作业",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      headline: "课后作业",
+    },
+  },
 ];

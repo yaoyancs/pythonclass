@@ -442,7 +442,7 @@ print(sum(costs))`,
   },
   {
     id: "playlist-up-summary",
-    title: "本讲小结",
+    title: "列表小结",
     type: "explain",
     layout: "fullscreen",
     content: {
@@ -454,18 +454,6 @@ print(sum(costs))`,
         "数字列表可用 max、min、sum。平均值是 sum 除以 len",
         "append、extend、+=、sort、reverse 改原列表。+、切片、sorted、reversed 得到新列表",
         "查找可以手写循环，也可以先 in 再 index",
-      ],
-    },
-  },
-  {
-    id: "playlist-up-homework",
-    title: "课后作业",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "课后作业",
-      bulletPoints: [
-        "歌单里已有晴天、稻香、夜曲，用列表保存。从键盘输入一首歌名。若这首歌已经在歌单中，输出它的位置（第 1 首的位置是 1）；否则输出「不存在」。用循环和分支完成，这一题先不使用 index()。自验：输入稻香，输出 2；输入七里香，输出不存在。",
       ],
     },
   },
