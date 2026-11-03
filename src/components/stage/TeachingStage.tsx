@@ -282,7 +282,7 @@ export function TeachingStage() {
                     className={`${
                       content.flowDiagram
                         ? 'text-lg'
-                        : content.bulletPoints.length >= 5
+                        : (content.bulletPoints?.length ?? 0) >= 5
                           ? 'text-2xl'
                           : 'text-stage-sub'
                     } font-medium flex items-baseline gap-4 text-text-primary`}
