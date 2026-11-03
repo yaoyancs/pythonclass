@@ -554,6 +554,13 @@ export interface StringBoardExample {
   pick?: number[];
 }
 
+/** 第 6 讲：按 Python 列表字面量展示，点击一项看到 songs[i]。 */
+export interface PlaylistBoardContent {
+  songs: string[];
+  /** 格子上方的变量名，默认 songs */
+  bindingName?: string;
+}
+
 /** 第 2 讲：一排字符上的下标、切片，以及「有没有 / 有几个」 */
 export interface StringBoardContent {
   word: string;
@@ -731,6 +738,8 @@ export interface SceneContent {
   compareTable?: {
     leftHeader: string;
     rightHeader: string;
+    /** 有值时在最左侧加一列，按行号从 1 编号 */
+    indexHeader?: string;
     rows: { left: string; right: string }[];
   };
   body?: string;
@@ -807,6 +816,7 @@ export interface SceneContent {
   intFloat?: IntFloatContent;
   nameLink?: NameLinkContent;
   stringBoard?: StringBoardContent;
+  playlistBoard?: PlaylistBoardContent;
   stringCut?: StringCutContent;
   stringTemplate?: StringTemplateContent;
   stringCast?: StringCastContent;

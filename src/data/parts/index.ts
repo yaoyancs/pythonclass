@@ -45,9 +45,18 @@ import { scenes as loopNest } from "./loop-nest/scenes";
 import { scenes as loopDrill } from "./loop-drill/scenes";
 import { scenes as loopWrap } from "./loop-wrap/scenes";
 import { scenes as lesson04Close } from "./lesson04-close/scenes";
-import { scenes as listQueue } from "./list-queue/scenes";
-import { scenes as listEdit } from "./list-edit/scenes";
-import { scenes as listLookup } from "./list-lookup/scenes";
+import { scenes as playlistWhy } from "./playlist-why/scenes";
+import { scenes as playlistIndex } from "./playlist-index/scenes";
+import { scenes as playlistEdit } from "./playlist-edit/scenes";
+import { scenes as playlistWalk } from "./playlist-walk/scenes";
+import { scenes as playlistManager } from "./playlist-manager/scenes";
+import { scenes as playlistUpgrade } from "./playlist-upgrade/scenes";
+import { scenes as tupleCard } from "./tuple-card/scenes";
+import { scenes as tupleWhy } from "./tuple-why/scenes";
+import { scenes as tupleDefine } from "./tuple-define/scenes";
+import { scenes as tupleOps } from "./tuple-ops/scenes";
+import { scenes as tupleLimit } from "./tuple-limit/scenes";
+import { scenes as tupleWalk } from "./tuple-walk/scenes";
 
 /** 全课知识块仓库：开课表通过 ref 引用 */
 export const PARTS: Record<string, ContentPart> = {
@@ -97,9 +106,18 @@ export const PARTS: Record<string, ContentPart> = {
   "loop-drill": { id: "loop-drill", scenes: loopDrill },
   "loop-wrap": { id: "loop-wrap", scenes: loopWrap },
   "lesson04-close": { id: "lesson04-close", scenes: lesson04Close },
-  "list-queue": { id: "list-queue", scenes: listQueue },
-  "list-edit": { id: "list-edit", scenes: listEdit },
-  "list-lookup": { id: "list-lookup", scenes: listLookup },
+  "playlist-why": { id: "playlist-why", scenes: playlistWhy },
+  "playlist-index": { id: "playlist-index", scenes: playlistIndex },
+  "playlist-edit": { id: "playlist-edit", scenes: playlistEdit },
+  "playlist-walk": { id: "playlist-walk", scenes: playlistWalk },
+  "playlist-manager": { id: "playlist-manager", scenes: playlistManager },
+  "playlist-upgrade": { id: "playlist-upgrade", scenes: playlistUpgrade },
+  "tuple-card": { id: "tuple-card", scenes: tupleCard },
+  "tuple-why": { id: "tuple-why", scenes: tupleWhy },
+  "tuple-define": { id: "tuple-define", scenes: tupleDefine },
+  "tuple-ops": { id: "tuple-ops", scenes: tupleOps },
+  "tuple-limit": { id: "tuple-limit", scenes: tupleLimit },
+  "tuple-walk": { id: "tuple-walk", scenes: tupleWalk },
 };
 
 export function getPart(ref: string): ContentPart {

@@ -142,19 +142,49 @@ export const offering2026S: Offering = {
     {
       id: "lesson06",
       number: 6,
-      title: "列表与元组",
-      blurb: "先学会用列表管理一组数据",
+      title: "列表",
+      blurb: "从一个变量到一批数据：让 Python 学会管理信息",
       hours: 3,
       ready: true,
+      homework: {
+        title: "本讲作业",
+        items: [
+          "歌单里已有晴天、稻香、夜曲，用列表保存。从键盘输入一首歌名。若这首歌已经在歌单中，输出它的位置（第 1 首的位置是 1）；否则输出「不存在」。用循环和分支完成，这一题先不使用 index()。自验：输入稻香，输出 2；输入七里香，输出不存在。",
+        ],
+      },
       parts: [
-        { id: "01", title: "容器与创建增加", ref: "list-queue" },
-        { id: "02", title: "删除与修改", ref: "list-edit" },
-        { id: "03", title: "查询拷贝排序", ref: "list-lookup" },
+        { id: "01", title: "列表的引入", ref: "playlist-why" },
+        { id: "02", title: "索引", ref: "playlist-index" },
+        { id: "03", title: "增加、删除与修改", ref: "playlist-edit" },
+        { id: "04", title: "遍历", ref: "playlist-walk" },
+        { id: "05", title: "综合应用", ref: "playlist-manager" },
+        { id: "06", title: "切片、查找与排序", ref: "playlist-upgrade" },
       ],
     },
     {
       id: "lesson07",
       number: 7,
+      title: "元组",
+      blurb: "封装写定后不应被篡改的数据",
+      hours: 3,
+      ready: true,
+      homework: {
+        title: "本讲作业",
+        items: [
+          "student_info = (\"周杰伦\", 11, [\"football\", \"music\"])。查出年龄 11 的下标，取出学生姓名；从爱好列表中删除 football，再追加 coding。每一步都打印。自验：下标是 1，姓名是周杰伦；删除后是 ('周杰伦', 11, ['music'])；追加后是 ('周杰伦', 11, ['music', 'coding'])。",
+        ],
+      },
+      parts: [
+        { id: "01", title: "为什么需要元组", ref: "tuple-why" },
+        { id: "02", title: "定义元组", ref: "tuple-define" },
+        { id: "03", title: "元组的相关操作", ref: "tuple-ops" },
+        { id: "04", title: "不可修改", ref: "tuple-limit" },
+        { id: "05", title: "遍历与总结", ref: "tuple-walk" },
+      ],
+    },
+    {
+      id: "lesson-dict",
+      number: 8,
       title: "集合与字典",
       blurb: "组织结构化数据",
       hours: 3,
@@ -163,7 +193,7 @@ export const offering2026S: Offering = {
     },
     {
       id: "lesson08",
-      number: 8,
+      number: 9,
       title: "函数",
       blurb: "拆分和复用程序",
       hours: 3,
@@ -172,7 +202,7 @@ export const offering2026S: Offering = {
     },
     {
       id: "lesson09",
-      number: 9,
+      number: 10,
       title: "文件和数据格式化",
       blurb: "读写文件并整理数据",
       hours: 3,
@@ -181,7 +211,7 @@ export const offering2026S: Offering = {
     },
     {
       id: "lesson10",
-      number: 10,
+      number: 11,
       title: "Python与大模型",
       blurb: "选用库完成实际任务",
       hours: 3,

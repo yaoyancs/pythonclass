@@ -44,8 +44,9 @@ export function ClassroomShell() {
   useEffect(() => {
     if (paired) setRightPct(50);
     else if (drill) setRightPct(58);
+    else if (scene.content.flowDiagram) setRightPct(50);
     else if (editorLeft) setRightPct(42);
-  }, [paired, drill, editorLeft, scene.id]);
+  }, [paired, drill, editorLeft, scene.id, scene.content.flowDiagram]);
 
   const handleSplitterPointerDown = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
     e.preventDefault();

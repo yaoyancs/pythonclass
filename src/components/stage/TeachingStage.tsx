@@ -65,6 +65,7 @@ import { WhyLearnWrapStage } from './WhyLearnWrapStage';
 import { FinalVerdictStage } from './FinalVerdictStage';
 import { NameLinkStage } from './NameLinkStage';
 import { StringBoardStage } from './StringBoardStage';
+import { PlaylistBoardStage } from './PlaylistBoardStage';
 import { StringCutStage } from './StringCutStage';
 import { StringTemplateStage } from './StringTemplateStage';
 import { StringCastStage } from './StringCastStage';
@@ -144,6 +145,7 @@ export function TeachingStage() {
       content.finalVerdict ||
       content.nameLink ||
       content.stringBoard ||
+      content.playlistBoard ||
       content.stringIdea ||
       content.stringFork ||
       content.stringSlice ||
@@ -164,10 +166,14 @@ export function TeachingStage() {
   return (
     <section
       className={`grid h-full overflow-hidden ${
-        pinTop ? 'place-items-start' : 'place-items-center'
-      } ${isFullscreen ? (pinTop ? 'px-10 pt-4 pb-5' : 'px-10 py-8') : scene.editorSide === 'left' ? 'px-6 py-6' : 'px-14 py-10'}`}
+        content.compareTable
+          ? 'items-start justify-items-stretch'
+          : pinTop || content.flowDiagram || content.codeComparison || (content.bulletPoints && !content.headline)
+            ? 'place-items-start'
+            : 'place-items-center'
+      } ${isFullscreen ? (pinTop || content.compareTable ? 'px-8 pt-2 pb-2' : 'px-10 py-8') : scene.editorSide === 'left' ? (content.flowDiagram ? 'px-4 py-2' : 'px-6 py-6') : 'px-14 py-10'}`}
     >
-      <div className="w-full max-h-full overflow-y-auto">
+      <div className={`w-full overflow-y-auto ${content.flowDiagram ? 'h-full' : 'max-h-full'}`}>
         {content.headline && (
           <h2
             className={`title-stage text-text-primary ${
@@ -175,6 +181,8 @@ export function TeachingStage() {
             } ${
               hasSideImage
                 ? 'whitespace-nowrap text-[clamp(1.75rem,4.6vw,3.75rem)] leading-[1.2]'
+                : content.flowDiagram
+                  ? 'text-3xl leading-tight'
                 : content.typeProbe || content.typeMap
                   ? 'text-[2.35rem] leading-tight'
                   : isFullscreen && !dense
@@ -208,6 +216,16 @@ export function TeachingStage() {
           }
         >
           <div>
+            {content.flowDiagram && (
+              <div className="mt-2 overflow-x-auto rounded-2xl bg-classroom-playground border border-classroom-border px-4 py-2 space-y-0.5 whitespace-pre font-mono text-sm leading-snug text-text-primary font-medium">
+                {content.flowDiagram.map((line, index) => (
+                  <div key={`${index}-${line}`} className={line.startsWith('#') ? 'text-highlight' : ''}>
+                    {line || '\u00a0'}
+                  </div>
+                ))}
+              </div>
+            )}
+
             {content.promptQuote && (
               <blockquote className="mt-12 rounded-3xl bg-classroom-stage shadow-card border border-classroom-border px-8 py-7">
                 <p className="text-sm uppercase tracking-[0.2em] font-semibold text-accent mb-3">
@@ -235,15 +253,39 @@ export function TeachingStage() {
             )}
 
             {content.body && scene.type !== 'summary' && (
-              <p className="text-stage-body mt-8 text-text-secondary font-medium">{content.body}</p>
+              <p
+                className={
+                  content.flowDiagram
+                    ? 'mt-3 text-lg font-medium leading-snug text-text-primary'
+                    : (content.bulletPoints?.length ?? 0) >= 5
+                      ? 'mt-4 text-2xl font-medium leading-snug text-text-primary'
+                      : 'text-stage-body mt-8 text-text-secondary font-medium'
+                }
+              >
+                {content.body}
+              </p>
             )}
 
             {content.bulletPoints && (
-              <ul className="mt-10 space-y-5">
+              <ul
+                className={
+                  content.flowDiagram
+                    ? 'mt-2 space-y-1'
+                    : (content.bulletPoints.length ?? 0) >= 5
+                      ? 'mt-6 space-y-3'
+                      : 'mt-10 space-y-5'
+                }
+              >
                 {content.bulletPoints.map((point) => (
                   <li
                     key={point}
-                    className="text-stage-sub font-medium flex items-baseline gap-4 text-text-primary"
+                    className={`${
+                      content.flowDiagram
+                        ? 'text-lg'
+                        : content.bulletPoints.length >= 5
+                          ? 'text-2xl'
+                          : 'text-stage-sub'
+                    } font-medium flex items-baseline gap-4 text-text-primary`}
                   >
                     <span className="h-2.5 w-2.5 rounded-full bg-accent shrink-0 translate-y-[-0.28em]" />
                     {point}
@@ -277,39 +319,46 @@ export function TeachingStage() {
             )}
 
             {content.note && (
-              <div className="mt-10 border-t border-classroom-border pt-8">
-                <p className="text-stage-sub font-semibold text-text-primary">{content.note.title}</p>
-                <ol className="mt-4 space-y-3 list-decimal pl-7">
+              <div className={content.note.title ? 'mt-10 border-t border-classroom-border pt-8' : 'mt-2'}>
+                {content.note.title && (
+                  <p className="text-stage-sub font-semibold text-text-primary">{content.note.title}</p>
+                )}
+                <ol className={`${content.note.title ? 'mt-4' : ''} space-y-4 list-decimal pl-10`}>
                   {content.note.points.map((point) => (
                     <li key={point} className="text-stage-sub font-medium text-text-secondary">
-                      {point}
+                      {point.split('\n').map((line, index) => (
+                        <span
+                          key={line}
+                          className={index === 0 ? 'block font-semibold text-text-primary' : 'mt-2 block'}
+                        >
+                          {line}
+                        </span>
+                      ))}
                     </li>
                   ))}
                 </ol>
               </div>
             )}
 
-            {content.flowDiagram && (
-              <div className="mt-10 rounded-2xl bg-classroom-playground border border-classroom-border px-8 py-6 space-y-2 font-mono text-xl text-text-secondary font-medium">
-                {content.flowDiagram.map((line) => (
-                  <div key={line}>{line}</div>
-                ))}
-              </div>
-            )}
-
             {content.compareTable && (
-              <table className="mt-8 w-full border-collapse text-left">
+              <table className={`${content.headline ? 'mt-8' : 'mt-1'} w-full border-collapse text-left`}>
                 <thead>
-                  <tr className="border-b border-classroom-border text-stage-sub text-text-secondary">
-                    <th className="py-3 pr-6 font-semibold">{content.compareTable.leftHeader}</th>
-                    <th className="py-3 font-semibold">{content.compareTable.rightHeader}</th>
+                  <tr className="border-b border-classroom-border text-text-secondary">
+                    {content.compareTable.indexHeader && (
+                      <th className="w-16 whitespace-nowrap py-1 pr-4 text-base font-semibold">{content.compareTable.indexHeader}</th>
+                    )}
+                    <th className="whitespace-nowrap py-1 pr-8 text-base font-semibold">{content.compareTable.leftHeader}</th>
+                    <th className="py-1 text-base font-semibold">{content.compareTable.rightHeader}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {content.compareTable.rows.map((row) => (
+                  {content.compareTable.rows.map((row, index) => (
                     <tr key={row.left} className="border-b border-classroom-border/70">
-                      <td className="py-4 pr-6 text-stage-sub text-text-primary">{row.left}</td>
-                      <td className="py-4 font-mono text-xl text-text-primary">{row.right}</td>
+                      {content.compareTable?.indexHeader && (
+                        <td className="py-1 pr-4 text-base text-text-secondary">{index + 1}</td>
+                      )}
+                      <td className="whitespace-nowrap py-1 pr-8 font-mono text-base text-text-primary">{row.left}</td>
+                      <td className="py-1 text-base text-text-primary">{row.right}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -479,6 +528,9 @@ export function TeachingStage() {
             )}
             {content.stringBoard && (
               <StringBoardStage content={content.stringBoard} sceneId={scene.id} />
+            )}
+            {content.playlistBoard && (
+              <PlaylistBoardStage content={content.playlistBoard} sceneId={scene.id} />
             )}
             {content.stringCut && (
               <StringCutStage content={content.stringCut} sceneId={scene.id} />
