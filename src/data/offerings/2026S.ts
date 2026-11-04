@@ -4,6 +4,7 @@ import type { Offering } from "../../types/scene";
 export const offering2026S: Offering = {
   id: "2026S",
   term: "2026 秋",
+  currentLectureNumber: 6,
   lectures: [
     {
       id: "lesson01",

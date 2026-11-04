@@ -1017,6 +1017,8 @@ export interface Offering {
   id: string;
   /** 封面学期，如「2026 秋」 */
   term: string;
+  /** 当前正在进行的讲次号；缺省取最后一个 ready 讲次 */
+  currentLectureNumber?: number;
   lectures: LectureSpec[];
 }
 

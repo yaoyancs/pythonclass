@@ -79,13 +79,18 @@ function ReadyLectureLink({
 export function HomePage() {
   const [logoAvailable, setLogoAvailable] = useState(true);
   const ready = LECTURES.filter((lecture) => lecture.ready);
-  const upcoming = LECTURES.filter((lecture) => !lecture.ready);
-  const currentNumber = ready.at(-1)?.number;
+  const currentNumber = CURRENT_OFFERING.currentLectureNumber ?? ready.at(-1)?.number;
   const current = ready
     .filter((lecture) => lecture.number === currentNumber)
     .slice()
     .sort((a, b) => Number(Boolean(a.label)) - Number(Boolean(b.label)));
-  const earlierReady = ready.filter((lecture) => lecture.number !== currentNumber).slice().reverse();
+  const earlierReady = ready
+    .filter((lecture) => currentNumber !== undefined && lecture.number < currentNumber)
+    .slice()
+    .reverse();
+  const upcoming = LECTURES.filter(
+    (lecture) => !lecture.ready || (currentNumber !== undefined && lecture.number > currentNumber),
+  );
 
   return (
     <div className="min-h-full classroom-grid">
