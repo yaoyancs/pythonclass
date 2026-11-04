@@ -1,6 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useSceneEngine } from '../engine/SceneEngine';
-import { scheduleSceneView, trackHomeworkOpen, trackLessonView, trackSceneDwell } from './client';
+import {
+  scheduleSceneView,
+  trackHomeworkOpen,
+  trackLessonComplete,
+  trackLessonView,
+  trackSceneDwell,
+} from './client';
 
 const viewedLessons = new Set<string>();
 
@@ -61,6 +67,14 @@ export function useLessonAnalytics(): void {
         sceneId: scene.id,
         partId: scene.partId,
       });
+      if (state.currentSceneIndex >= lesson.scenes.length - 1) {
+        trackLessonComplete({
+          lessonId: lesson.id,
+          sceneIndex: state.currentSceneIndex,
+          sceneId: scene.id,
+          partId: scene.partId,
+        });
+      }
       return;
     }
 
@@ -79,7 +93,15 @@ export function useLessonAnalytics(): void {
       sceneId: scene.id,
       partId: scene.partId,
     });
-  }, [lesson.id, state.currentSceneIndex, scene.id, scene.partId]);
+    if (state.currentSceneIndex >= lesson.scenes.length - 1) {
+      trackLessonComplete({
+        lessonId: lesson.id,
+        sceneIndex: state.currentSceneIndex,
+        sceneId: scene.id,
+        partId: scene.partId,
+      });
+    }
+  }, [lesson.id, lesson.scenes.length, state.currentSceneIndex, scene.id, scene.partId]);
 
   useEffect(() => {
     const onHide = () => flushDwell();

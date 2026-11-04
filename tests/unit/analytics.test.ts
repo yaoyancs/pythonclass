@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DWELL_MIN_SECONDS,
   allowRate,
+  buildLessonHeat,
   buildSummary,
   classifyDevice,
   parseIncomingHit,
@@ -25,6 +26,12 @@ function hit(partial: Partial<StoredHit> & Pick<StoredHit, 'sessionId' | 'type' 
     device: 'desktop',
     teacher: false,
     source: 'other',
+    outcome: null,
+    errorType: null,
+    codeChanged: null,
+    choiceId: null,
+    correct: null,
+    attempt: null,
     ...partial,
   };
 }
@@ -129,6 +136,74 @@ describe('analytics summary', () => {
     const all = buildSummary(shanghaiDate(new Date()), hits, false);
     expect(all.uv).toBe(2);
     expect(all.homeworkOpens).toBe(2);
+  });
+});
+
+describe('learning signals', () => {
+  it('keeps run outcome, choice attempt, completion and first-run delay', () => {
+    const run = parseIncomingHit(
+      {
+        type: 'run_result',
+        sessionId: 'abcdefghij',
+        lessonId: 'lesson01',
+        sceneIndex: 2,
+        outcome: 'error',
+        errorType: 'IndexError',
+        codeChanged: false,
+      },
+      { ip: '1', device: 'desktop' },
+    );
+    expect(run.ok).toBe(true);
+    if (run.ok) {
+      expect(run.hit.outcome).toBe('error');
+      expect(run.hit.errorType).toBe('IndexError');
+      expect(run.hit.codeChanged).toBe(false);
+    }
+
+    const choice = parseIncomingHit(
+      {
+        type: 'choice',
+        sessionId: 'abcdefghij',
+        lessonId: 'lesson01',
+        sceneIndex: 1,
+        choiceId: 'zero',
+        correct: true,
+        attempt: 1,
+      },
+      { ip: '1', device: 'desktop' },
+    );
+    expect(choice.ok).toBe(true);
+
+    const late = parseIncomingHit(
+      {
+        type: 'first_run',
+        sessionId: 'abcdefghij',
+        lessonId: 'lesson01',
+        seconds: 40,
+      },
+      { ip: '1', device: 'desktop' },
+    );
+    expect(late.ok).toBe(true);
+    if (late.ok) expect(late.hit.dwellSeconds).toBe(40);
+  });
+
+  it('summarizes signals per lesson', () => {
+    const ts = '2026-09-21T02:00:00.000Z';
+    const heat = buildLessonHeat([
+      hit({ type: 'run_result', sessionId: 'stud0000001', ts, lessonId: 'lesson01', sceneIndex: 1, outcome: 'error', errorType: 'TypeError', codeChanged: false }),
+      hit({ type: 'run_result', sessionId: 'stud0000001', ts, lessonId: 'lesson01', sceneIndex: 1, outcome: 'ok', codeChanged: true }),
+      hit({ type: 'choice', sessionId: 'stud0000001', ts, lessonId: 'lesson01', sceneIndex: 0, choiceId: 'a', correct: true, attempt: 1 }),
+      hit({ type: 'lesson_complete', sessionId: 'stud0000001', ts, lessonId: 'lesson01', sceneIndex: 4 }),
+      hit({ type: 'first_run', sessionId: 'stud0000001', ts, lessonId: 'lesson01', dwellSeconds: 30 }),
+    ]);
+    expect(heat[0]?.runError).toBe(1);
+    expect(heat[0]?.runOk).toBe(1);
+    expect(heat[0]?.codeSame).toBe(1);
+    expect(heat[0]?.codeChanged).toBe(1);
+    expect(heat[0]?.firstTryCorrect).toBe(1);
+    expect(heat[0]?.completions).toBe(1);
+    expect(heat[0]?.avgFirstRunSeconds).toBe(30);
+    expect(heat[0]?.errorTypes[0]?.key).toBe('TypeError');
   });
 });
 

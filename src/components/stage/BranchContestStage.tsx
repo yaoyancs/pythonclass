@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import { trackChoice } from '../../analytics/client';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { useStageAdvance } from '../../hooks/useStageAdvance';
 import type { BranchContestContent } from '../../types/scene';
@@ -253,6 +254,7 @@ function Cover({ sceneId }: { sceneId: string }) {
 
 function Conflict() {
   const [choice, setChoice] = useState<string | null>(null);
+  const { state, scene } = useSceneEngine();
   const options = [
     { id: 'a', label: 'A：厨余垃圾', correct: false },
     { id: 'b', label: 'B：厨余垃圾和暂未收录', correct: true },
@@ -272,7 +274,18 @@ function Conflict() {
               <button
                 key={option.id}
                 type="button"
-                onClick={() => setChoice(option.id)}
+                onClick={() => {
+                  setChoice(option.id);
+                  trackChoice({
+                    lessonId: state.lessonId,
+                    sceneIndex: state.currentSceneIndex,
+                    sceneId: scene.id,
+                    partId: scene.partId,
+                    choiceId: option.id,
+                    correct: option.correct,
+                    group: 'conflict',
+                  });
+                }}
                 className={`block w-full rounded-2xl border px-4 py-3 text-left text-lg ${
                   selected
                     ? option.correct

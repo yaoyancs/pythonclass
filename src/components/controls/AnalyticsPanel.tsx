@@ -213,12 +213,21 @@ export function AnalyticsPanel({ onClose }: AnalyticsPanelProps) {
                       {lesson.lessonId}
                     </Button>
                     <span className="text-sm text-text-secondary">
-                      作业 {lesson.homeworkOpens} · 浏览 {lesson.views} · 会话 {lesson.sessions} · 运行{' '}
-                      {lesson.runs} · 平均停留 {lesson.avgDwellSeconds}s
+                      作业 {lesson.homeworkOpens} · 浏览 {lesson.views} · 会话 {lesson.sessions} · 看完{' '}
+                      {lesson.completions} · 运行 {lesson.runs}（成功 {lesson.runOk} / 报错 {lesson.runError}，改过{' '}
+                      {lesson.codeChanged} / 未改 {lesson.codeSame}）· 选择 {lesson.choicesCorrect}/{lesson.choices}
+                      （一次对 {lesson.firstTryCorrect}）· 首次运行 {lesson.avgFirstRunSeconds}s · 平均停留{' '}
+                      {lesson.avgDwellSeconds}s
                     </span>
                   </div>
                   {openLesson === lesson.lessonId && (
-                    <ul className="mt-2 text-sm space-y-1 pl-2">
+                    <div className="mt-2 pl-2">
+                      {lesson.errorTypes.length > 0 && (
+                        <p className="text-sm text-text-secondary mb-2">
+                          异常：{lesson.errorTypes.map((row) => `${row.key} ${row.count}`).join(' · ')}
+                        </p>
+                      )}
+                    <ul className="text-sm space-y-1">
                       {lesson.scenes.map((scene) => (
                         <li key={scene.sceneIndex} className="flex justify-between gap-2">
                           <span>
@@ -226,11 +235,13 @@ export function AnalyticsPanel({ onClose }: AnalyticsPanelProps) {
                             {scene.partId ? ` · ${scene.partId}` : ''}
                           </span>
                           <span className="text-text-secondary tabular-nums">
-                            浏览 {scene.views} · 停留 {scene.avgDwellSeconds}s · 运行 {scene.runs}
+                            浏览 {scene.views} · 停留 {scene.avgDwellSeconds}s · 运行 {scene.runs}（成功 {scene.runOk} / 报错{' '}
+                            {scene.runError}）· 选择 {scene.choicesCorrect}/{scene.choices}
                           </span>
                         </li>
                       ))}
                     </ul>
+                    </div>
                   )}
                 </li>
               ))}

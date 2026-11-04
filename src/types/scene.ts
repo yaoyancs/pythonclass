@@ -742,6 +742,11 @@ export interface SceneContent {
     indexHeader?: string;
     rows: { left: string; right: string }[];
   };
+  /** 多列对照表。headers 与每一行的格子数相同，第一列是行标题 */
+  gridTable?: {
+    headers: string[];
+    rows: string[][];
+  };
   body?: string;
   question?: string;
   bulletPoints?: string[];

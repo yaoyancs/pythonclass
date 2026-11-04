@@ -95,3 +95,16 @@ export interface PerformanceGradeRow {
   equivalentAbsences: number;
   canTakeFinal: boolean;
 }
+
+export interface ParticipationSummary {
+  totalStudents: number;
+  participatedStudents: number;
+  /** 互动参与率（百分比，保留一位小数，如 95.2） */
+  participationRatePct: number;
+  questionStudents: number;
+  interactStudents: number;
+  totalFlowers: number;
+  totalClovers: number;
+  totalInteractions: number;
+}
+

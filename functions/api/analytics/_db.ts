@@ -26,7 +26,8 @@ const CREATE_TABLE_SQL = `CREATE TABLE IF NOT EXISTS hits (
   ip TEXT,
   device TEXT,
   teacher INTEGER NOT NULL DEFAULT 0,
-  source TEXT
+  source TEXT,
+  detail TEXT
 )`;
 
 const SCHEMA_SQL = [
@@ -38,6 +39,7 @@ const SCHEMA_SQL = [
 const ALTER_SQL = [
   'ALTER TABLE hits ADD COLUMN teacher INTEGER NOT NULL DEFAULT 0',
   'ALTER TABLE hits ADD COLUMN source TEXT',
+  'ALTER TABLE hits ADD COLUMN detail TEXT',
 ];
 
 let ensured = false;
@@ -70,8 +72,8 @@ export async function insertHit(db: D1Database, hit: StoredHit): Promise<void> {
   await ensureHitsTable(db);
   await db
     .prepare(
-      `INSERT INTO hits (ts, type, session_id, path, referrer, lesson_id, scene_index, scene_id, part_id, dwell_seconds, ip, device, teacher, source)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO hits (ts, type, session_id, path, referrer, lesson_id, scene_index, scene_id, part_id, dwell_seconds, ip, device, teacher, source, detail)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       hit.ts,
@@ -88,6 +90,7 @@ export async function insertHit(db: D1Database, hit: StoredHit): Promise<void> {
       hit.device,
       hit.teacher ? 1 : 0,
       hit.source,
+      encodeDetail(hit),
     )
     .run();
 }
@@ -107,6 +110,46 @@ interface HitRow {
   device: StoredHit['device'];
   teacher?: number | null;
   source?: string | null;
+  detail?: string | null;
+}
+
+function encodeDetail(hit: StoredHit): string | null {
+  const detail: Record<string, string | number> = {};
+  if (hit.outcome) detail.outcome = hit.outcome;
+  if (hit.errorType) detail.errorType = hit.errorType;
+  if (hit.codeChanged != null) detail.codeChanged = hit.codeChanged ? 1 : 0;
+  if (hit.choiceId) detail.choiceId = hit.choiceId;
+  if (hit.correct != null) detail.correct = hit.correct ? 1 : 0;
+  if (hit.attempt != null) detail.attempt = hit.attempt;
+  return Object.keys(detail).length === 0 ? null : JSON.stringify(detail);
+}
+
+function decodeDetail(raw: string | null | undefined): Pick<
+  StoredHit,
+  'outcome' | 'errorType' | 'codeChanged' | 'choiceId' | 'correct' | 'attempt'
+> {
+  const empty = {
+    outcome: null,
+    errorType: null,
+    codeChanged: null,
+    choiceId: null,
+    correct: null,
+    attempt: null,
+  } as const;
+  if (!raw) return { ...empty };
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    return {
+      outcome: parsed.outcome === 'ok' || parsed.outcome === 'error' ? parsed.outcome : null,
+      errorType: typeof parsed.errorType === 'string' ? parsed.errorType : null,
+      codeChanged: parsed.codeChanged === 1 ? true : parsed.codeChanged === 0 ? false : null,
+      choiceId: typeof parsed.choiceId === 'string' ? parsed.choiceId : null,
+      correct: parsed.correct === 1 ? true : parsed.correct === 0 ? false : null,
+      attempt: typeof parsed.attempt === 'number' ? parsed.attempt : null,
+    };
+  } catch {
+    return { ...empty };
+  }
 }
 
 function rowToHit(row: HitRow): StoredHit {
@@ -125,10 +168,11 @@ function rowToHit(row: HitRow): StoredHit {
     device: row.device,
     teacher: row.teacher === 1,
     source: row.source === 'homework' ? 'homework' : 'other',
+    ...decodeDetail(row.detail),
   };
 }
 
-const SELECT_HITS_SQL = `SELECT ts, type, session_id, path, referrer, lesson_id, scene_index, scene_id, part_id, dwell_seconds, ip, device, teacher, source
+const SELECT_HITS_SQL = `SELECT ts, type, session_id, path, referrer, lesson_id, scene_index, scene_id, part_id, dwell_seconds, ip, device, teacher, source, detail
        FROM hits WHERE ts >= ? AND ts < ? ORDER BY ts ASC LIMIT ?`;
 
 async function selectHitsInRange(

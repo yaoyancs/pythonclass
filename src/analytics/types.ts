@@ -51,5 +51,19 @@ export interface LessonHeat {
     views: number;
     avgDwellSeconds: number;
     runs: number;
+    runOk: number;
+    runError: number;
+    choices: number;
+    choicesCorrect: number;
   }>;
+  runOk: number;
+  runError: number;
+  codeChanged: number;
+  codeSame: number;
+  choices: number;
+  choicesCorrect: number;
+  firstTryCorrect: number;
+  completions: number;
+  avgFirstRunSeconds: number;
+  errorTypes: CountRow[];
 }

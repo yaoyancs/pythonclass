@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { trackChoice } from '../../analytics/client';
+import { useSceneEngine } from '../../engine/SceneEngine';
 import type { CodeChoiceContent } from '../../types/scene';
 import { useStageAdvance } from '../../hooks/useStageAdvance';
 
@@ -9,6 +11,7 @@ interface Props {
 
 export function CodeChoiceStage({ content, sceneId }: Props) {
   const { phase, advance, done } = useStageAdvance(sceneId, 2);
+  const { state, scene } = useSceneEngine();
   const [picked, setPicked] = useState<string | null>(null);
   const showFollow = phase >= 1;
   const showConclusion = phase >= 2;
@@ -28,7 +31,18 @@ export function CodeChoiceStage({ content, sceneId }: Props) {
             <button
               key={opt.id}
               type="button"
-              onClick={() => setPicked(opt.id)}
+              onClick={() => {
+                setPicked(opt.id);
+                trackChoice({
+                  lessonId: state.lessonId,
+                  sceneIndex: state.currentSceneIndex,
+                  sceneId: scene.id,
+                  partId: scene.partId,
+                  choiceId: opt.id,
+                  correct: Boolean(opt.correct),
+                  group: 'code',
+                });
+              }}
               className={`rounded-2xl px-4 py-4 text-left font-mono text-base transition-all ${
                 reveal
                   ? 'bg-accent text-white shadow-card'

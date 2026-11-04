@@ -3,7 +3,13 @@ import type { LectureSpec, ScheduleBlock } from "../types/scene";
 /** 2026 秋第 1 周星期一 */
 export const WEEK1_MONDAY = "2026-09-21";
 
-export const THEORY_LECTURES = 10;
+/** 由开课表展开：跨周的讲按 span 占多周，同一讲次号只保留先出现的一条。 */
+export function theorySlotCount(
+  lectures: Pick<LectureSpec, "number" | "span">[],
+): number {
+  return expandLectures(lectures).length;
+}
+
 export const LAB_SESSIONS = 8;
 
 /** 校历周次 → 放假说明；放假周不安排理论/实验，后续讲次顺延 */
@@ -44,7 +50,7 @@ export const CLASS_SCHEDULES: ClassSchedule[] = [
 export const COURSE_SCHEDULE: ScheduleBlock[] = [
   {
     title: "理论 32 学时",
-    subtitle: "第 1 至 11 周（第 2 周国庆放假，第 2 讲起顺延）",
+    subtitle: "第 1 至 12 周（第 2 周国庆放假，第 2 讲起顺延）",
     rows: [
       { time: "周二 3–5 节", place: "JC405（大数据1班）" },
       { time: "周三 3–5 节", place: "JS104（大数据2班）" },
@@ -106,27 +112,28 @@ function sessionOn(week: number, dayOffset: number, time: string, place: string)
   };
 }
 
-function lectureByNumber(
-  lectures: Pick<LectureSpec, "id" | "number" | "title" | "label" | "span">[],
-  number: number,
-): Pick<LectureSpec, "id" | "number" | "title" | "label"> | undefined {
-  const spec = lectures.find((item) => {
+function expandLectures<T extends Pick<LectureSpec, "number" | "span">>(lectures: T[]): T[] {
+  const seen = new Set<number>();
+  const slots: T[] = [];
+  for (const item of lectures) {
+    if (seen.has(item.number)) continue;
+    seen.add(item.number);
     const span = item.span ?? 1;
-    return number >= item.number && number < item.number + span;
-  });
-  if (!spec) return undefined;
-  return { id: spec.id, number: spec.number, title: spec.title, label: spec.label };
+    for (let i = 0; i < span; i += 1) slots.push(item);
+  }
+  return slots;
 }
 
 export function buildCalendarWeeks(
   lectures: Pick<LectureSpec, "id" | "number" | "title" | "label" | "span">[],
 ): CalendarWeek[] {
+  const slots = expandLectures(lectures);
   const weeks: CalendarWeek[] = [];
   let lectureNumber = 0;
   let labCount = 0;
   let week = 1;
 
-  while (lectureNumber < THEORY_LECTURES || labCount < LAB_SESSIONS) {
+  while (lectureNumber < slots.length || labCount < LAB_SESSIONS) {
     const holiday = HOLIDAY_WEEKS[week];
     if (holiday) {
       weeks.push({ week, holiday, classes: [] });
@@ -135,13 +142,16 @@ export function buildCalendarWeeks(
     }
 
     lectureNumber += 1;
-    const hasTheory = lectureNumber <= THEORY_LECTURES;
+    const hasTheory = lectureNumber <= slots.length;
+    const slot = hasTheory ? slots[lectureNumber - 1] : undefined;
     const hasLab = labCount < LAB_SESSIONS && !NO_LAB_WEEKS.has(week);
     if (hasLab) labCount += 1;
 
     weeks.push({
       week,
-      lecture: hasTheory ? lectureByNumber(lectures, lectureNumber) : undefined,
+      lecture: slot
+        ? { id: slot.id, number: slot.number, title: slot.title, label: slot.label }
+        : undefined,
       labMark: hasLab ? LAB_MARKS[week] : undefined,
       classes: CLASS_SCHEDULES.map((cls) => ({
         name: cls.name,

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { trackChoice } from '../../analytics/client';
 import type { CodeBeat, CodeBeatsContent } from '../../types/scene';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { publishBeatPhase, useStageAdvance } from '../../hooks/useStageAdvance';
@@ -50,7 +51,23 @@ export function CodeBeatsStage({ content, sceneId, onPhase }: Props) {
       }}
     >
       {visible.map((beat, index) => (
-        <BeatView key={index} beat={beat} picked={picked} onPick={setPicked} />
+        <BeatView
+          key={index}
+          beat={beat}
+          picked={picked}
+          onPick={(label, correct) => {
+            setPicked(label);
+            trackChoice({
+              lessonId: state.lessonId,
+              sceneIndex: state.currentSceneIndex,
+              sceneId: scene.id,
+              partId: scene.partId,
+              choiceId: label,
+              correct: correct === true,
+              group: `beat-${phase}`,
+            });
+          }}
+        />
       ))}
       {!done && <p className="mt-4 text-base text-accent/80">点击继续 · 或按空格 / →</p>}
     </div>
@@ -64,7 +81,7 @@ function BeatView({
 }: {
   beat: CodeBeat;
   picked: string | null;
-  onPick: (label: string) => void;
+  onPick: (label: string, correct: boolean) => void;
 }) {
   return (
     <div className="mt-4 timeline-node-in">
@@ -79,7 +96,7 @@ function BeatView({
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
-                  onPick(choice.label);
+                  onPick(choice.label, Boolean(choice.correct));
                 }}
                 className={`rounded-2xl px-5 py-3 text-xl ${
                   on && choice.correct

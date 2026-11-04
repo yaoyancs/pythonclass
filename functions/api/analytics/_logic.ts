@@ -5,6 +5,10 @@ export const HIT_TYPES = [
   'scene_dwell',
   'run',
   'homework_open',
+  'run_result',
+  'choice',
+  'lesson_complete',
+  'first_run',
 ] as const;
 
 export type HitType = (typeof HIT_TYPES)[number];
@@ -33,6 +37,12 @@ export interface IncomingHit {
   seconds?: unknown;
   teacher?: unknown;
   source?: unknown;
+  outcome?: unknown;
+  errorType?: unknown;
+  codeChanged?: unknown;
+  choiceId?: unknown;
+  correct?: unknown;
+  attempt?: unknown;
 }
 
 export interface StoredHit {
@@ -50,6 +60,12 @@ export interface StoredHit {
   device: DeviceKind;
   teacher: boolean;
   source: 'homework' | 'other';
+  outcome: 'ok' | 'error' | null;
+  errorType: string | null;
+  codeChanged: boolean | null;
+  choiceId: string | null;
+  correct: boolean | null;
+  attempt: number | null;
 }
 
 export interface CountRow {
@@ -103,7 +119,50 @@ export interface LessonHeat {
     views: number;
     avgDwellSeconds: number;
     runs: number;
+    runOk: number;
+    runError: number;
+    choices: number;
+    choicesCorrect: number;
   }>;
+  runOk: number;
+  runError: number;
+  codeChanged: number;
+  codeSame: number;
+  choices: number;
+  choicesCorrect: number;
+  firstTryCorrect: number;
+  completions: number;
+  avgFirstRunSeconds: number;
+  errorTypes: CountRow[];
+}
+
+const ERROR_TYPE_RE = /^[A-Za-z][A-Za-z0-9_]{0,40}$/;
+
+export function normalizeErrorType(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return ERROR_TYPE_RE.test(trimmed) ? trimmed : null;
+}
+
+export function normalizeChoiceId(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.replace(/[\u0000-\u001f]/g, '').trim();
+  if (!trimmed) return null;
+  return clip(trimmed, 40);
+}
+
+function signalDefaults(): Pick<
+  StoredHit,
+  'outcome' | 'errorType' | 'codeChanged' | 'choiceId' | 'correct' | 'attempt'
+> {
+  return {
+    outcome: null,
+    errorType: null,
+    codeChanged: null,
+    choiceId: null,
+    correct: null,
+    attempt: null,
+  };
 }
 
 export function isHitType(value: string): value is HitType {
@@ -245,11 +304,50 @@ export function parseIncomingHit(
   if (typeRaw === 'homework_open' && !lessonId) {
     return { ok: false, drop: false, error: '缺少 lessonId' };
   }
-  if ((typeRaw === 'scene_view' || typeRaw === 'scene_dwell' || typeRaw === 'run') && !lessonId) {
+  const needsScene =
+    typeRaw === 'scene_view' ||
+    typeRaw === 'scene_dwell' ||
+    typeRaw === 'run' ||
+    typeRaw === 'run_result' ||
+    typeRaw === 'choice' ||
+    typeRaw === 'lesson_complete';
+  if ((needsScene || typeRaw === 'first_run') && !lessonId) {
     return { ok: false, drop: false, error: '缺少 lessonId' };
   }
-  if ((typeRaw === 'scene_view' || typeRaw === 'scene_dwell' || typeRaw === 'run') && sceneIndex == null) {
+  if (needsScene && sceneIndex == null) {
     return { ok: false, drop: false, error: '缺少 sceneIndex' };
+  }
+
+  const signals = signalDefaults();
+  if (typeRaw === 'run_result') {
+    if (body.outcome !== 'ok' && body.outcome !== 'error') {
+      return { ok: false, drop: false, error: 'outcome 无效' };
+    }
+    signals.outcome = body.outcome;
+    signals.codeChanged = body.codeChanged === true;
+    if (body.outcome === 'error') {
+      signals.errorType = normalizeErrorType(body.errorType) ?? 'Error';
+    }
+  }
+  if (typeRaw === 'choice') {
+    const choiceId = normalizeChoiceId(body.choiceId);
+    const attempt = typeof body.attempt === 'number' ? body.attempt : Number(body.attempt);
+    if (!choiceId || !Number.isInteger(attempt) || attempt < 1 || attempt > 20) {
+      return { ok: false, drop: true };
+    }
+    if (body.correct !== true && body.correct !== false) {
+      return { ok: false, drop: true };
+    }
+    signals.choiceId = choiceId;
+    signals.correct = body.correct;
+    signals.attempt = attempt;
+  }
+  if (typeRaw === 'first_run') {
+    const seconds = typeof body.seconds === 'number' ? body.seconds : Number(body.seconds);
+    if (!Number.isFinite(seconds) || seconds < 0) {
+      return { ok: false, drop: true };
+    }
+    dwellSeconds = Math.min(Math.round(seconds), 24 * 60 * 60);
   }
 
   const teacher = body.teacher === true;
@@ -273,6 +371,7 @@ export function parseIncomingHit(
       device: meta.device,
       teacher,
       source,
+      ...signals,
     },
   };
 }
@@ -425,10 +524,41 @@ export function buildLessonHeat(hits: StoredHit[], excludeTeacher = true): Lesso
                   sceneDwells.reduce((s, h) => s + (h.dwellSeconds ?? 0), 0) / sceneDwells.length,
                 ),
           runs: rows.filter((h) => h.type === 'run').length,
+          runOk: rows.filter((h) => h.type === 'run_result' && h.outcome === 'ok').length,
+          runError: rows.filter((h) => h.type === 'run_result' && h.outcome === 'error').length,
+          choices: rows.filter((h) => h.type === 'choice').length,
+          choicesCorrect: rows.filter((h) => h.type === 'choice' && h.correct).length,
         };
       });
 
-    result.push({ lessonId, views, sessions, homeworkOpens, runs, avgDwellSeconds, scenes });
+    const results = list.filter((h) => h.type === 'run_result');
+    const choices = list.filter((h) => h.type === 'choice');
+    const firstRuns = list.filter((h) => h.type === 'first_run' && h.dwellSeconds != null);
+    result.push({
+      lessonId,
+      views,
+      sessions,
+      homeworkOpens,
+      runs,
+      avgDwellSeconds,
+      scenes,
+      runOk: results.filter((h) => h.outcome === 'ok').length,
+      runError: results.filter((h) => h.outcome === 'error').length,
+      codeChanged: results.filter((h) => h.codeChanged === true).length,
+      codeSame: results.filter((h) => h.codeChanged === false).length,
+      choices: choices.length,
+      choicesCorrect: choices.filter((h) => h.correct).length,
+      firstTryCorrect: choices.filter((h) => h.correct && h.attempt === 1).length,
+      completions: new Set(list.filter((h) => h.type === 'lesson_complete').map((h) => h.sessionId)).size,
+      avgFirstRunSeconds:
+        firstRuns.length === 0
+          ? 0
+          : Math.round(firstRuns.reduce((s, h) => s + (h.dwellSeconds ?? 0), 0) / firstRuns.length),
+      errorTypes: countMap(
+        results.filter((h) => h.outcome === 'error').map((h) => h.errorType),
+        'Error',
+      ),
+    });
   }
 
   return result.sort((a, b) => b.views - a.views);

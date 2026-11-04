@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { trackChoice } from '../../analytics/client';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { getBeatPhase, subscribeBeatPhase } from '../../hooks/useStageAdvance';
 import { Button } from '../ui/Button';
@@ -43,7 +44,21 @@ export function PredictPanel() {
           variant="primary"
           size="lg"
           disabled={!selected}
-          onClick={() => dispatch({ type: 'SUBMIT_PREDICTION' })}
+          onClick={() => {
+            const option = prediction.options.find((item) => item.id === selected);
+            if (selected && option) {
+              trackChoice({
+                lessonId: state.lessonId,
+                sceneIndex: state.currentSceneIndex,
+                sceneId: scene.id,
+                partId: scene.partId,
+                choiceId: selected,
+                correct: option.isCorrect === true,
+                group: 'prediction',
+              });
+            }
+            dispatch({ type: 'SUBMIT_PREDICTION' });
+          }}
         >
           提交预测
         </Button>

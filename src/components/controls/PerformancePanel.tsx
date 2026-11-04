@@ -4,9 +4,12 @@ import type { AttendanceLog, SemesterLedger, SessionLedger, Student } from '../.
 import { downloadTextFile } from '../../utils/csv';
 import {
   REWARD_MIN,
+  buildParticipationSummary,
   exportMeetingDetailCsv,
   exportSemesterPerformanceCsv,
   getClassLabel,
+  getClassStudents,
+  loadSemester,
   studentMatchesQuery,
 } from '../../utils/rosterStorage';
 import { CloverCount } from '../ui/CloverIcon';
@@ -91,6 +94,39 @@ export function PerformancePanel({
     [rows, query],
   );
 
+  const classSummary = useMemo(
+    () => buildParticipationSummary(students, semester),
+    [students, semester],
+  );
+
+  const allClassesSummary = useMemo(() => {
+    if (classes.length <= 1) return null;
+    let totalStudents = 0;
+    let participatedStudents = 0;
+    let totalFlowers = 0;
+    let totalClovers = 0;
+    for (const c of classes) {
+      const cStudents = c.id === classId ? students : getClassStudents(c.id);
+      const cSemester = c.id === classId ? semester : loadSemester(c.id);
+      const sub = buildParticipationSummary(cStudents, cSemester);
+      totalStudents += sub.totalStudents;
+      participatedStudents += sub.participatedStudents;
+      totalFlowers += sub.totalFlowers;
+      totalClovers += sub.totalClovers;
+    }
+    if (totalStudents === 0) return null;
+    const participationRatePct = Math.round((participatedStudents / totalStudents) * 1000) / 10;
+    return {
+      classCount: classes.length,
+      totalStudents,
+      participatedStudents,
+      participationRatePct,
+      totalFlowers,
+      totalClovers,
+      totalInteractions: totalFlowers + totalClovers,
+    };
+  }, [classes, classId, students, semester]);
+
   const exportSemester = () => {
     const csv = exportSemesterPerformanceCsv(students, semester, attendanceLog);
     downloadTextFile(`抽点和主动回答_${metaLabel}_学期.csv`, csv);
@@ -166,6 +202,35 @@ export function PerformancePanel({
       <p className={`text-sm mb-3 ${dark ? 'text-white/45' : 'text-text-secondary'}`}>
         本堂会话：{session.sessionId}
       </p>
+      {classSummary.totalStudents > 0 && (
+        <div
+          className={`rounded-2xl border px-4 py-2.5 mb-3 text-sm ${
+            dark
+              ? 'border-white/15 bg-white/5 text-white/85'
+              : 'border-classroom-border bg-classroom-playground text-text-primary'
+          }`}
+        >
+          <p className="font-medium">
+            本班课堂互动参与率：
+            <span className="font-semibold tabular-nums">
+              {classSummary.participationRatePct}%
+            </span>
+            （已参与 {classSummary.participatedStudents}/{classSummary.totalStudents} 人 · 提问抽点{' '}
+            {classSummary.totalFlowers} 人次 · 主动互动 {classSummary.totalClovers} 人次 · 合计{' '}
+            {classSummary.totalInteractions} 人次）
+          </p>
+          {allClassesSummary && (
+            <p className={`mt-1 text-xs ${dark ? 'text-white/60' : 'text-text-secondary'}`}>
+              全课程 {allClassesSummary.classCount} 个教学班合计：参与率{' '}
+              <span className="font-semibold tabular-nums">
+                {allClassesSummary.participationRatePct}%
+              </span>
+              （已参与 {allClassesSummary.participatedStudents}/{allClassesSummary.totalStudents} 人 · 累计互动{' '}
+              {allClassesSummary.totalInteractions} 人次）
+            </p>
+          )}
+        </div>
+      )}
       {tab === 'pick' ? (
         <PickStudentContent
           pool={pool}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { trackChoice } from '../../analytics/client';
 import { useStageAdvance } from '../../hooks/useStageAdvance';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import type { LoopPathContent } from '../../types/scene';
@@ -439,6 +440,7 @@ const RANGE_QUIZ = [
 function RangeQuiz() {
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
+  const { state, scene } = useSceneEngine();
   const item = RANGE_QUIZ[index]!;
   return (
     <div>
@@ -453,7 +455,18 @@ function RangeQuiz() {
             <button
               key={label}
               type="button"
-              onClick={() => setPicked(option)}
+              onClick={() => {
+                setPicked(option);
+                trackChoice({
+                  lessonId: state.lessonId,
+                  sceneIndex: state.currentSceneIndex,
+                  sceneId: scene.id,
+                  partId: scene.partId,
+                  choiceId: String(option),
+                  correct: option === item.answer,
+                  group: `range-${index}`,
+                });
+              }}
               className={`block w-full rounded-2xl px-5 py-4 text-left text-xl ${
                 revealed && correct ? 'bg-accent text-white' : revealed && chosen ? 'bg-white text-text-secondary' : 'bg-white'
               }`}

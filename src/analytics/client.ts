@@ -70,8 +70,45 @@ export function trackSessionStart(path: string): void {
   });
 }
 
+const lessonEnteredAt = new Map<string, number>();
+
 export function trackLessonView(lessonId: string): void {
+  lessonEnteredAt.set(`${getAnalyticsSessionId()}:${lessonId}`, Date.now());
   track({ type: 'lesson_view', lessonId, path: `/lesson/${lessonId}` });
+}
+
+const completedLessons = new Set<string>();
+
+export function trackLessonComplete(input: {
+  lessonId: string;
+  sceneIndex: number;
+  sceneId?: string;
+  partId?: string;
+}): void {
+  const key = `${getAnalyticsSessionId()}:${input.lessonId}`;
+  if (completedLessons.has(key)) return;
+  completedLessons.add(key);
+  track({
+    type: 'lesson_complete',
+    lessonId: input.lessonId,
+    sceneIndex: input.sceneIndex,
+    sceneId: input.sceneId,
+    partId: input.partId,
+  });
+}
+
+const firstRuns = new Set<string>();
+
+function trackFirstRun(lessonId: string): void {
+  const key = `${getAnalyticsSessionId()}:${lessonId}`;
+  if (firstRuns.has(key)) return;
+  firstRuns.add(key);
+  const entered = lessonEnteredAt.get(key) ?? Date.now();
+  track({
+    type: 'first_run',
+    lessonId,
+    seconds: Math.max(0, Math.round((Date.now() - entered) / 1000)),
+  });
 }
 
 const homeworkOpened = new Set<string>();
@@ -146,11 +183,61 @@ export function trackSceneDwell(input: {
 
 const runLast = new Map<string, number>();
 
-export function trackRun(lessonId: string, sceneIndex: number): void {
+export function trackRun(lessonId: string, sceneIndex: number): boolean {
   const key = `${getAnalyticsSessionId()}:${lessonId}:${sceneIndex}`;
   const now = Date.now();
   const prev = runLast.get(key) ?? 0;
-  if (now - prev < RUN_DEDUP_MS) return;
+  if (now - prev < RUN_DEDUP_MS) return false;
   runLast.set(key, now);
+  trackFirstRun(lessonId);
   track({ type: 'run', lessonId, sceneIndex });
+  return true;
+}
+
+export function trackRunResult(input: {
+  lessonId: string;
+  sceneIndex: number;
+  sceneId?: string;
+  partId?: string;
+  ok: boolean;
+  errorType?: string | null;
+  codeChanged: boolean;
+}): void {
+  track({
+    type: 'run_result',
+    lessonId: input.lessonId,
+    sceneIndex: input.sceneIndex,
+    sceneId: input.sceneId,
+    partId: input.partId,
+    outcome: input.ok ? 'ok' : 'error',
+    errorType: input.ok ? undefined : input.errorType || 'Error',
+    codeChanged: input.codeChanged,
+  });
+}
+
+const choiceAttempts = new Map<string, number>();
+
+export function trackChoice(input: {
+  lessonId: string;
+  sceneIndex: number;
+  sceneId?: string;
+  partId?: string;
+  choiceId: string;
+  correct: boolean;
+  group?: string;
+}): void {
+  const key = `${getAnalyticsSessionId()}:${input.lessonId}:${input.sceneIndex}:${input.group ?? 'q'}`;
+  const attempt = (choiceAttempts.get(key) ?? 0) + 1;
+  if (attempt > 20) return;
+  choiceAttempts.set(key, attempt);
+  track({
+    type: 'choice',
+    lessonId: input.lessonId,
+    sceneIndex: input.sceneIndex,
+    sceneId: input.sceneId,
+    partId: input.partId,
+    choiceId: input.choiceId,
+    correct: input.correct,
+    attempt,
+  });
 }

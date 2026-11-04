@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   adjustClovers,
   adjustFlowers,
+  buildParticipationSummary,
   buildSemesterGradeRows,
   canTakeFinalExam,
   equivalentAbsences,
@@ -314,5 +315,33 @@ describe('performance scoring', () => {
   it('gives 5 when p90 is 0 but points are positive', () => {
     expect(scalePerformanceScore(1, 0)).toBe(5);
     expect(scalePerformanceScore(0, 0)).toBe(0);
+  });
+
+  it('computes class participation summary and includes it in exported CSV', () => {
+    const students = [
+      { id: 'a', name: '甲', studentNo: '1' },
+      { id: 'b', name: '乙', studentNo: '2' },
+      { id: 'c', name: '丙', studentNo: '3' },
+      { id: 'd', name: '丁', studentNo: '4' },
+    ];
+    const semester = {
+      classId: 'monday',
+      flowers: { a: 2, b: 1 },
+      clovers: { b: 3, c: 1 },
+      updatedAt: 'x',
+    };
+    const summary = buildParticipationSummary(students, semester);
+    expect(summary.totalStudents).toBe(4);
+    expect(summary.participatedStudents).toBe(3);
+    expect(summary.participationRatePct).toBe(75);
+    expect(summary.questionStudents).toBe(2);
+    expect(summary.interactStudents).toBe(2);
+    expect(summary.totalFlowers).toBe(3);
+    expect(summary.totalClovers).toBe(4);
+    expect(summary.totalInteractions).toBe(7);
+
+    const log = { classId: 'monday', updatedAt: 'x', entries: [] };
+    const csv = exportSemesterPerformanceCsv(students, semester, log);
+    expect(csv).toContain('课堂互动参与率：75%（已参与 3/4 人');
   });
 });

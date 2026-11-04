@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { trackChoice } from '../../analytics/client';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import type { VendPathContent } from '../../types/scene';
 
@@ -19,6 +20,7 @@ function Choice({
   badText: string;
 }) {
   const [choice, setChoice] = useState<string | null>(null);
+  const { state, scene } = useSceneEngine();
   const picked = options.find((option) => option.id === choice);
   return (
     <div>
@@ -30,7 +32,18 @@ function Choice({
             <button
               key={option.id}
               type="button"
-              onClick={() => setChoice(option.id)}
+              onClick={() => {
+                setChoice(option.id);
+                trackChoice({
+                  lessonId: state.lessonId,
+                  sceneIndex: state.currentSceneIndex,
+                  sceneId: scene.id,
+                  partId: scene.partId,
+                  choiceId: option.id,
+                  correct: option.correct,
+                  group: question,
+                });
+              }}
               className={`block w-full rounded-2xl border px-4 py-3 text-left text-lg ${
                 selected
                   ? option.correct

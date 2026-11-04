@@ -158,7 +158,8 @@ export function TeachingStage() {
       content.vendPath ||
       content.codeBeats,
   );
-  const hasSideImage = Boolean(content.image);
+  const hasSideImage = Boolean(content.image) && isFullscreen;
+  const stackedImage = Boolean(content.image) && !isFullscreen;
   const pinTop = Boolean(
     content.machineLang || content.translateStack || (content.historyDialogue && content.digestPipeline),
   );
@@ -216,6 +217,7 @@ export function TeachingStage() {
           }
         >
           <div>
+            {stackedImage && content.image && <SceneSideImage image={content.image} stacked />}
             {content.flowDiagram && (
               <div className="mt-2 overflow-x-auto rounded-2xl bg-classroom-playground border border-classroom-border px-4 py-2 space-y-0.5 whitespace-pre font-mono text-sm leading-snug text-text-primary font-medium">
                 {content.flowDiagram.map((line, index) => (
@@ -338,6 +340,37 @@ export function TeachingStage() {
                   ))}
                 </ol>
               </div>
+            )}
+
+            {content.gridTable && (
+              <table className={`${content.headline ? 'mt-8' : 'mt-1'} w-full table-fixed border-collapse text-center`}>
+                <thead>
+                  <tr className="border-b border-classroom-border text-text-secondary">
+                    {content.gridTable.headers.map((header, index) => (
+                      <th
+                        key={header}
+                        className={`py-1.5 text-xl font-semibold ${index === 0 ? 'text-left' : ''}`}
+                      >
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {content.gridTable.rows.map((row) => (
+                    <tr key={row[0]} className="border-b border-classroom-border/70">
+                      {row.map((cell, index) => (
+                        <td
+                          key={`${row[0]}-${index}`}
+                          className={`py-1.5 text-xl text-text-primary ${index === 0 ? 'text-left font-semibold text-accent' : ''}`}
+                        >
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
 
             {content.compareTable && (

@@ -1,4 +1,4 @@
-import { trackRun } from '../../analytics/client';
+import { trackRun, trackRunResult } from '../../analytics/client';
 import { useCallback, useEffect, useState } from 'react';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { canRun } from '../../engine/sceneTransitions';
@@ -31,7 +31,9 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
   const handleRun = useCallback(async () => {
     if (!runEnabled) return;
     dispatch({ type: 'RUN_START' });
-    trackRun(state.lessonId, state.currentSceneIndex);
+    const counted = trackRun(state.lessonId, state.currentSceneIndex);
+    const initial = scene.code?.initial ?? '';
+    const codeChanged = state.sceneLocal.code.trim() !== initial.trim();
 
     const onInput = (prompt: string): Promise<string> => {
       return new Promise((resolve) => {
@@ -43,6 +45,17 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
     try {
       const result = await runCode(state.sceneLocal.code, onInput);
       dispatch({ type: 'RUN_COMPLETE', result });
+      if (counted) {
+        trackRunResult({
+          lessonId: state.lessonId,
+          sceneIndex: state.currentSceneIndex,
+          sceneId: scene.id,
+          partId: scene.partId,
+          ok: result.error == null,
+          errorType: result.error?.type,
+          codeChanged,
+        });
+      }
     } catch {
       dispatch({
         type: 'RUN_COMPLETE',
@@ -52,11 +65,22 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
           error: { type: 'Error', message: 'Execution interrupted' },
         },
       });
+      if (counted) {
+        trackRunResult({
+          lessonId: state.lessonId,
+          sceneIndex: state.currentSceneIndex,
+          sceneId: scene.id,
+          partId: scene.partId,
+          ok: false,
+          errorType: 'Error',
+          codeChanged,
+        });
+      }
     } finally {
       setInputPrompt(null);
       setPendingRun(null);
     }
-  }, [runEnabled, dispatch, runCode, state.sceneLocal.code]);
+  }, [runEnabled, dispatch, runCode, state.sceneLocal.code, state.lessonId, state.currentSceneIndex, scene]);
 
   const handleInputSubmit = (value: string) => {
     pendingRun?.resolve(value);

@@ -57,6 +57,31 @@ import { scenes as tupleDefine } from "./tuple-define/scenes";
 import { scenes as tupleOps } from "./tuple-ops/scenes";
 import { scenes as tupleLimit } from "./tuple-limit/scenes";
 import { scenes as tupleWalk } from "./tuple-walk/scenes";
+import { scenes as setWhy } from "./set-why/scenes";
+import { scenes as setDefine } from "./set-define/scenes";
+import { scenes as setEdit } from "./set-edit/scenes";
+import { scenes as setOps } from "./set-ops/scenes";
+import { scenes as setWalk } from "./set-walk/scenes";
+import { scenes as dictWhy } from "./dict-why/scenes";
+import { scenes as dictUse } from "./dict-use/scenes";
+import { scenes as dictWalk } from "./dict-walk/scenes";
+import { scenes as fnWhy } from "./fn-why/scenes";
+import { scenes as fnDef } from "./fn-def/scenes";
+import { scenes as fnParam } from "./fn-param/scenes";
+import { scenes as fnReturn } from "./fn-return/scenes";
+import { scenes as fnCall } from "./fn-call/scenes";
+import { scenes as fnClose } from "./fn-close/scenes";
+import { scenes as fileWhy } from "./file-why/scenes";
+import { scenes as fileOpen } from "./file-open/scenes";
+import { scenes as fileCsv } from "./file-csv/scenes";
+import { scenes as fileJson } from "./file-json/scenes";
+import { scenes as fileClose } from "./file-close/scenes";
+import { scenes as llmWhy } from "./llm-why/scenes";
+import { scenes as llmRequest } from "./llm-request/scenes";
+import { scenes as llmParse } from "./llm-parse/scenes";
+import { scenes as llmCheck } from "./llm-check/scenes";
+import { scenes as llmPipeline } from "./llm-pipeline/scenes";
+import { scenes as llmClose } from "./llm-close/scenes";
 
 /** 全课知识块仓库：开课表通过 ref 引用 */
 export const PARTS: Record<string, ContentPart> = {
@@ -118,6 +143,31 @@ export const PARTS: Record<string, ContentPart> = {
   "tuple-ops": { id: "tuple-ops", scenes: tupleOps },
   "tuple-limit": { id: "tuple-limit", scenes: tupleLimit },
   "tuple-walk": { id: "tuple-walk", scenes: tupleWalk },
+  "set-why": { id: "set-why", scenes: setWhy },
+  "set-define": { id: "set-define", scenes: setDefine },
+  "set-edit": { id: "set-edit", scenes: setEdit },
+  "set-ops": { id: "set-ops", scenes: setOps },
+  "set-walk": { id: "set-walk", scenes: setWalk },
+  "dict-why": { id: "dict-why", scenes: dictWhy },
+  "dict-use": { id: "dict-use", scenes: dictUse },
+  "dict-walk": { id: "dict-walk", scenes: dictWalk },
+  "fn-why": { id: "fn-why", scenes: fnWhy },
+  "fn-def": { id: "fn-def", scenes: fnDef },
+  "fn-param": { id: "fn-param", scenes: fnParam },
+  "fn-return": { id: "fn-return", scenes: fnReturn },
+  "fn-call": { id: "fn-call", scenes: fnCall },
+  "fn-close": { id: "fn-close", scenes: fnClose },
+  "file-why": { id: "file-why", scenes: fileWhy },
+  "file-open": { id: "file-open", scenes: fileOpen },
+  "file-csv": { id: "file-csv", scenes: fileCsv },
+  "file-json": { id: "file-json", scenes: fileJson },
+  "file-close": { id: "file-close", scenes: fileClose },
+  "llm-why": { id: "llm-why", scenes: llmWhy },
+  "llm-request": { id: "llm-request", scenes: llmRequest },
+  "llm-parse": { id: "llm-parse", scenes: llmParse },
+  "llm-check": { id: "llm-check", scenes: llmCheck },
+  "llm-pipeline": { id: "llm-pipeline", scenes: llmPipeline },
+  "llm-close": { id: "llm-close", scenes: llmClose },
 };
 
 export function getPart(ref: string): ContentPart {

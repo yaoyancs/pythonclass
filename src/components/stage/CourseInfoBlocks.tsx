@@ -1,13 +1,15 @@
 import type { CatalogItem, GalleryLink, GradeItem, InfoCard, SceneImage, ScheduleBlock } from '../../types/scene';
 import { Fragment, useRef, useState } from 'react';
 
-export function SceneSideImage({ image }: { image: SceneImage }) {
+export function SceneSideImage({ image, stacked = false }: { image: SceneImage; stacked?: boolean }) {
   return (
-    <figure className="justify-self-center">
+    <figure className={stacked ? 'mt-4 w-full' : 'justify-self-center'}>
       <img
         src={image.src}
         alt={image.alt}
-        className="max-h-[26rem] w-auto rounded-3xl bg-classroom-stage shadow-card object-contain"
+        className={`rounded-3xl bg-classroom-stage shadow-card object-contain ${
+          stacked ? 'max-h-[22rem] w-full' : 'max-h-[26rem] w-auto'
+        }`}
       />
       {image.caption && (
         <figcaption className="mt-4 text-center text-lg text-text-secondary">{image.caption}</figcaption>

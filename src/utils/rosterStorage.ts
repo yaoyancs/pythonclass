@@ -6,6 +6,7 @@ import type {
   AttendanceStatus,
   ClassRoster,
   MultiRosterStore,
+  ParticipationSummary,
   PerformanceGradeRow,
   RewardKind,
   SemesterLedger,
@@ -813,11 +814,50 @@ export function buildSemesterGradeRows(
   });
 }
 
+export function buildParticipationSummary(
+  students: Student[],
+  semester: SemesterLedger,
+): ParticipationSummary {
+  const sem = normalizeSemester(semester);
+  const totalStudents = students.length;
+  let participatedStudents = 0;
+  let questionStudents = 0;
+  let interactStudents = 0;
+  let totalFlowers = 0;
+  let totalClovers = 0;
+
+  for (const s of students) {
+    const f = Math.max(0, sem.flowers[s.id] ?? 0);
+    const c = Math.max(0, sem.clovers[s.id] ?? 0);
+    if (f > 0) questionStudents += 1;
+    if (c > 0) interactStudents += 1;
+    if (f > 0 || c > 0) participatedStudents += 1;
+    totalFlowers += f;
+    totalClovers += c;
+  }
+
+  const participationRatePct =
+    totalStudents > 0 ? round1((participatedStudents / totalStudents) * 100) : 0;
+
+  return {
+    totalStudents,
+    participatedStudents,
+    participationRatePct,
+    questionStudents,
+    interactStudents,
+    totalFlowers,
+    totalClovers,
+    totalInteractions: totalFlowers + totalClovers,
+  };
+}
+
 export function exportSemesterPerformanceCsv(
   students: Student[],
   semester: SemesterLedger,
   log: AttendanceLog,
 ): string {
+  const summary = buildParticipationSummary(students, semester);
+  const summaryComment = `# 课堂互动参与率：${summary.participationRatePct}%（已参与 ${summary.participatedStudents}/${summary.totalStudents} 人；提问抽点 ${summary.questionStudents} 人、共 ${summary.totalFlowers} 人次；主动互动 ${summary.interactStudents} 人、共 ${summary.totalClovers} 人次；合计互动 ${summary.totalInteractions} 人次）`;
   const header = [
     '学号',
     '姓名',
@@ -863,7 +903,7 @@ export function exportSemesterPerformanceCsv(
       row.canTakeFinal ? '可以' : '不得参加',
     ].join(','),
   );
-  return [PERFORMANCE_CSV_NOTE, header, ...lines].join('\n');
+  return [PERFORMANCE_CSV_NOTE, summaryComment, header, ...lines].join('\n');
 }
 
 /** 档案 + 本机会话合并，供本堂明细导出与对账 */
