@@ -218,26 +218,35 @@ export function HomePage() {
         )}
 
         {upcoming.length > 0 && (
-          <details className="mt-8 group">
-            <summary className="cursor-pointer list-none text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors">
-              <span className="group-open:hidden">后续讲次（筹备中）</span>
-              <span className="hidden group-open:inline">收起后续讲次</span>
-            </summary>
-            <ol className="mt-3 space-y-2">
-              {upcoming.map((lecture) => (
-                <li key={lecture.id}>
-                  <Link
-                    to={lecturePath(lecture.id)}
-                    className="flex items-baseline gap-4 rounded-2xl border border-dashed border-classroom-border px-6 py-3 text-text-secondary hover:text-text-primary hover:border-accent/30 transition-colors"
-                  >
-                    <span className="shrink-0">第 {lectureLabel(lecture)} 讲</span>
-                    <span className="title-stage">{lecture.title}</span>
-                    <span className="text-sm">{lecture.blurb}</span>
-                  </Link>
+          <section className="mt-8">
+            <p className="text-sm font-semibold text-text-secondary mb-3">后续讲次</p>
+            <ol className="space-y-3">
+              {groupSharedNumber(upcoming).map((row) => (
+                <li key={row.map((lecture) => lecture.id).join('-')}>
+                  {row.length === 1 ? (
+                    row[0]!.ready ? (
+                      <ReadyLectureLink lecture={row[0]!} />
+                    ) : (
+                      <Link
+                        to={lecturePath(row[0]!.id)}
+                        className="flex items-baseline gap-4 rounded-2xl border border-dashed border-classroom-border px-6 py-3 text-text-secondary hover:text-text-primary hover:border-accent/30 transition-colors"
+                      >
+                        <span className="shrink-0">第 {lectureLabel(row[0]!)} 讲</span>
+                        <span className="title-stage">{row[0]!.title}</span>
+                        <span className="text-sm">{row[0]!.blurb}</span>
+                      </Link>
+                    )
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      {row.map((lecture) => (
+                        <ReadyLectureLink key={lecture.id} lecture={lecture} />
+                      ))}
+                    </div>
+                  )}
                 </li>
               ))}
             </ol>
-          </details>
+          </section>
         )}
       </main>
 
