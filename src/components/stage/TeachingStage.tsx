@@ -15,6 +15,7 @@ import {
   InfoCardGrid,
   SceneGallery,
   SceneSideImage,
+  SceneSideImages,
   ScheduleList,
 } from './CourseInfoBlocks';
 import { LearningFlowStage } from './LearningFlowStage';
@@ -52,6 +53,7 @@ import { VarDefinitionStage } from './VarDefinitionStage';
 import { AssignIntroStage } from './AssignIntroStage';
 import { BindingModelStage } from './BindingModelStage';
 import { TypeMapStage } from './TypeMapStage';
+import { ContainerMapStage } from './ContainerMapStage';
 import { TypeProbeStage } from './TypeProbeStage';
 import { IntFloatStage } from './IntFloatStage';
 import { VarPredictStage } from './VarPredictStage';
@@ -66,6 +68,8 @@ import { FinalVerdictStage } from './FinalVerdictStage';
 import { NameLinkStage } from './NameLinkStage';
 import { StringBoardStage } from './StringBoardStage';
 import { PlaylistBoardStage } from './PlaylistBoardStage';
+import { PlayCountsStage } from './PlayCountsStage';
+import { StepRunStage } from './StepRunStage';
 import { StringCutStage } from './StringCutStage';
 import { StringTemplateStage } from './StringTemplateStage';
 import { StringCastStage } from './StringCastStage';
@@ -93,6 +97,7 @@ export function TeachingStage() {
   const isFullscreen = scene.layout === 'fullscreen';
   const dense = Boolean(
     content.image ||
+      content.images?.length ||
       content.gallery ||
       content.infoCards ||
       content.schedule ||
@@ -132,6 +137,7 @@ export function TeachingStage() {
       content.assignIntro ||
       content.bindingModel ||
       content.typeMap ||
+      content.containerMap ||
       content.typeProbe ||
       content.intFloat ||
       content.varPredict ||
@@ -158,8 +164,15 @@ export function TeachingStage() {
       content.vendPath ||
       content.codeBeats,
   );
-  const hasSideImage = Boolean(content.image) && isFullscreen;
+  const hasSideImage = Boolean(content.image || content.images?.length) && isFullscreen;
+  const imageBesideText = hasSideImage && Boolean(
+    content.body ||
+      content.bulletPoints?.length ||
+      clickLines.length ||
+      content.images?.length,
+  );
   const stackedImage = Boolean(content.image) && !isFullscreen;
+  const compactWithMedia = Boolean(content.flowDiagram);
   const pinTop = Boolean(
     content.machineLang || content.translateStack || (content.historyDialogue && content.digestPipeline),
   );
@@ -180,11 +193,11 @@ export function TeachingStage() {
             className={`title-stage text-text-primary ${
               clickLines.length > 0 && !clickReveal.done ? 'cursor-pointer' : ''
             } ${
-              hasSideImage
+              imageBesideText
                 ? 'whitespace-nowrap text-[clamp(1.75rem,4.6vw,3.75rem)] leading-[1.2]'
                 : content.flowDiagram
                   ? 'text-3xl leading-tight'
-                : content.typeProbe || content.typeMap
+                : content.typeProbe || content.typeMap || content.containerMap || content.containerMap
                   ? 'text-[2.35rem] leading-tight'
                   : isFullscreen && !dense
                     ? 'text-stage-hero'
@@ -212,12 +225,19 @@ export function TeachingStage() {
         <div
           className={
             hasSideImage
-              ? `grid grid-cols-[1.15fr_0.85fr] gap-12 items-start ${content.headline ? 'mt-8' : ''}`
+              ? content.images?.length
+                ? 'flex flex-col gap-6'
+                : imageBesideText
+                  ? `grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-12 items-start ${content.headline ? 'mt-8' : ''}`
+                  : `flex flex-col items-center ${content.headline ? 'mt-8' : ''}`
               : ''
           }
         >
-          <div>
+          <div className="min-w-0">
             {stackedImage && content.image && <SceneSideImage image={content.image} stacked />}
+            {content.stepRun && scene.code && (
+              <StepRunStage sceneId={scene.id} code={scene.code.initial} />
+            )}
             {content.flowDiagram && (
               <div className="mt-2 overflow-x-auto rounded-2xl bg-classroom-playground border border-classroom-border px-4 py-2 space-y-0.5 whitespace-pre font-mono text-sm leading-snug text-text-primary font-medium">
                 {content.flowDiagram.map((line, index) => (
@@ -257,8 +277,10 @@ export function TeachingStage() {
             {content.body && scene.type !== 'summary' && (
               <p
                 className={
-                  content.flowDiagram
-                    ? 'mt-3 text-lg font-medium leading-snug text-text-primary'
+                  content.images?.length
+                    ? 'mt-2 text-3xl font-medium leading-snug text-text-primary'
+                    : compactWithMedia
+                    ? 'mt-3 text-lg font-medium leading-relaxed text-text-secondary'
                     : (content.bulletPoints?.length ?? 0) >= 5
                       ? 'mt-4 text-2xl font-medium leading-snug text-text-primary'
                       : 'text-stage-body mt-8 text-text-secondary font-medium'
@@ -271,8 +293,10 @@ export function TeachingStage() {
             {content.bulletPoints && (
               <ul
                 className={
-                  content.flowDiagram
-                    ? 'mt-2 space-y-1'
+                  content.images?.length
+                    ? 'mt-3 space-y-2'
+                    : compactWithMedia
+                    ? 'mt-4 space-y-2.5'
                     : (content.bulletPoints.length ?? 0) >= 5
                       ? 'mt-6 space-y-3'
                       : 'mt-10 space-y-5'
@@ -282,7 +306,9 @@ export function TeachingStage() {
                   <li
                     key={point}
                     className={`${
-                      content.flowDiagram
+                      content.images?.length
+                        ? 'text-2xl'
+                        : compactWithMedia
                         ? 'text-lg'
                         : (content.bulletPoints?.length ?? 0) >= 5
                           ? 'text-2xl'
@@ -294,6 +320,12 @@ export function TeachingStage() {
                   </li>
                 ))}
               </ul>
+            )}
+
+            {content.codeSnippet && (
+              <pre className="mt-5 overflow-x-auto whitespace-pre-wrap break-words rounded-2xl border border-code-border bg-code-bg px-5 py-3.5 font-mono text-base leading-relaxed text-code-text shadow-card">
+                {content.codeSnippet}
+              </pre>
             )}
 
             {content.markedPoints && (
@@ -523,6 +555,7 @@ export function TeachingStage() {
               <BindingModelStage content={content.bindingModel} sceneId={scene.id} />
             )}
             {content.typeMap && <TypeMapStage />}
+            {content.containerMap && <ContainerMapStage />}
             {content.typeProbe && (
               <TypeProbeStage content={content.typeProbe} sceneId={scene.id} />
             )}
@@ -565,6 +598,7 @@ export function TeachingStage() {
             {content.playlistBoard && (
               <PlaylistBoardStage content={content.playlistBoard} sceneId={scene.id} />
             )}
+            {content.playCountsApp && <PlayCountsStage />}
             {content.stringCut && (
               <StringCutStage content={content.stringCut} sceneId={scene.id} />
             )}
@@ -602,7 +636,11 @@ export function TeachingStage() {
               <SceneGallery images={content.gallery} links={content.galleryLinks} />
             )}
           </div>
-          {content.image && <SceneSideImage image={content.image} />}
+          {content.images?.length && isFullscreen ? (
+            <SceneSideImages images={content.images} />
+          ) : (
+            content.image && isFullscreen && <SceneSideImage image={content.image} />
+          )}
         </div>
 
         {beatPhase === 0 && (scene.prediction || scene.requiresPrediction) && <PredictPanel />}

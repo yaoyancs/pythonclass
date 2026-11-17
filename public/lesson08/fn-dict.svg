@@ -1,28 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 280" font-family="PingFang SC, sans-serif">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 280">
   <rect width="880" height="280" rx="24" fill="#F4F7FB"/>
-  <defs>
-    <marker id="dict-arr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-      <path d="M0,0 L10,5 L0,10 Z" fill="#1B3A6B"/>
-    </marker>
-  </defs>
-
-  <rect x="28" y="70" width="250" height="130" rx="14" fill="#FFFFFF" stroke="#1B3A6B" stroke-width="2.5"/>
-  <text x="153" y="48" text-anchor="middle" font-size="18" font-weight="700" fill="#1B3A6B">WxÌXıp</text>
-  <text x="48" y="118" font-size="18" fill="#1B3A6B">"Ê<": passed</text>
-  <text x="48" y="156" font-size="18" fill="#1B3A6B">"á": full_mark</text>
-  <text x="153" y="228" text-anchor="middle" font-size="16" fill="#1B3A6B">™eö ì÷</text>
-
-  <line x1="278" y1="135" x2="348" y2="135" stroke="#1B3A6B" stroke-width="2.5" marker-end="url(#dict-arr)"/>
-
-  <rect x="360" y="78" width="230" height="114" rx="14" fill="#E8EEF8" stroke="#1B3A6B" stroke-width="2.5"/>
-  <text x="475" y="48" text-anchor="middle" font-size="18" font-weight="700" fill="#1B3A6B">	.Öú</text>
-  <text x="475" y="128" text-anchor="middle" font-size="18" fill="#1B3A6B">actions["Ê<"]</text>
-  <text x="475" y="164" text-anchor="middle" font-size="16" fill="#1B3A6B">—0ıp passed</text>
-
-  <line x1="590" y1="135" x2="648" y2="135" stroke="#1B3A6B" stroke-width="2.5" marker-end="url(#dict-arr)"/>
-
-  <rect x="660" y="78" width="190" height="114" rx="14" fill="#1B3A6B"/>
-  <text x="755" y="48" text-anchor="middle" font-size="18" font-weight="700" fill="#1B3A6B">(</text>
-  <text x="755" y="128" text-anchor="middle" font-size="20" font-weight="700" fill="#FFFFFF">check(60)</text>
-  <text x="755" y="164" text-anchor="middle" font-size="18" fill="#FFFFFF">Óœ True</text>
+  <rect x="40" y="50" width="280" height="180" rx="16" fill="#fff" stroke="#1B3A6B" stroke-width="2.5"/>
+  <text x="180" y="90" text-anchor="middle" font-size="18" font-weight="700" fill="#1B3A6B" font-family="PingFang SC, sans-serif">å­—å…¸å­˜å‡½æ•°</text>
+  <text x="180" y="140" text-anchor="middle" font-size="18" fill="#1B3A6B" font-family="PingFang SC, sans-serif">"åŠæ ¼" â†’ passed</text>
+  <text x="180" y="180" text-anchor="middle" font-size="18" fill="#1B3A6B" font-family="PingFang SC, sans-serif">"æ»¡åˆ†" â†’ full_mark</text>
+  <path d="M320 140 L380 140" stroke="#1B3A6B" stroke-width="3"/>
+  <polygon points="380,132 396,140 380,148" fill="#1B3A6B"/>
+  <rect x="404" y="50" width="200" height="180" rx="16" fill="#E8EEF8" stroke="#1B3A6B" stroke-width="2.5"/>
+  <text x="504" y="120" text-anchor="middle" font-size="18" fill="#1B3A6B" font-family="PingFang SC, sans-serif">å–å‡º</text>
+  <text x="504" y="164" text-anchor="middle" font-size="18" font-weight="700" fill="#1B3A6B" font-family="PingFang SC, sans-serif">passed</text>
+  <path d="M604 140 L664 140" stroke="#1B3A6B" stroke-width="3"/>
+  <polygon points="664,132 680,140 664,148" fill="#1B3A6B"/>
+  <rect x="688" y="50" width="152" height="180" rx="16" fill="#fff" stroke="#1B3A6B" stroke-width="2.5"/>
+  <text x="764" y="120" text-anchor="middle" font-size="18" fill="#1B3A6B" font-family="PingFang SC, sans-serif">åŠ æ‹¬å·</text>
+  <text x="764" y="164" text-anchor="middle" font-size="22" font-weight="700" fill="#1B3A6B" font-family="PingFang SC, sans-serif">True</text>
 </svg>

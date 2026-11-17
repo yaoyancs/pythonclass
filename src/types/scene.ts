@@ -67,11 +67,19 @@ export interface ScheduleBlock {
   rows: { time: string; place: string }[];
 }
 
+export interface GradeLine {
+  label: string;
+  percent: string;
+  note?: string;
+  /** 划掉本行，下一行用红色写出替换内容 */
+  replaceWith?: { label: string; percent: string; note?: string };
+}
+
 export interface GradeItem {
   label: string;
   percent: string;
   note?: string;
-  children?: { label: string; percent: string; note?: string }[];
+  children?: GradeLine[];
 }
 
 export interface CatalogItem {
@@ -766,6 +774,10 @@ export interface SceneContent {
   promptQuote?: string;
   emoji?: string;
   image?: SceneImage;
+  /** 右侧并排展示的多张对比图（如列表抽屉 vs 标签抽屉） */
+  images?: SceneImage[];
+  /** 正文或要点下方展示的代码示例 */
+  codeSnippet?: string;
   /** 投屏图片网格，按顺序排列 */
   gallery?: SceneImage[];
   /** 点击 from 后，用对应颜色连线到 to */
@@ -817,11 +829,19 @@ export interface SceneContent {
   whyLearnWrap?: WhyLearnWrapContent;
   finalVerdict?: FinalVerdictContent;
   typeMap?: TypeMapContent;
+  /** 第 7 讲收束：四种容器的读取、增加、删除 */
+  containerMap?: TypeMapContent;
+  /** 第 7 讲收束：四种容器的读取、增加、删除 */
+  containerMap?: TypeMapContent;
   typeProbe?: TypeProbeContent;
   intFloat?: IntFloatContent;
   nameLink?: NameLinkContent;
   stringBoard?: StringBoardContent;
   playlistBoard?: PlaylistBoardContent;
+  /** 播放次数窗口，操作与 demos/play_counts.py 相同 */
+  playCountsApp?: boolean;
+  /** 按行回放这次运行，高亮当前行并显示变量 */
+  stepRun?: boolean;
   stringCut?: StringCutContent;
   stringTemplate?: StringTemplateContent;
   stringCast?: StringCastContent;

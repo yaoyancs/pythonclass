@@ -6,40 +6,156 @@ const code = (initial: string) => ({
   resetToInitial: true,
 });
 
-const ROSTER = `roster = {"2024001": "周杰伦", "2024002": "林俊杰"}`;
+const PLAYS = `plays = {"晴天": 12, "稻香": 30, "夜曲": 7}`;
 
-/** 遍历、四类容器对照、课堂练习、课后作业。 */
+/** 延续歌单：同一份播放次数，遍历、计数。综合实例放在全讲作业前。 */
 export const scenes: DraftScene[] = [
   {
-    id: "dict-walk-for",
-    title: "遍历键",
+    id: "dict-walk-for-keys",
+    title: "遍历字典（方式 1：keys）",
     type: "run",
     layout: "split",
+    editorSide: "left",
     content: {
-      headline: "for 直接遍历得到键",
-      flowDiagram: ["for sid in roster:"],
-      body: "直接遍历字典时，循环变量依次绑定键。访问对应值需要再用该键索引。",
-      bulletPoints: ["遍历得到的是键", "roster[sid] 才是对应的值"],
+      headline: "循环取出全部 Key",
+      flowDiagram: [
+        "for key in 字典.keys():",
+        "    print(\"key:\", key)",
+      ],
+      body: ".keys() 每次给出一个键。这里只打印歌名，不打印次数。",
+      bulletPoints: [
+        "字典没有整数下标，不能用 while 配下标逐项遍历",
+      ],
     },
-    code: code(`${ROSTER}
-for sid in roster:
-    print(sid, roster[sid])`),
+    code: code(`${PLAYS}
+for key in plays.keys():
+    print("key:", key)`),
   },
   {
-    id: "dict-walk-views",
-    title: "keys、values、items",
+    id: "dict-walk-for-values",
+    title: "遍历字典（方式 2：values）",
     type: "run",
     layout: "split",
+    editorSide: "left",
     content: {
-      headline: "键视图、值视图与项视图",
-      flowDiagram: ["roster.keys()", "roster.values()", "roster.items()"],
-      body: "keys 返回全部键，values 返回全部值，items 返回键值对。下面分别转为列表后输出。",
-      bulletPoints: ["只需键或只需值时使用 keys、values", "同时需要键和值时使用 items"],
+      headline: "循环取出全部 Value",
+      flowDiagram: [
+        "for value in 字典.values():",
+        "    print(\"value:\", value)",
+      ],
+      body: ".values() 每次给出一个值。这里只打印次数，歌名不会出现。",
     },
-    code: code(`${ROSTER}
-print(list(roster.keys()))
-print(list(roster.values()))
-print(list(roster.items()))`),
+    code: code(`${PLAYS}
+for value in plays.values():
+    print("value:", value)`),
+  },
+  {
+    id: "dict-walk-for-items",
+    title: "遍历字典（方式 3：items）",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "同时取出 Key 和 Value",
+      flowDiagram: [
+        "for key, value in 字典.items():",
+        "    print(\"key:\", key, \", value:\", value)",
+      ],
+      body: ".items() 每次同时给出键和值，解包到两个变量上。",
+      bulletPoints: [
+        "key 绑定歌名",
+        "value 绑定播放次数",
+      ],
+    },
+    code: code(`${PLAYS}
+for key, value in plays.items():
+    print("key:", key, ", value:", value)`),
+  },
+  {
+    id: "dict-walk-choose",
+    title: "遍历方式对比",
+    type: "predict",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "直接 for 遍历字典得到什么？",
+      codeComparison: {
+        left: {
+          label: "写法 A：直接遍历字典",
+          code: "for x in plays:\n    print(x)",
+        },
+        right: {
+          label: "写法 B：遍历 items()",
+          code: "for k, v in plays.items():\n    print(k, v)",
+        },
+      },
+    },
+    code: code(`${PLAYS}
+for x in plays:
+    print(x)`),
+    prediction: {
+      question: "直接写 for x in plays: 时，打印出来的 x 是什么？",
+      options: [
+        { id: "key", label: "只是键（晴天、稻香、夜曲）", isCorrect: true },
+        { id: "val", label: "只是值（12、30、7）" },
+        { id: "both", label: "键和值一起打印" },
+      ],
+    },
+    reveal: {
+      title: "直接遍历字典得到的是 Key",
+      body: "for x in plays 和 for key in plays.keys() 一样，取出的是歌名。只要次数用 .values()；歌名和次数一起用 .items()。",
+    },
+  },
+  {
+    id: "dict-walk-tally",
+    title: "应用：频次统计",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "每听一次，对应次数加 1",
+      body: "history 记下每一次点击。右侧逐步执行：还没有这把钥匙时从 0 起算，再碰到同一首歌就加 1。",
+      stepRun: true,
+    },
+    code: code(`history = ["晴天", "稻香", "晴天", "夜曲", "稻香", "晴天"]
+counts = {}
+for name in history:
+    counts[name] = counts.get(name, 0) + 1
+print(counts)`),
+  },
+  {
+    id: "dict-walk-mutate",
+    title: "遍历过程中修改字典",
+    type: "debug",
+    layout: "split",
+    editorSide: "left",
+    editorOnly: true,
+    content: {},
+    code: code(`${PLAYS}
+for name in plays:
+    if name == "稻香":
+        del plays[name]
+print(plays)`),
+    hints: [
+      { level: 1, text: "遍历字典的同时增删它的键，会报 RuntimeError。" },
+      { level: 2, text: "for 循环里不要 del。先用变量记下「稻香」，循环结束后再 pop。" },
+      {
+        level: 3,
+        text: `${PLAYS}
+found = None
+for name in plays:
+    if name == "稻香":
+        found = name
+if found is not None:
+    plays.pop(found, None)
+print(plays)`,
+      },
+    ],
+    reveal: {
+      title: "对照",
+      body: "遍历这个字典时不能增删它的键。循环里先记下歌名，循环结束后再 pop。",
+    },
+    expectedOutput: "{'晴天': 12, '夜曲': 7}",
   },
   {
     id: "dict-walk-traits",
@@ -47,90 +163,31 @@ print(list(roster.items()))`),
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "字典的特点",
+      body: "字典以「键值对（Key: Value）」的方式存储关联数据。",
       bulletPoints: [
-        "按键访问，不需要线性扫描",
-        "键不重复，后写入的值覆盖先写入的值",
-        "不支持下标，roster[0] 不表示第一项",
-        "可以新增、修改、删除",
-        "for 遍历得到的是键",
+        "可以容纳多个数据，每个元素是一组「键: 值」",
+        "Key 不可重复（重复会对原有数据覆盖），Value 可以重复",
+        "Key 必须是不可变类型，Value 可以是任意类型",
+        "没有整数下标，只能通过 Key 取得对应的 Value",
+        "可以修改（支持新增、更新、删除键值对）",
+        "逐项遍历用 for；不能用下标配合 while 逐项走。while 仍可用于菜单",
       ],
     },
   },
   {
     id: "dict-walk-summary",
-    title: "四种容器",
+    title: "字典总结",
     type: "explain",
     layout: "fullscreen",
     content: {
       note: {
-        title: "列表、元组、集合、字典",
+        title: "",
         points: [
-          "列表\n有顺序，允许重复，可以改。用下标取出一项。",
-          "元组\n有顺序，允许重复，不能改项。用下标取出一项。",
-          "集合\n无序，元素不重复，可增删。用 in 做成员检测，不支持下标。",
-          "字典\n键不重复，可插入、更新、删除。用键访问值，不支持下标。",
+          "字典的定义方式\n{key: value, key: value, ……}；空字典写成 {} 或 dict()。",
+          "字典的常用操作\n字典[key] 或 get 取值；字典[key] = value 新增或修改；pop 按键删除；keys / values / items 取出键、值、键值对。循环里可用 get 累加次数。",
+          "字典的注意事项\nKey 不可重复且不可变；in 默认只判断 Key 是否存在；没有整数下标，不能靠下标配合 while 逐项遍历。",
         ],
       },
-    },
-  },
-  {
-    id: "dict-walk-practice",
-    title: "练习：查名册",
-    type: "challenge",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      body: "依次查询键 \"2024002\" 和 \"2024009\"。键存在时输出对应值，不存在时输出「查无此人」。缺少的键不得使程序中断。",
-    },
-    code: code(`${ROSTER}
-`),
-    hints: [
-      { level: 1, text: "方括号取值在键不存在时会报 KeyError。" },
-      { level: 2, text: "get 的第二个参数写成「查无此人」。" },
-      {
-        level: 3,
-        text: "print(roster.get(\"2024002\", \"查无此人\"))\nprint(roster.get(\"2024009\", \"查无此人\"))",
-      },
-    ],
-    reveal: {
-      title: "对照",
-      body: "键 \"2024002\" 的值是林俊杰。键 \"2024009\" 不存在，输出查无此人。",
-    },
-    expectedOutput: `林俊杰
-查无此人`,
-  },
-  {
-    id: "dict-walk-containers",
-    title: "容器数据类型总结",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      gridTable: {
-        headers: ["对比", "列表", "元组", "集合", "字典"],
-        rows: [
-          ["写法", "[a, b]", "(a, b)", "{a, b}", "{k: v}"],
-          ["空容器", "[]", "()", "set()", "{}"],
-          ["顺序", "有", "有", "无", "无"],
-          ["重复", "允许", "允许", "不重复", "键不重复"],
-          ["修改", "可变", "元素不可变", "可增删", "可增改删"],
-          ["取出", "下标", "下标", "不能用下标", "用键"],
-          ["适合解决的问题", "保留顺序、按位置访问或修改", "固定序列、防意外修改", "唯一性、成员判断与集合运算", "根据键快速查找对应信息"],
-        ],
-      },
-    },
-  },
-  {
-    id: "dict-walk-homework",
-    title: "课后作业",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "课后作业",
-      bulletPoints: [
-        "集合 A 为 {\"周杰伦\", \"林俊杰\", \"邓紫棋\"} 的来源列表含重复项，集合 B 同理。输出 A 与 B 的交集，再输出 A - B。各组按字典序，每个元素一行。自验：林俊杰；随后为周杰伦、邓紫棋。",
-        "字典 {\"2024001\": \"周杰伦\", \"2024002\": \"林俊杰\"}。依次查询 \"2024002\" 与 \"2024009\"。键存在则输出值，否则输出「查无此人」。使用 get 或分支，不得因缺少的键中断。自验：林俊杰；查无此人。",
-      ],
     },
   },
 ];

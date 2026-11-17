@@ -15,53 +15,79 @@ export const scenes: DraftScene[] = [
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "用多个函数分解任务",
-      body: "将过滤、统计和报告拆成三个函数。每个函数只完成一项功能，数据通过参数和返回值传递。",
+      headline: "多函数协作与数据传递",
       flowDiagram: [
-        "clean_scores(过滤有效成绩)",
-        "calc_stats(计算均值与最高分)",
-        "make_report(生成文字报告)",
+        "raw ──► clean_scores ──► 有效成绩",
+        "          calc_stats ──► 平均, 最高",
+        "          make_report ──► 一句话",
       ],
     },
     code: code(`def clean_scores(raw):
-    return [s for s in raw if 0 <= s <= 100]
+    valid = []
+    for s in raw:
+        if 0 <= s <= 100:
+            valid.append(s)
+    return valid
 
 def calc_stats(scores):
-    return sum(scores) / len(scores), max(scores)
+    avg = sum(scores) / len(scores)
+    return avg, max(scores)
 
 def make_report(name, raw):
     valid = clean_scores(raw)
     avg, top = calc_stats(valid)
     return f"{name}: 有效{len(valid)}人, 平均{avg:.1f}, 最高{top}"
 
-print(make_report("一班", [80, 90, -5, 100]))`),
+print(make_report("一班", [80, 90, -5, 100]))
+print(make_report("二班", [75, 85, 95]))`),
   },
   {
     id: "fn-close-practice",
-    title: "练习：票价",
+    title: "练习：补全报告流水线",
     type: "challenge",
     layout: "split",
     editorSide: "left",
     content: {
-      body: "定义 ticket_total(count, price=180)，返回 count * price。先输出 count 为 3 且使用默认 price 的结果，再输出 count 为 2、price 为 200 的结果。",
+      headline: "补全统计函数与报告函数",
+      bulletPoints: [
+        "calc_stats：return 平均分, 最高分",
+        "make_report：先清洗，再统计，再 return 那句话",
+      ],
     },
-    code: code(`def ticket_total(count, price=180):
-    return count * price
+    code: code(`def clean_scores(raw):
+    valid = []
+    for s in raw:
+        if 0 <= s <= 100:
+            valid.append(s)
+    return valid
+
+def calc_stats(scores):
+    return
+
+def make_report(name, raw):
+    return
+
+print(make_report("一班", [80, 90, -5, 100]))
 `),
     hints: [
-      { level: 1, text: "使用默认 price 时不必传入第二个实参。" },
-      { level: 2, text: "第二行调用写成 ticket_total(2, 200) 或 ticket_total(2, price=200)。" },
+      { level: 1, text: "calc_stats 返回 sum(scores) / len(scores) 与 max(scores)。" },
+      { level: 2, text: "make_report 里先 valid = clean_scores(raw)，再 avg, top = calc_stats(valid)。" },
       {
         level: 3,
-        text: "print(ticket_total(3))\nprint(ticket_total(2, 200))",
+        text: `def calc_stats(scores):
+    return sum(scores) / len(scores), max(scores)
+
+def make_report(name, raw):
+    valid = clean_scores(raw)
+    avg, top = calc_stats(valid)
+    return f"{name}: 有效{len(valid)}人, 平均{avg:.1f}, 最高{top}"`,
       },
     ],
     reveal: {
       title: "对照",
-      body: "3 × 180 是 540。2 × 200 是 400。",
+      body: "有效成绩是 80、90、100。平均 90.0，最高 100。三个函数各做一件事，靠 return 把数据交给下一个函数。",
     },
-    expectedOutput: `540
-400`,
+    expectedOutput: "一班: 有效3人, 平均90.0, 最高100",
   },
   {
     id: "fn-close-points",
@@ -69,13 +95,14 @@ print(make_report("一班", [80, 90, -5, 100]))`),
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "函数",
+      headline: "本讲要点",
       bulletPoints: [
-        "def 创建函数并绑定名字，调用时才执行函数体",
-        "位置参数按顺序传；默认参数可省略；关键字参数按名字传，且写在位置参数后面",
-        "return 返回结果；多个值构成一个元组；没有 return 时返回值为 None",
-        "不加括号保存的是函数，加括号才调用",
-        "函数可以赋给变量，也可以作为字典的值",
+        "def 创建函数对象，调用时才执行函数体",
+        "位置实参按顺序传递；关键字实参按名传递；默认参数可省略",
+        "print 输出到标准输出；return 将结果返回调用方",
+        "函数内部的名字是局部变量；要改外面的同名变量，须先写 global",
+        "不加括号引用函数对象，加括号才执行调用",
+        "import 模块名 后用 模块名.函数()；from 模块 import 名字 后可直接调用",
       ],
     },
   },

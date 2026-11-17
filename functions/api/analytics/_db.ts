@@ -121,12 +121,13 @@ function encodeDetail(hit: StoredHit): string | null {
   if (hit.choiceId) detail.choiceId = hit.choiceId;
   if (hit.correct != null) detail.correct = hit.correct ? 1 : 0;
   if (hit.attempt != null) detail.attempt = hit.attempt;
+  if (hit.region) detail.region = hit.region;
   return Object.keys(detail).length === 0 ? null : JSON.stringify(detail);
 }
 
 function decodeDetail(raw: string | null | undefined): Pick<
   StoredHit,
-  'outcome' | 'errorType' | 'codeChanged' | 'choiceId' | 'correct' | 'attempt'
+  'outcome' | 'errorType' | 'codeChanged' | 'choiceId' | 'correct' | 'attempt' | 'region'
 > {
   const empty = {
     outcome: null,
@@ -135,6 +136,7 @@ function decodeDetail(raw: string | null | undefined): Pick<
     choiceId: null,
     correct: null,
     attempt: null,
+    region: null,
   } as const;
   if (!raw) return { ...empty };
   try {
@@ -146,6 +148,7 @@ function decodeDetail(raw: string | null | undefined): Pick<
       choiceId: typeof parsed.choiceId === 'string' ? parsed.choiceId : null,
       correct: parsed.correct === 1 ? true : parsed.correct === 0 ? false : null,
       attempt: typeof parsed.attempt === 'number' ? parsed.attempt : null,
+      region: typeof parsed.region === 'string' && parsed.region.trim() ? parsed.region : null,
     };
   } catch {
     return { ...empty };
@@ -196,5 +199,165 @@ export async function loadHitsInRange(
   } catch {
     await ensureHitsTable(db);
     return await selectHitsInRange(db, startIso, endIso, limit);
+  }
+}
+
+const TEACHERS_CTE = `teachers AS (SELECT DISTINCT session_id FROM hits WHERE teacher = 1)`;
+
+const TOTALS_SQL = `WITH ${TEACHERS_CTE}
+SELECT
+  COUNT(DISTINCT h.session_id) AS sessions,
+  COALESCE(SUM(CASE WHEN h.type IN ('session_start', 'lesson_view', 'scene_view') THEN 1 ELSE 0 END), 0) AS pv,
+  COUNT(DISTINCT CASE WHEN h.type = 'homework_open' THEN h.session_id END) AS homework
+FROM hits h
+WHERE (? = 1 OR h.session_id NOT IN (SELECT session_id FROM teachers))`;
+
+const RANGE_TOTALS_SQL = `${TOTALS_SQL} AND h.ts >= ? AND h.ts < ?`;
+
+const DAILY_SQL = `WITH ${TEACHERS_CTE}
+SELECT
+  date(h.ts, '+8 hours') AS day,
+  COUNT(DISTINCT h.session_id) AS sessions,
+  COALESCE(SUM(CASE WHEN h.type IN ('session_start', 'lesson_view', 'scene_view') THEN 1 ELSE 0 END), 0) AS pv,
+  COUNT(DISTINCT CASE WHEN h.type = 'homework_open' THEN h.session_id END) AS homework
+FROM hits h
+WHERE (? = 1 OR h.session_id NOT IN (SELECT session_id FROM teachers))
+  AND h.ts >= ? AND h.ts < ?
+GROUP BY day`;
+
+const CITIES_SQL = `WITH ${TEACHERS_CTE},
+scoped AS (
+  SELECT h.ts AS ts, h.type AS type, h.session_id AS session_id, h.detail AS detail
+  FROM hits h
+  WHERE ? = 1 OR h.session_id NOT IN (SELECT session_id FROM teachers)
+),
+starts AS (
+  SELECT session_id, MIN(ts) AS ts
+  FROM scoped
+  WHERE type = 'session_start'
+  GROUP BY session_id
+),
+anys AS (
+  SELECT session_id, MIN(ts) AS ts
+  FROM scoped
+  GROUP BY session_id
+),
+first_ts AS (
+  SELECT a.session_id AS session_id, COALESCE(s.ts, a.ts) AS ts,
+         CASE WHEN s.session_id IS NULL THEN 0 ELSE 1 END AS from_start
+  FROM anys a
+  LEFT JOIN starts s ON s.session_id = a.session_id
+),
+active7 AS (
+  SELECT DISTINCT session_id FROM scoped WHERE ts >= ? AND ts < ?
+),
+regions AS (
+  SELECT
+    f.session_id AS session_id,
+    CASE WHEN f.from_start = 1 THEN (
+      SELECT json_extract(s2.detail, '$.region')
+      FROM scoped s2
+      WHERE s2.session_id = f.session_id AND s2.ts = f.ts AND s2.type = 'session_start'
+      LIMIT 1
+    ) ELSE (
+      SELECT json_extract(s2.detail, '$.region')
+      FROM scoped s2
+      WHERE s2.session_id = f.session_id AND s2.ts = f.ts
+      LIMIT 1
+    ) END AS region,
+    CASE WHEN f.session_id IN (SELECT session_id FROM active7) THEN 1 ELSE 0 END AS in7
+  FROM first_ts f
+)
+SELECT
+  CASE WHEN region IS NULL OR TRIM(region) = '' THEN '未知地区' ELSE TRIM(region) END AS key,
+  COUNT(*) AS total,
+  SUM(in7) AS last7
+FROM regions
+GROUP BY key
+ORDER BY total DESC`;
+
+interface TotalsRow {
+  sessions: number | null;
+  pv: number | null;
+  homework: number | null;
+}
+
+interface DailyRow {
+  day: string;
+  sessions: number | null;
+  pv: number | null;
+  homework: number | null;
+}
+
+interface CitySqlRow {
+  key: string;
+  total: number | null;
+  last7: number | null;
+}
+
+function asCount(value: number | null | undefined): number {
+  const n = Number(value ?? 0);
+  return Number.isFinite(n) ? n : 0;
+}
+
+export interface OverviewQuery {
+  includeTeacher: boolean;
+  last7Start: string;
+  last7End: string;
+}
+
+export interface OverviewAggregates {
+  totals: { sessions: number; pv: number; homeworkOpens: number };
+  last7: { sessions: number; pv: number; homeworkOpens: number };
+  dayRows: { day: string; sessions: number; pv: number; homeworkOpens: number }[];
+  cityRows: { key: string; total: number; last7: number }[];
+}
+
+function mapTotals(row: TotalsRow | undefined): OverviewAggregates['totals'] {
+  return {
+    sessions: asCount(row?.sessions),
+    pv: asCount(row?.pv),
+    homeworkOpens: asCount(row?.homework),
+  };
+}
+
+async function queryOverview(db: D1Database, query: OverviewQuery): Promise<OverviewAggregates> {
+  const includeFlag = query.includeTeacher ? 1 : 0;
+  const totalsRes = await db.prepare(TOTALS_SQL).bind(includeFlag).all<TotalsRow>();
+  const last7Res = await db
+    .prepare(RANGE_TOTALS_SQL)
+    .bind(includeFlag, query.last7Start, query.last7End)
+    .all<TotalsRow>();
+  const dailyRes = await db
+    .prepare(DAILY_SQL)
+    .bind(includeFlag, query.last7Start, query.last7End)
+    .all<DailyRow>();
+  const cityRes = await db
+    .prepare(CITIES_SQL)
+    .bind(includeFlag, query.last7Start, query.last7End)
+    .all<CitySqlRow>();
+  return {
+    totals: mapTotals(totalsRes.results?.[0]),
+    last7: mapTotals(last7Res.results?.[0]),
+    dayRows: (dailyRes.results ?? []).map((row) => ({
+      day: row.day,
+      sessions: asCount(row.sessions),
+      pv: asCount(row.pv),
+      homeworkOpens: asCount(row.homework),
+    })),
+    cityRows: (cityRes.results ?? []).map((row) => ({
+      key: row.key,
+      total: asCount(row.total),
+      last7: asCount(row.last7),
+    })),
+  };
+}
+
+export async function loadOverview(db: D1Database, query: OverviewQuery): Promise<OverviewAggregates> {
+  try {
+    return await queryOverview(db, query);
+  } catch {
+    await ensureHitsTable(db);
+    return await queryOverview(db, query);
   }
 }

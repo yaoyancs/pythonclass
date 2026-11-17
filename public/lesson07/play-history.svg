@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="640" viewBox="0 0 520 640" font-family="PingFang SC, Microsoft YaHei, sans-serif">
+  <rect width="520" height="640" rx="36" fill="#1B3A6B"/>
+  <rect x="16" y="16" width="488" height="608" rx="28" fill="#F7F8FC"/>
+  <rect x="16" y="16" width="488" height="88" rx="28" fill="#FFFFFF"/>
+  <rect x="16" y="72" width="488" height="32" fill="#FFFFFF"/>
+  <text x="260" y="68" text-anchor="middle" font-size="26" font-weight="700" fill="#1B3A6B">播放记录</text>
+  <g>
+    <rect x="40" y="120" width="440" height="84" rx="16" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="64" y="156" font-size="22" font-weight="700" fill="#1B1528">晴天</text>
+    <text x="64" y="184" font-size="14" fill="#64748B">周杰伦 · 今天 11:42</text>
+    <circle cx="444" cy="162" r="8" fill="#C45C26"/>
+  </g>
+  <g>
+    <rect x="40" y="216" width="440" height="84" rx="16" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="64" y="252" font-size="22" font-weight="700" fill="#1B1528">稻香</text>
+    <text x="64" y="280" font-size="14" fill="#64748B">周杰伦 · 今天 11:38</text>
+    <circle cx="444" cy="258" r="8" fill="#C45C26"/>
+  </g>
+  <g>
+    <rect x="40" y="312" width="440" height="84" rx="16" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="64" y="348" font-size="22" font-weight="700" fill="#1B1528">晴天</text>
+    <text x="64" y="376" font-size="14" fill="#64748B">周杰伦 · 今天 11:21</text>
+    <circle cx="444" cy="354" r="8" fill="#C45C26"/>
+  </g>
+  <g>
+    <rect x="40" y="408" width="440" height="84" rx="16" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="64" y="444" font-size="22" font-weight="700" fill="#1B1528">夜曲</text>
+    <text x="64" y="472" font-size="14" fill="#64748B">周杰伦 · 今天 10:55</text>
+    <circle cx="444" cy="450" r="8" fill="#C45C26"/>
+  </g>
+  <g>
+    <rect x="40" y="504" width="440" height="84" rx="16" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="64" y="540" font-size="22" font-weight="700" fill="#1B1528">稻香</text>
+    <text x="64" y="568" font-size="14" fill="#64748B">周杰伦 · 今天 10:40</text>
+    <circle cx="444" cy="546" r="8" fill="#C45C26"/>
+  </g>
+</svg>

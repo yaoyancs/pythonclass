@@ -6,101 +6,147 @@ const code = (initial: string) => ({
   resetToInitial: true,
 });
 
-/** add、remove、discard、pop；集合没有下标。 */
+const HEARD = `heard = {"晴天", "稻香"}`;
+
+/** 听过的歌要能加、能删。不讲 pop、clear；remove 与 discard 放在同一需求里对照。 */
 export const scenes: DraftScene[] = [
   {
-    id: "set-edit-add",
-    title: "添加",
-    type: "run",
-    layout: "split",
-    content: {
-      headline: "add 添加一个元素",
-      flowDiagram: ["names.add(\"邓紫棋\")"],
-      body: "add 向集合加入一个元素。元素已存在时，再次 add 不改变集合。",
-      bulletPoints: ["每次添加一个元素", "重复添加不增加元素个数"],
-    },
-    code: code(`names = {"周杰伦", "林俊杰"}
-names.add("邓紫棋")
-names.add("周杰伦")
-print(names)`),
-  },
-  {
-    id: "set-edit-remove",
-    title: "删除指定元素",
+    id: "set-edit-index",
+    title: "代码分析",
     type: "debug",
     layout: "split",
     editorSide: "left",
-    content: {
-      headline: "remove 找不到就报错",
-      body: "集合中不存在该元素。remove 抛出 KeyError。改为删除已存在的元素后再输出。",
-    },
-    code: code(`names = {"周杰伦", "林俊杰"}
-names.remove("蔡依林")
-print(names)`),
+    editorOnly: true,
+    content: {},
+    code: code(`${HEARD}
+print(heard[0])`),
     hints: [
-      { level: 1, text: "remove 要求元素已经在集合里。" },
-      { level: 2, text: "报错信息是 KeyError: '蔡依林'。" },
-      { level: 3, text: "把 \"蔡依林\" 改成 \"周杰伦\"。" },
+      { level: 1, text: "集合不能像列表那样写 heard[0]。" },
+      { level: 2, text: "TypeError: 'set' object is not subscriptable 表示不支持下标。" },
+      { level: 3, text: "print(sorted(heard))" },
     ],
     reveal: {
       title: "对照",
-      body: "指定元素被删除。元素可能不存在时，使用 discard，避免抛出 KeyError。",
+      body: "集合没有下标，也不能切片。需要固定顺序时，用 sorted(heard) 得到列表。",
     },
-    expectedOutput: "{'林俊杰'}",
+    expectedOutput: "['晴天', '稻香']",
+  },
+  {
+    id: "set-edit-add",
+    title: "添加元素（add）",
+    type: "predict",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "add：加入一首歌",
+      flowDiagram: ["集合.add(元素)"],
+      body: "七里香第一次出现。晴天已经听过，再 add 一次。先判断 len(heard)。",
+    },
+    code: code(`${HEARD}
+heard.add("七里香")
+heard.add("晴天")
+print(sorted(heard))
+print(len(heard))`),
+    prediction: {
+      question: "两次 add 之后，len(heard) 是？",
+      options: [
+        { id: "three", label: "3（晴天已在，不再加一份）", isCorrect: true },
+        { id: "four", label: "4（晴天又加了一份）" },
+        { id: "two", label: "2（七里香加不进去）" },
+      ],
+    },
+    reveal: {
+      title: "已有的元素再 add，集合不变",
+      body: "七里香是新的，加进去。晴天已经在集合里，再 add 一次不会变成两份。晴天、稻香、七里香，len 是 3。",
+    },
+  },
+  {
+    id: "set-edit-update",
+    title: "批量添加（update）",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "update：一次并入多首",
+      flowDiagram: ["集合.update(列表)"],
+      body: "同学推荐夜曲、七里香、晴天。已经听过的晴天不会变成两份。字典的 update 按键覆盖或新增；集合的 update 把列表里的元素并进来，已有的忽略。",
+    },
+    code: code(`${HEARD}
+heard.update(["夜曲", "七里香", "晴天"])
+print(sorted(heard))`),
   },
   {
     id: "set-edit-discard",
-    title: "discard",
-    type: "run",
-    layout: "split",
-    content: {
-      headline: "元素不存在时不抛出异常",
-      flowDiagram: ["names.discard(\"蔡依林\")"],
-      body: "discard 删除指定元素。元素不在集合中时，集合保持不变，程序继续执行。",
-      bulletPoints: ["remove：元素不存在时抛出 KeyError", "discard：元素不存在时不修改集合"],
-    },
-    code: code(`names = {"周杰伦", "林俊杰"}
-names.discard("蔡依林")
-names.discard("周杰伦")
-print(names)`),
-  },
-  {
-    id: "set-edit-pop",
-    title: "取出一个",
-    type: "run",
-    layout: "split",
-    content: {
-      headline: "pop 取出并删除一个元素",
-      flowDiagram: ["name = names.pop()"],
-      body: "集合仅有一个元素时，pop 返回该元素。存在多个元素时，返回哪一个没有保证，不能用 pop 删除指定元素。",
-      bulletPoints: ["pop 修改原集合", "删除指定元素使用 remove 或 discard"],
-    },
-    code: code(`names = {"周杰伦"}
-name = names.pop()
-print(name)
-print(names)`),
-  },
-  {
-    id: "set-edit-index",
-    title: "没有下标",
-    type: "debug",
+    title: "删除元素 discard()方法",
+    type: "predict",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "不能按下标取元素",
-      body: "集合不支持下标。names[0] 抛出 TypeError。删除该语句，改为 print(sorted(names))。",
     },
-    code: code(`names = {"周杰伦", "林俊杰"}
-print(names[0])`),
+    code: code(`heard = {"晴天", "稻香", "夜曲"}
+heard.discard("七里香")
+heard.discard("夜曲")
+print(sorted(heard))`),
+    prediction: {
+      question: "discard(\"七里香\") 会不会让程序停？",
+      options: [
+        { id: "go", label: "不会，程序继续", isCorrect: true },
+        { id: "key", label: "会，KeyError 停住" },
+        { id: "type", label: "会，TypeError 停住" },
+      ],
+    },
+    reveal: {
+      title: "discard：有就删，没有也不报错",
+      body: "remove 在元素不存在时才会 KeyError。",
+    },
+  },
+  {
+    id: "set-edit-summary",
+    title: "增删小结",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      compareTable: {
+        indexHeader: "编号",
+        leftHeader: "使用方式",
+        rightHeader: "作用",
+        rows: [
+          { left: "集合.add(元素)", right: "加入一首；已经有则忽略" },
+          { left: "集合.update(容器)", right: "把列表或另一集合里的歌去重后并入" },
+          { left: "集合.discard(元素)", right: "删除一首；没有则保持不变" },
+          { left: "集合.remove(元素)", right: "删除一首；没有则 KeyError" },
+          { left: "len(集合)", right: "不同歌曲的数量" },
+        ],
+      },
+    },
+  },
+  {
+    id: "set-edit-practice",
+    title: "练习：增删集合成员",
+    type: "challenge",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      body: "heard 里已有晴天、稻香。加入夜曲，删掉晴天，对可能不存在的七里香用安全删除，最后打印 sorted(heard)。",
+    },
+    code: code(`${HEARD}
+`),
     hints: [
-      { level: 1, text: "集合不能像列表那样用下标。" },
-      { level: 2, text: "报错信息是 TypeError: 'set' object is not subscriptable。" },
-      { level: 3, text: "删掉 names[0]，写成 print(sorted(names))。" },
+      { level: 1, text: "加入用 add；可能没有的歌用 discard。" },
+      { level: 2, text: "依次 add(\"夜曲\")、discard(\"晴天\")、discard(\"七里香\")。" },
+      {
+        level: 3,
+        text: `${HEARD}
+heard.add("夜曲")
+heard.discard("晴天")
+heard.discard("七里香")
+print(sorted(heard))`,
+      },
     ],
     reveal: {
       title: "对照",
-      body: "sorted 返回按字典序排列的列表。集合本身不支持下标。判断元素是否存在使用 in。",
+      body: "加入夜曲、去掉晴天、忽略没有的七里香后，排序结果为 ['夜曲', '稻香']。",
     },
-    expectedOutput: "['周杰伦', '林俊杰']",
+    expectedOutput: "['夜曲', '稻香']",
   },
 ];

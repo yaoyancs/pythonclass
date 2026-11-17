@@ -47,6 +47,17 @@ export const CLASS_SCHEDULES: ClassSchedule[] = [
   },
 ];
 
+/** 指定周次覆盖常规排课（仅理论）。dayOffset 相对该周星期一。 */
+const THEORY_OVERRIDES: Record<
+  number,
+  Partial<Record<ClassSchedule["id"], { dayOffset: number; time: string; place: string }>>
+> = {
+  12: {
+    "1": { dayOffset: 2, time: "6–8 节", place: "JS103" },
+    "2": { dayOffset: 2, time: "3–5 节", place: "JS103" },
+  },
+};
+
 export const COURSE_SCHEDULE: ScheduleBlock[] = [
   {
     title: "理论 32 学时",
@@ -153,15 +164,19 @@ export function buildCalendarWeeks(
         ? { id: slot.id, number: slot.number, title: slot.title, label: slot.label }
         : undefined,
       labMark: hasLab ? LAB_MARKS[week] : undefined,
-      classes: CLASS_SCHEDULES.map((cls) => ({
-        name: cls.name,
-        theory: hasTheory
-          ? sessionOn(week, cls.theory.dayOffset, cls.theory.time, cls.theory.place)
-          : undefined,
-        lab: hasLab
-          ? sessionOn(week, cls.lab.dayOffset, cls.lab.time, cls.lab.place)
-          : undefined,
-      })),
+      classes: CLASS_SCHEDULES.map((cls) => {
+        const theoryOverride = THEORY_OVERRIDES[week]?.[cls.id];
+        const theory = theoryOverride ?? cls.theory;
+        return {
+          name: cls.name,
+          theory: hasTheory
+            ? sessionOn(week, theory.dayOffset, theory.time, theory.place)
+            : undefined,
+          lab: hasLab
+            ? sessionOn(week, cls.lab.dayOffset, cls.lab.time, cls.lab.place)
+            : undefined,
+        };
+      }),
     });
     week += 1;
   }

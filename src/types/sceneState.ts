@@ -51,6 +51,7 @@ export type ClassroomAction =
   | { type: 'SUBMIT_PREDICTION' }
   | { type: 'RUN_START' }
   | { type: 'RUN_COMPLETE'; result: PythonResult }
+  | { type: 'SHOW_OUTPUT'; stdout: string }
   | { type: 'RESET_CODE' }
   | { type: 'SHOW_HINT' }
   | { type: 'REVEAL' }

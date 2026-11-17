@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 import { loadPyodide, version as pyodideVersion, type PyodideInterface } from 'pyodide';
-import type { WorkerRequest, WorkerResponse } from '../types/python';
+import type { TraceStep, WorkerRequest, WorkerResponse } from '../types/python';
 
 let pyodide: PyodideInterface | null = null;
 let currentRunId: string | null = null;
@@ -11,10 +11,15 @@ const inputFlag = new Int32Array(INPUT_SAB, 0, 1);
 const inputLen = new Int32Array(INPUT_SAB, 4, 1);
 const inputBytes = new Uint8Array(INPUT_SAB);
 
-function blockingInput(prompt: string): string {
+function blockingInput(prompt: string, stdout: string): string {
   if (!currentRunId) return '';
   Atomics.store(inputFlag, 0, 0);
-  post({ type: 'INPUT_REQUEST', id: currentRunId, prompt: String(prompt ?? '') });
+  post({
+    type: 'INPUT_REQUEST',
+    id: currentRunId,
+    prompt: String(prompt ?? ''),
+    stdout: String(stdout ?? ''),
+  });
   Atomics.wait(inputFlag, 0, 0);
   const len = Atomics.load(inputLen, 0);
   return new TextDecoder().decode(inputBytes.slice(8, 8 + len));
@@ -33,14 +38,18 @@ async function initPyodide() {
     });
 
     // 必须挂在 worker 全局对象上，Python 侧的 `from js import requestInput` 才能找到它
-    (self as unknown as { blockingInput: (prompt: string) => string }).blockingInput = blockingInput;
+    (self as unknown as { blockingInput: (prompt: string, stdout: string) => string }).blockingInput =
+      blockingInput;
 
     await pyodide.runPythonAsync(`
 import builtins, traceback
 from js import blockingInput
 
 def _patched_input(prompt=""):
-    return str(blockingInput(str(prompt) if prompt is not None else ""))
+    import sys
+    captured = sys.stdout.getvalue() if hasattr(sys.stdout, "getvalue") else ""
+    text = str(prompt) if prompt is not None else ""
+    return str(blockingInput(text, captured))
 
 builtins.input = _patched_input
 
@@ -53,6 +62,54 @@ def _pyclass_format_exc(exc):
     if frames:
         formatted.stack = traceback.StackSummary.from_list(frames)
     return "".join(formatted.format())
+
+def __pyclass_trace(src):
+    import sys, io, json
+    out = io.StringIO()
+    sys.stdout = out
+    steps = []
+
+    def snap(scope, line, done):
+        vals = []
+        for key, value in scope.items():
+            if str(key).startswith("_"):
+                continue
+            cell = lambda x: x if isinstance(x, str) else repr(x)
+            def pair(k, v):
+                packed = {"k": cell(k), "v": cell(v)}
+                if isinstance(v, list):
+                    packed["items"] = [cell(x) for x in v]
+                return packed
+            entry = {"name": str(key), "value": repr(value), "kind": "value", "id": id(value)}
+            if isinstance(value, dict):
+                entry["kind"] = "dict"
+                entry["pairs"] = [pair(k, v) for k, v in value.items()]
+            elif isinstance(value, (set, list, tuple)):
+                entry["kind"] = "set" if isinstance(value, set) else "tuple" if isinstance(value, tuple) else "list"
+                entry["items"] = [cell(x) for x in value]
+            vals.append(entry)
+        steps.append({"line": line, "vars": vals, "stdout": out.getvalue(), "done": done})
+        return len(steps) < 40
+
+    def tracer(frame, event, arg):
+        if frame.f_code.co_filename == "<stdin>" and event == "line":
+            if not snap(frame.f_locals, frame.f_lineno, False):
+                sys.settrace(None)
+        return tracer
+
+    ns = {}
+    err = ""
+    sys.settrace(tracer)
+    try:
+        exec(compile(src, "<stdin>", "exec"), ns, ns)
+        snap(ns, None, True)
+    except BaseException as exc:
+        err = type(exc).__name__ + ": " + str(exc)
+        snap(ns, None, True)
+    finally:
+        sys.settrace(None)
+        sys.stdout = sys.__stdout__
+    return json.dumps({"steps": steps, "error": err}, ensure_ascii=False)
 
 def __pyclass_run():
     import sys, io
@@ -84,6 +141,20 @@ function formatError(err: unknown): { type: string; message: string; traceback?:
     if (pyType) return { type: pyType, message: e.message, traceback: e.stack };
   }
   return { type: 'Error', message: String(err) };
+}
+
+async function traceCode(id: string, code: string) {
+  if (!pyodide) {
+    post({ type: 'TRACE_RESULT', id, steps: [], error: 'Python engine not ready' });
+    return;
+  }
+  try {
+    const raw = String(await pyodide.runPythonAsync(`__pyclass_trace(${JSON.stringify(code)})`));
+    const parsed = JSON.parse(raw) as { steps: TraceStep[]; error?: string };
+    post({ type: 'TRACE_RESULT', id, steps: parsed.steps ?? [], error: parsed.error || undefined });
+  } catch (err) {
+    post({ type: 'TRACE_RESULT', id, steps: [], error: formatError(err).message });
+  }
 }
 
 async function runCode(id: string, code: string) {
@@ -136,6 +207,9 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
       break;
     case 'RUN':
       void runCode(msg.id, msg.code);
+      break;
+    case 'TRACE':
+      void traceCode(msg.id, msg.code);
       break;
     case 'INPUT':
       if (inputResolve) {

@@ -73,7 +73,14 @@ export const scenes: DraftScene[] = [
           percent: "30%",
           children: [
             { label: "基础语法 PTA", percent: "15%" },
-            { label: "综合项目", percent: "15%" },
+            {
+              label: "综合项目",
+              percent: "15%",
+              replaceWith: {
+                label: "PTA综合练习（每周一次，约5次）",
+                percent: "15%",
+              },
+            },
           ],
         },
         {

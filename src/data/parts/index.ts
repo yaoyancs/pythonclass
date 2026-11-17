@@ -71,6 +71,7 @@ import { scenes as fnParam } from "./fn-param/scenes";
 import { scenes as fnReturn } from "./fn-return/scenes";
 import { scenes as fnCall } from "./fn-call/scenes";
 import { scenes as fnClose } from "./fn-close/scenes";
+import { scenes as modImport } from "./mod-import/scenes";
 import { scenes as fileWhy } from "./file-why/scenes";
 import { scenes as fileOpen } from "./file-open/scenes";
 import { scenes as fileCsv } from "./file-csv/scenes";
@@ -157,6 +158,7 @@ export const PARTS: Record<string, ContentPart> = {
   "fn-return": { id: "fn-return", scenes: fnReturn },
   "fn-call": { id: "fn-call", scenes: fnCall },
   "fn-close": { id: "fn-close", scenes: fnClose },
+  "mod-import": { id: "mod-import", scenes: modImport },
   "file-why": { id: "file-why", scenes: fileWhy },
   "file-open": { id: "file-open", scenes: fileOpen },
   "file-csv": { id: "file-csv", scenes: fileCsv },

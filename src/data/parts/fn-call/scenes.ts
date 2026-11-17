@@ -8,7 +8,7 @@ const code = (initial: string) => ({
 
 /**
  * 函数是对象：赋值不调用，圆括号才调用。
- * 不讲闭包、装饰器和类的 __call__。
+ * 补充局部名字空间。不讲闭包、装饰器。
  */
 export const scenes: DraftScene[] = [
   {
@@ -18,19 +18,17 @@ export const scenes: DraftScene[] = [
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "def 创建函数对象并绑定名称",
-      body: "名称 square 引用一个函数对象。输出该名称得到的是函数对象，不是调用结果。type 的结果是 function。",
-      bulletPoints: ["定义时函数体不执行", "函数也是一种值，可以查看类型"],
+      headline: "函数名绑定函数对象",
       image: {
         src: "/lesson08/fn-bind.svg",
-        alt: "执行 def 创建函数对象，再把名字 square 绑定到它。定义时函数体不执行。",
+        alt: "执行 def 创建函数对象，再把名字绑定到它。定义时函数体不执行。",
       },
     },
-    code: code(`def square(x):
-    return x * x
+    code: code(`def average(scores):
+    return sum(scores) / len(scores)
 
-print(square)
-print(type(square))`),
+print(average)
+print(type(average))`),
   },
   {
     id: "fn-call-paren",
@@ -40,65 +38,145 @@ print(type(square))`),
     editorSide: "left",
     content: {
       headline: "圆括号决定是否调用",
-      body: "task = square 只增加一个指向同一函数对象的名称，不执行函数体。square(4) 才是调用，返回值为 16。",
-      bulletPoints: ["无圆括号：引用函数对象", "有圆括号：执行函数体并得到返回值"],
       image: {
         src: "/lesson08/fn-paren.svg",
-        alt: "左边 task = square 保存同一个函数；右边 square(4) 先调用，result 保存 16。",
+        alt: "左边 task = average 保存同一个函数；右边加括号才得到返回值。",
       },
     },
-    code: code(`def square(x):
-    return x * x
+    code: code(`def average(scores):
+    return sum(scores) / len(scores)
 
-task = square
+task = average
 print(task)
-print(task(4))
-print(square(4))`),
+print(task([80, 90]))
+print(average([80, 90]))`),
   },
   {
-    id: "fn-call-predict",
-    title: "看返回的是什么",
+    id: "fn-call-forget",
+    title: "调试：忘记写括号",
+    type: "debug",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "补全函数调用与实参",
+    },
+    code: code(`def average(scores):
+    return sum(scores) / len(scores)
+
+res = average
+print(res + 5)`),
+    hints: [
+      { level: 1, text: "print(average) 看到的是函数对象。加上圆括号才会执行。" },
+      { level: 2, text: "average 需要一个列表实参。" },
+      {
+        level: 3,
+        text: `def average(scores):
+    return sum(scores) / len(scores)
+
+res = average([80, 90, 70])
+print(res + 5)`,
+      },
+    ],
+    reveal: {
+      title: "对照",
+      body: "average([80, 90, 70]) 得到 80.0，再加 5 得到 85.0。漏写括号时，名字仍然指向函数对象。",
+    },
+    expectedOutput: "85.0",
+  },
+  {
+    id: "fn-call-local",
+    title: "局部变量",
     type: "predict",
     layout: "split",
     editorSide: "left",
     content: {
-      body: "两个函数都使用 return，差别在于返回的是函数对象还是调用结果。",
+      headline: "局部变量能否在函数外访问？",
       image: {
-        src: "/lesson08/fn-return.svg",
-        alt: "return square 交回函数，之后才能 picked(3)；return square() 会立刻调用并因缺少参数报错。",
+        src: "/lesson08/fn-scope.svg",
+        alt: "调用时创建局部名字空间，avg 只存在于函数内部；调用结束后局部名字消失。",
       },
     },
-    code: code(`def square(x):
-    return x * x
+    code: code(`def average(scores):
+    avg = sum(scores) / len(scores)
+    return avg
 
-def give_square():
-    return square
-
-picked = give_square()
-print(picked(3))`),
+print(average([80, 90, 70]))
+print(avg)`),
     prediction: {
-      question: "picked(3) 打印出什么？",
+      question: "第二行 print(avg) 会怎样？",
       options: [
-        { id: "nine", label: "9", isCorrect: true },
-        { id: "fn", label: "函数 square 本身" },
-        { id: "err", label: "报错，因为 give_square 没有参数" },
+        { id: "eighty", label: "再打印一次 80.0" },
+        { id: "none", label: "打印 None" },
+        { id: "error", label: "报 NameError，外部没有 avg", isCorrect: true },
       ],
     },
     reveal: {
-      title: "return square 返回函数对象",
-      body: "give_square() 不调用 square，而是返回函数对象。picked 与 square 引用同一函数，picked(3) 计算 3×3，结果为 9。若写成 return square()，函数定义合法，但调用时会因 square 缺少实参而抛出 TypeError。",
+      title: "函数内部的名字默认是局部的",
+      body: "avg 是局部变量，函数结束后不可访问。结果须通过 return 传出。",
     },
   },
   {
-    id: "fn-call-table",
-    title: "放进字典",
+    id: "fn-call-shadow",
+    title: "局部变量与全局变量同名",
+    type: "predict",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "局部变量是否覆盖全局变量？",
+    },
+    code: code(`line = 60
+
+def is_pass(score):
+    line = 90
+    return score >= line
+
+print(is_pass(80))
+print(line)`),
+    prediction: {
+      question: "两行 print 的结果依次是？",
+      options: [
+        { id: "t-90", label: "True 与 90" },
+        { id: "f-60", label: "False 与 60", isCorrect: true },
+        { id: "f-90", label: "False 与 90" },
+        { id: "t-60", label: "True 与 60" },
+      ],
+    },
+    reveal: {
+      title: "函数内的赋值绑定局部名字",
+      body: "函数里的 line = 90 是局部变量，80 >= 90 为 False。外部的 line 仍是 60。两边只是碰巧同名，不是同一个绑定。",
+    },
+  },
+  {
+    id: "fn-call-global",
+    title: "用 global 修改外部变量",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "用名字查出要调用的函数",
-      body: "字典的值是函数对象，写入时不加调用运算符。按键取出后再调用，并传入实参。",
-      bulletPoints: ["actions[\"及格\"] 得到函数对象", "随后的 (60) 才执行调用"],
+      headline: "先声明 global，再给外部同名变量赋值",
+      bulletPoints: [
+        "没有 global 时，函数里的赋值只建立局部名字",
+        "global line 表示这一行改的是外面的 line",
+      ],
+    },
+    code: code(`line = 60
+
+def raise_line():
+    global line
+    line = 90
+
+raise_line()
+print(line)`),
+    expectedOutput: "90",
+  },
+  {
+    id: "fn-call-table",
+    title: "函数对象作为字典的值",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "取出函数对象后再调用",
       image: {
         src: "/lesson08/fn-dict.svg",
         alt: "字典保存函数对象，按键取出后再用圆括号调用。",

@@ -3,18 +3,52 @@ import { Fragment, useRef, useState } from 'react';
 
 export function SceneSideImage({ image, stacked = false }: { image: SceneImage; stacked?: boolean }) {
   return (
-    <figure className={stacked ? 'mt-4 w-full' : 'justify-self-center'}>
+    <figure className={stacked ? 'mt-4 w-full' : 'w-full max-w-md mx-auto'}>
       <img
         src={image.src}
         alt={image.alt}
         className={`rounded-3xl bg-classroom-stage shadow-card object-contain ${
-          stacked ? 'max-h-[22rem] w-full' : 'max-h-[26rem] w-auto'
+          stacked ? 'max-h-[22rem] w-full' : 'max-h-[26rem] w-full h-auto'
         }`}
       />
       {image.caption && (
         <figcaption className="mt-4 text-center text-lg text-text-secondary">{image.caption}</figcaption>
       )}
     </figure>
+  );
+}
+
+export function SceneSideImages({ images }: { images: SceneImage[] }) {
+  return (
+    <div className="order-first grid w-full grid-cols-2 gap-8 items-start">
+      {images.map((image, index) => (
+        <figure
+          key={image.src}
+          className={`min-w-0 overflow-hidden rounded-2xl bg-classroom-stage shadow-card border-2 ${
+            index === 0 ? 'border-highlight/40' : 'border-accent/60'
+          }`}
+        >
+          <div className="h-[34vh] w-full overflow-hidden bg-classroom-playground">
+            <img
+              src={image.src}
+              alt={image.alt}
+              className="h-full w-full object-cover object-center"
+            />
+          </div>
+          {image.caption && (
+            <figcaption
+              className={`px-4 py-3 text-center text-2xl font-semibold leading-snug ${
+                index === 0
+                  ? 'bg-highlight-muted/60 text-highlight'
+                  : 'bg-accent-muted/50 text-accent'
+              }`}
+            >
+              {image.caption}
+            </figcaption>
+          )}
+        </figure>
+      ))}
+    </div>
   );
 }
 
@@ -178,11 +212,38 @@ export function GradeTable({ items }: { items: GradeItem[] }) {
                 <td className="px-8 py-4 text-lg text-text-secondary">{item.note ?? ''}</td>
               </tr>
               {item.children?.map((child) => (
-                <tr key={child.label} className="border-b border-classroom-border/40">
-                  <td className="px-8 py-3 pl-16 text-lg text-text-secondary">{child.label}</td>
-                  <td className="px-8 py-3 text-xl tabular-nums text-text-secondary">{child.percent}</td>
-                  <td className="px-8 py-3 text-lg text-text-secondary">{child.note ?? ''}</td>
-                </tr>
+                <Fragment key={child.label}>
+                  <tr className="border-b border-classroom-border/40">
+                    <td
+                      className={`px-8 py-3 pl-16 text-lg text-text-secondary ${
+                        child.replaceWith ? 'line-through decoration-2' : ''
+                      }`}
+                    >
+                      {child.label}
+                    </td>
+                    <td
+                      className={`px-8 py-3 text-xl tabular-nums text-text-secondary ${
+                        child.replaceWith ? 'line-through decoration-2' : ''
+                      }`}
+                    >
+                      {child.percent}
+                    </td>
+                    <td className="px-8 py-3 text-lg text-text-secondary">{child.note ?? ''}</td>
+                  </tr>
+                  {child.replaceWith && (
+                    <tr className="border-b border-classroom-border/40">
+                      <td className="px-8 py-3 pl-16 text-lg font-medium text-error">
+                        {child.replaceWith.label}
+                      </td>
+                      <td className="px-8 py-3 text-xl font-medium tabular-nums text-error">
+                        {child.replaceWith.percent}
+                      </td>
+                      <td className="px-8 py-3 text-lg font-medium text-error">
+                        {child.replaceWith.note ?? ''}
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </Fragment>
           ))}

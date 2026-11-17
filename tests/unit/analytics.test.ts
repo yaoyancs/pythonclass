@@ -8,10 +8,14 @@ import {
   parseIncomingHit,
   shanghaiDate,
   shanghaiDayUtcRange,
+  shanghaiLast7Range,
+  shapeOverview,
   uniqueSessionCount,
+  visitCityName,
   type StoredHit,
 } from '../../functions/api/analytics/_logic';
 import { track } from '../../src/analytics/client';
+import { formatVisitRegion } from '../../functions/api/analytics/_geo';
 
 function hit(partial: Partial<StoredHit> & Pick<StoredHit, 'sessionId' | 'type' | 'ts'>): StoredHit {
   return {
@@ -24,6 +28,7 @@ function hit(partial: Partial<StoredHit> & Pick<StoredHit, 'sessionId' | 'type' 
     dwellSeconds: null,
     ip: '1.1.1.1',
     device: 'desktop',
+    region: null,
     teacher: false,
     source: 'other',
     outcome: null,
@@ -35,6 +40,26 @@ function hit(partial: Partial<StoredHit> & Pick<StoredHit, 'sessionId' | 'type' 
     ...partial,
   };
 }
+
+describe('visit region', () => {
+  it('formats Shandong Rizhao as 山东省日照市', () => {
+    expect(formatVisitRegion({ country: 'CN', region: 'Shandong', city: 'Rizhao' })).toBe('山东省日照市');
+    expect(formatVisitRegion({ country: 'CN', region: 'Beijing', city: 'Beijing' })).toBe('北京市');
+    expect(formatVisitRegion({ country: 'CN', region: 'Shandong', city: 'Unknownville' })).toBe('山东省');
+  });
+
+  it('stores region on the hit and groups sessions', () => {
+    const parsed = parseIncomingHit(
+      { type: 'session_start', sessionId: 'abcdefghij', path: '/' },
+      { ip: '203.0.113.9', device: 'mobile', region: '山东省日照市' },
+    );
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    const summary = buildSummary('2026-11-16', [parsed.hit]);
+    expect(summary.byRegion[0]).toEqual({ key: '山东省日照市', count: 1 });
+    expect(summary.recent[0]?.region).toBe('山东省日照市');
+  });
+});
 
 describe('analytics payload', () => {
   it('rejects unknown type and short sessionId', () => {
@@ -136,6 +161,46 @@ describe('analytics summary', () => {
     const all = buildSummary(shanghaiDate(new Date()), hits, false);
     expect(all.uv).toBe(2);
     expect(all.homeworkOpens).toBe(2);
+  });
+});
+
+describe('analytics overview', () => {
+  it('names a city and leaves province-only records off the map', () => {
+    expect(visitCityName('山东省日照市')).toBe('日照');
+    expect(visitCityName('广西壮族自治区南宁市')).toBe('南宁');
+    expect(visitCityName('北京市')).toBe('北京');
+    expect(visitCityName('山东省')).toBeNull();
+    expect(visitCityName('未知地区')).toBeNull();
+  });
+
+  it('fills missing days and counts named cities once', () => {
+    const days = ['2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13', '2026-11-14', '2026-11-15', '2026-11-16'];
+    const overview = shapeOverview({
+      excludeTeacher: true,
+      days,
+      totals: { sessions: 4, pv: 20, homeworkOpens: 2 },
+      last7: { sessions: 2, pv: 6, homeworkOpens: 1 },
+      dayRows: [{ day: '2026-11-16', sessions: 2, pv: 6, homeworkOpens: 1 }],
+      cityRows: [
+        { key: '山东省日照市', total: 2, last7: 1 },
+        { key: '山东省', total: 1, last7: 1 },
+        { key: '未知地区', total: 1, last7: 0 },
+      ],
+    });
+    expect(overview.days).toHaveLength(7);
+    expect(overview.days[0]?.sessions).toBe(0);
+    expect(overview.days[6]?.pv).toBe(6);
+    expect(overview.totals.cities).toBe(1);
+    expect(overview.last7.cities).toBe(1);
+    expect(overview.cities[0]?.name).toBe('日照');
+    expect(overview.cities[1]?.name).toBeNull();
+  });
+
+  it('covers seven Shanghai dates ending today', () => {
+    const range = shanghaiLast7Range(new Date('2026-11-16T04:00:00.000Z'));
+    expect(range.days).toHaveLength(7);
+    expect(range.days[6]).toBe(shanghaiDate(new Date('2026-11-16T04:00:00.000Z')));
+    expect(new Date(range.endIso).getTime() - new Date(range.startIso).getTime()).toBe(7 * 24 * 60 * 60 * 1000);
   });
 });
 

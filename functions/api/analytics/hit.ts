@@ -1,4 +1,5 @@
 import { json, type TeacherEnv } from '../teacher/_shared';
+import { formatVisitRegion } from './_geo';
 import {
   allowRate,
   classifyDevice,
@@ -44,12 +45,18 @@ export const onRequestPost = async (context: PagesContext): Promise<Response> =>
     return json({ error: '请求格式错误' }, 400);
   }
 
+  const cf = (request as Request & { cf?: { country?: string; region?: string; city?: string } }).cf;
   const parsed = parseIncomingHit(body, {
     ip,
     device: classifyDevice(
       request.headers.get('user-agent') || '',
       request.headers.get('sec-ch-ua-mobile'),
     ),
+    region: formatVisitRegion({
+      country: cf?.country || request.headers.get('CF-IPCountry'),
+      region: cf?.region,
+      city: cf?.city,
+    }),
   });
 
   if (!parsed.ok) {

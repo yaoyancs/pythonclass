@@ -58,6 +58,8 @@ export interface StoredHit {
   dwellSeconds: number | null;
   ip: string;
   device: DeviceKind;
+  /** 服务端根据边缘节点地理位置写成的「省 + 市」，例如山东省日照市 */
+  region: string | null;
   teacher: boolean;
   source: 'homework' | 'other';
   outcome: 'ok' | 'error' | null;
@@ -83,6 +85,7 @@ export interface RecentRow {
   tsLocal: string;
   ip: string;
   device: DeviceKind;
+  region: string | null;
   referrer: string | null;
   path: string | null;
   lessonId: string | null;
@@ -99,10 +102,42 @@ export interface SummaryResult {
   homeworkOpens: number;
   byReferrer: CountRow[];
   byDevice: CountRow[];
+  byRegion: CountRow[];
   timeline: TimelineRow[];
   recent: RecentRow[];
   note: string;
   emptyStudents: boolean;
+}
+
+export interface OverviewTotals {
+  sessions: number;
+  pv: number;
+  homeworkOpens: number;
+  cities: number;
+}
+
+export interface OverviewDay {
+  date: string;
+  sessions: number;
+  pv: number;
+  homeworkOpens: number;
+}
+
+export interface OverviewCity {
+  key: string;
+  /** 可上地图的市名，例如「日照」。省级、未知、境外为 null。 */
+  name: string | null;
+  total: number;
+  last7: number;
+}
+
+export interface OverviewResult {
+  excludeTeacher: boolean;
+  totals: OverviewTotals;
+  last7: OverviewTotals;
+  days: OverviewDay[];
+  cities: OverviewCity[];
+  note: string;
 }
 
 export interface LessonHeat {
@@ -245,6 +280,156 @@ export function isValidDateYmd(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
+/** 含今天在内的 7 个北京时间自然日，endIso 为明天 0 点（不含）。 */
+export function shanghaiLast7Range(now = new Date()): { startIso: string; endIso: string; days: string[] } {
+  const { endIso } = shanghaiDayUtcRange(shanghaiDate(now));
+  const endMs = new Date(endIso).getTime();
+  const startMs = endMs - 7 * 24 * 60 * 60 * 1000;
+  const days: string[] = [];
+  for (let i = 6; i >= 0; i--) {
+    days.push(shanghaiDate(new Date(endMs - i * 24 * 60 * 60 * 1000 - 60 * 60 * 1000)));
+  }
+  return { startIso: new Date(startMs).toISOString(), endIso, days };
+}
+
+const MUNICIPALITIES = ['北京', '上海', '天津', '重庆'];
+const SARS = ['香港', '澳门'];
+
+/** 从「山东省日照市」取出「日照」。只有省、未知或境外时返回 null。 */
+export function visitCityName(region: string | null | undefined): string | null {
+  if (!region) return null;
+  const text = region.trim();
+  if (!text || text === '未知地区' || text === '中国') return null;
+  for (const name of SARS) {
+    if (text.startsWith(name)) return name;
+  }
+  for (const name of MUNICIPALITIES) {
+    if (text === `${name}市` || text.startsWith(`${name}市`)) return name;
+  }
+  const matched = /(?:省|自治区)(.+)市$/.exec(text);
+  if (matched?.[1]) return matched[1];
+  if (text.endsWith('市') && !/省|自治区/.test(text)) return text.slice(0, -1);
+  return null;
+}
+
+export interface OverviewDayRow {
+  day: string;
+  sessions: number;
+  pv: number;
+  homeworkOpens: number;
+}
+
+export interface OverviewCityRow {
+  key: string;
+  total: number;
+  last7: number;
+}
+
+function countNamedCities(rows: OverviewCity[], field: 'total' | 'last7'): number {
+  const names = new Set<string>();
+  for (const row of rows) {
+    if (row[field] <= 0 || !row.name) continue;
+    names.add(row.name);
+  }
+  return names.size;
+}
+
+const PV_TYPES_OVERVIEW = new Set<HitType>(['session_start', 'lesson_view', 'scene_view']);
+
+function sessionFirstHits(hits: StoredHit[]): StoredHit[] {
+  const firstBySession = new Map<string, StoredHit>();
+  for (const hit of hits) {
+    if (hit.type !== 'session_start') continue;
+    const prev = firstBySession.get(hit.sessionId);
+    if (!prev || hit.ts < prev.ts) firstBySession.set(hit.sessionId, hit);
+  }
+  for (const hit of hits) {
+    if (firstBySession.has(hit.sessionId)) continue;
+    const prev = firstBySession.get(hit.sessionId);
+    if (!prev || hit.ts < prev.ts) firstBySession.set(hit.sessionId, hit);
+  }
+  return [...firstBySession.values()];
+}
+
+function totalsOf(hits: StoredHit[]): Omit<OverviewTotals, 'cities'> {
+  return {
+    sessions: uniqueSessionCount(hits),
+    pv: hits.filter((hit) => PV_TYPES_OVERVIEW.has(hit.type)).length,
+    homeworkOpens: homeworkOpenSessions(hits),
+  };
+}
+
+/** 用已加载的访问记录算出累计和近 7 天。本地模拟与单测走这里，线上走数据库聚合。 */
+export function buildOverview(hits: StoredHit[], excludeTeacher = true, now = new Date()): OverviewResult {
+  const range = shanghaiLast7Range(now);
+  const scoped = excludeTeacher ? studentHits(hits) : hits;
+  const last7Hits = scoped.filter((hit) => hit.ts >= range.startIso && hit.ts < range.endIso);
+  const activeSessions = new Set(last7Hits.map((hit) => hit.sessionId));
+  const regionCounts = new Map<string, { total: number; last7: number }>();
+  for (const hit of sessionFirstHits(scoped)) {
+    const key = hit.region?.trim() || '未知地区';
+    const row = regionCounts.get(key) ?? { total: 0, last7: 0 };
+    row.total += 1;
+    if (activeSessions.has(hit.sessionId)) row.last7 += 1;
+    regionCounts.set(key, row);
+  }
+  const dayMap = new Map<string, StoredHit[]>();
+  for (const hit of last7Hits) {
+    const day = shanghaiDate(hit.ts);
+    const list = dayMap.get(day) ?? [];
+    list.push(hit);
+    dayMap.set(day, list);
+  }
+  return shapeOverview({
+    excludeTeacher,
+    days: range.days,
+    totals: totalsOf(scoped),
+    last7: totalsOf(last7Hits),
+    dayRows: [...dayMap.entries()].map(([day, list]) => ({ day, ...totalsOf(list) })),
+    cityRows: [...regionCounts.entries()].map(([key, row]) => ({ key, ...row })),
+  });
+}
+
+export function shapeOverview(input: {
+  excludeTeacher: boolean;
+  days: string[];
+  totals: Omit<OverviewTotals, 'cities'>;
+  last7: Omit<OverviewTotals, 'cities'>;
+  dayRows: OverviewDayRow[];
+  cityRows: OverviewCityRow[];
+}): OverviewResult {
+  const byDay = new Map(input.dayRows.map((row) => [row.day, row]));
+  const days = input.days.map((date) => {
+    const row = byDay.get(date);
+    return {
+      date,
+      sessions: row?.sessions ?? 0,
+      pv: row?.pv ?? 0,
+      homeworkOpens: row?.homeworkOpens ?? 0,
+    };
+  });
+  const cities = input.cityRows
+    .map((row) => ({
+      key: row.key,
+      name: visitCityName(row.key),
+      total: row.total,
+      last7: row.last7,
+    }))
+    .sort((a, b) => b.total - a.total || b.last7 - a.last7);
+  const totals = { ...input.totals, cities: countNamedCities(cities, 'total') };
+  const last7 = { ...input.last7, cities: countNamedCities(cities, 'last7') };
+  return {
+    excludeTeacher: input.excludeTeacher,
+    totals,
+    last7,
+    days,
+    cities,
+    note: input.excludeTeacher
+      ? '累计与近 7 天已排除教师解锁会话。会话按独立会话计，城市取该会话第一次访问的地区。'
+      : '累计与近 7 天含教师演示会话。会话按独立会话计，城市取该会话第一次访问的地区。',
+  };
+}
+
 export type ParseHitResult =
   | { ok: true; hit: StoredHit }
   | { ok: false; drop: true }
@@ -252,7 +437,7 @@ export type ParseHitResult =
 
 export function parseIncomingHit(
   body: IncomingHit,
-  meta: { ip: string; device: DeviceKind; nowIso?: string },
+  meta: { ip: string; device: DeviceKind; region?: string | null; nowIso?: string },
 ): ParseHitResult {
   const typeRaw = typeof body.type === 'string' ? body.type.trim() : '';
   if (!isHitType(typeRaw)) {
@@ -369,6 +554,7 @@ export function parseIncomingHit(
       dwellSeconds,
       ip: clip(meta.ip || 'unknown', 64),
       device: meta.device,
+      region: asTrimmedString(meta.region, 40),
       teacher,
       source,
       ...signals,
@@ -457,12 +643,17 @@ export function buildSummary(
       firstHits.map((h) => h.device),
       'unknown',
     ),
+    byRegion: countMap(
+      firstHits.map((h) => h.region),
+      '未知地区',
+    ),
     timeline: hourCounts,
     recent: recentSource.map((h) => ({
       ts: h.ts,
       tsLocal: formatShanghaiDateTime(h.ts),
       ip: h.ip,
       device: h.device,
+      region: h.region,
       referrer: h.referrer,
       path: h.path,
       lessonId: h.lessonId,

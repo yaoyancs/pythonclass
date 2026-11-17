@@ -15,10 +15,41 @@ export interface RecentRow {
   tsLocal: string;
   ip: string;
   device: DeviceKind;
+  region: string | null;
   referrer: string | null;
   path: string | null;
   lessonId: string | null;
   sceneIndex: number | null;
+}
+
+export interface OverviewTotals {
+  sessions: number;
+  pv: number;
+  homeworkOpens: number;
+  cities: number;
+}
+
+export interface OverviewDay {
+  date: string;
+  sessions: number;
+  pv: number;
+  homeworkOpens: number;
+}
+
+export interface OverviewCity {
+  key: string;
+  name: string | null;
+  total: number;
+  last7: number;
+}
+
+export interface OverviewResult {
+  excludeTeacher: boolean;
+  totals: OverviewTotals;
+  last7: OverviewTotals;
+  days: OverviewDay[];
+  cities: OverviewCity[];
+  note: string;
 }
 
 export interface SummaryResult {
@@ -31,6 +62,7 @@ export interface SummaryResult {
   homeworkOpens: number;
   byReferrer: CountRow[];
   byDevice: CountRow[];
+  byRegion: CountRow[];
   timeline: TimelineRow[];
   recent: RecentRow[];
   note: string;

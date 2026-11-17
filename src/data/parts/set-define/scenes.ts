@@ -6,76 +6,78 @@ const code = (initial: string) => ({
   resetToInitial: true,
 });
 
-/** 字面量、空集合、重复只留一份、从列表收成集合。 */
+const HISTORY = `history = ["晴天", "稻香", "晴天", "夜曲", "稻香"]`;
+
+/** 语法从「听过的歌」长出来：字面量、空集合与 {} 冲突、set(列表) 去重。 */
 export const scenes: DraftScene[] = [
   {
     id: "set-define-syntax",
     title: "定义集合",
     type: "run",
     layout: "split",
+    editorSide: "left",
     content: {
-      headline: "定义集合",
+      headline: "只写下过哪些歌",
       flowDiagram: [
-        "{元素, 元素, ……, 元素}",
-        "变量名称 = {元素, 元素, ……, 元素}",
-        "变量名称 = set()",
+        "{元素1, 元素2, 元素3, ...}",
+        "heard = {元素1, 元素2, 元素3, ...}",
+        "heard = set()    # 空集合，不能写成 {}",
       ],
-      body: "集合字面量使用花括号，元素之间用逗号分隔。元素类型可以不同。",
-      bulletPoints: ["空集合写为 set()", "集合无序，不能按输出顺序访问元素"],
+      body: "集合用花括号 {}，元素之间用逗号隔开。这里没有键，每一项就是一个元素。一个元素都没有时，空集合必须写 set()。",
+      bulletPoints: [
+        "和字典一样用 {}，但里面不是 key: value",
+        "空集合写成 set()；{} 是空字典",
+        "不要依赖打印顺序，问的是有没有这些歌",
+      ],
+      stepRun: true,
     },
-    code: code(`names = {"周杰伦", "林俊杰", "邓紫棋"}
-print(names)
-print(type(names))`),
-  },
-  {
-    id: "set-define-empty",
-    title: "空集合",
-    type: "run",
-    layout: "split",
-    content: {
-      headline: "空花括号表示空字典",
-      flowDiagram: ["empty = set()", "not_set = {}"],
-      body: "set() 得到空集合。写成 {} 得到的是空字典，类型是 dict。",
-      bulletPoints: ["set() 的类型是 set", "{} 的类型是 dict"],
-    },
-    code: code(`empty = set()
-print(empty)
-print(type(empty))
-
-not_set = {}
-print(not_set)
-print(type(not_set))`),
+    code: code(`heard = {"晴天", "稻香", "夜曲"}
+print(heard)
+print(type(heard))`),
   },
   {
     id: "set-define-dup",
-    title: "重复只留一份",
-    type: "run",
+    title: "元素唯一且不可变",
+    type: "predict",
     layout: "split",
+    editorSide: "left",
     content: {
-      headline: "重复元素只保留一个",
-      body: "字面量中同一元素出现两次，构造后只保留一份。len 的结果是 2。",
-      bulletPoints: ["相同元素只保留一个", "len 返回去重后的元素个数"],
+      bulletPoints: [
+        "同一元素写两次，只留一份，不报错",
+        "元素必须是不可变类型：str / int / tuple 可以；list 不可以",
+      ],
     },
-    code: code(`names = {"周杰伦", "林俊杰", "周杰伦"}
-print(names)
-print(len(names))`),
+    code: code(`heard = {"晴天", "稻香", "晴天", "夜曲", "稻香"}
+print(heard)
+print(len(heard))
+
+bad = {["晴天", "稻香"]}
+print(bad)`),
+    prediction: {
+      question: "print(len(heard)) 的结果是？",
+      options: [
+        { id: "three", label: "3", isCorrect: true },
+        { id: "five", label: "5" },
+        { id: "error", label: "引发异常" },
+      ],
+    },
+    reveal: {
+      title: "重复只留一份，列表不能当元素",
+      body: "字面量写了 5 项，去重后是晴天、稻香、夜曲，len 为 3。最后一行把列表放进花括号，创建时失败。",
+    },
   },
   {
     id: "set-define-from-list",
-    title: "由列表构造集合",
+    title: "由列表转成集合",
     type: "run",
     layout: "split",
-    content: {
-      headline: "set(可迭代对象) 去除重复",
-      flowDiagram: ["names = set(arrived)"],
-      body: "set 接收可迭代对象并构造集合，重复元素只保留一个。原列表不被修改。",
-      bulletPoints: ["arrived 的长度仍为 3", "names 中该重复元素只有一个"],
-    },
-    code: code(`arrived = ["周杰伦", "林俊杰", "周杰伦"]
-names = set(arrived)
-print(arrived)
-print(names)
-print(len(names))`),
+    editorSide: "left",
+    content: { stepRun: true },
+    code: code(`${HISTORY}
+heard = set(history)
+print(history)
+print(heard)
+print(len(heard))`),
   },
   {
     id: "set-define-summary",
@@ -86,11 +88,38 @@ print(len(names))`),
       note: {
         title: "集合创建小结",
         points: [
-          "集合的定义语法\n{元素1, 元素2, 元素3, …}",
-          "空集合的写法\n使用 set()。{} 表示空字典。",
-          "重复元素\n只保留一份。set(列表) 由已有序列构造集合。",
+          "集合解决什么问题？\n只记录元素是否出现过。最近播放用列表；「听过哪些歌」用集合。",
+          "定义语法\n{元素1, 元素2, …}；空集合必须写 set()，{} 是空字典。",
+          "已有列表怎么去重？\nset(列表) 得到新集合，原列表不变。重复项只留一份。",
         ],
       },
     },
+  },
+  {
+    id: "set-define-practice",
+    title: "练习：统计不同元素个数",
+    type: "challenge",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      body: "history 是最近播放。用集合去重后，打印不同歌曲的数量。",
+    },
+    code: code(`${HISTORY}
+`),
+    hints: [
+      { level: 1, text: "set(history) 把列表转成集合。" },
+      { level: 2, text: "再用 len() 打印集合里有几首歌。" },
+      {
+        level: 3,
+        text: `${HISTORY}
+heard = set(history)
+print(len(heard))`,
+      },
+    ],
+    reveal: {
+      title: "对照",
+      body: "5 次点击里只有晴天、稻香、夜曲 3 首，len(set(history)) 为 3。",
+    },
+    expectedOutput: "3",
   },
 ];

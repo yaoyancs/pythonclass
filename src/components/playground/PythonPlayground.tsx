@@ -1,5 +1,5 @@
 import { trackRun, trackRunResult } from '../../analytics/client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { canRun } from '../../engine/sceneTransitions';
 import { usePythonEngine } from '../../python/usePythonEngine';
@@ -9,6 +9,7 @@ import { OutputPanel } from './OutputPanel';
 import { EngineStatus } from './EngineStatus';
 import { InputPrompt } from './InputPrompt';
 import { useExecTrace } from '../stage/BranchContestStage';
+import { useStepCursor } from '../stage/StepRunStage';
 import { PredictPanel } from '../stage/PredictPanel';
 import { RevealPanel } from '../stage/RevealPanel';
 
@@ -22,11 +23,12 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
 
   const runEnabled = canRun(scene, state, isReady);
   const trace = useExecTrace();
+  const stepLine = useStepCursor(scene.id);
   const mode = scene.content.branchContest?.mode ?? scene.content.conditionPath?.mode;
   const tracing = mode === 'trace' || mode === 'lab' || mode === 'extend' || mode === 'walk';
-  const hideRun = scene.content.branchContest
+  const hideRun = Boolean(scene.content.playCountsApp) || (scene.content.branchContest
     ? mode === 'trace' || mode === 'lab'
-    : scene.content.conditionPath?.mode === 'lab' || scene.content.conditionPath?.mode === 'walk';
+    : scene.content.conditionPath?.mode === 'lab' || scene.content.conditionPath?.mode === 'walk');
 
   const handleRun = useCallback(async () => {
     if (!runEnabled) return;
@@ -35,7 +37,8 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
     const initial = scene.code?.initial ?? '';
     const codeChanged = state.sceneLocal.code.trim() !== initial.trim();
 
-    const onInput = (prompt: string): Promise<string> => {
+    const onInput = (prompt: string, stdout: string): Promise<string> => {
+      dispatch({ type: 'SHOW_OUTPUT', stdout });
       return new Promise((resolve) => {
         setInputPrompt({ prompt });
         setPendingRun({ code: state.sceneLocal.code, resolve });
@@ -87,6 +90,12 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
     setInputPrompt(null);
   };
 
+  const outputRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!inputPrompt) return;
+    outputRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [inputPrompt]);
+
   useEffect(() => {
     (window as unknown as { __pyclassRun?: () => void }).__pyclassRun = handleRun;
     return () => {
@@ -117,7 +126,8 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
   return (
     <section className={embedded ? 'flex h-full min-h-0 flex-col overflow-hidden' : 'grid h-full place-items-center overflow-hidden px-10 py-10'}>
       {/* 卡片包裹内容并垂直居中，代码少时不被拉伸成大片空白 */}
-      <div className={`flex w-full flex-col gap-5 overflow-y-auto rounded-3xl bg-classroom-stage shadow-card ${embedded ? 'h-full min-h-0 p-5' : 'max-h-full p-7'}`}>
+      <div className={`flex w-full flex-col rounded-3xl bg-classroom-stage shadow-card ${embedded || inputPrompt ? 'h-full min-h-0 overflow-hidden' : 'max-h-full overflow-y-auto'} ${embedded ? 'p-5' : 'p-7'}`}>
+        <div className={`flex min-h-0 flex-col gap-5 ${inputPrompt ? 'flex-1 overflow-y-auto' : ''}`}>
         {scene.pairedCode && (
           <>
             <PredictPanel />
@@ -136,10 +146,10 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
         </div>
 
         <CodeEditor
-          activeLine={tracing ? trace.line : undefined}
+          activeLine={tracing ? trace.line : stepLine}
           lineNote={tracing ? trace.note : undefined}
           fontSize={24}
-          heightPx={scene.pairedCode ? 520 : undefined}
+          heightPx={scene.pairedCode ? 520 : inputPrompt ? 280 : undefined}
           fluo={mode === 'lab'}
           yellow={mode === 'summary'}
           onFocusChange={(focused) => dispatch({ type: 'SET_EDITOR_FOCUSED', value: focused })}
@@ -172,16 +182,18 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
                 <p className="max-w-40 text-base text-highlight">请先完成预测并提交，再运行验证。</p>
               )}
             </div>
-            <div className="min-w-0 flex-1">
+            <div ref={outputRef} className="min-w-0 flex-1">
               <OutputPanel />
             </div>
           </div>
         )}
+        </div>
+        {inputPrompt && (
+          <div className="shrink-0 pt-4">
+            <InputPrompt prompt={inputPrompt.prompt} onSubmit={handleInputSubmit} />
+          </div>
+        )}
       </div>
-
-      {inputPrompt && (
-        <InputPrompt prompt={inputPrompt.prompt} onSubmit={handleInputSubmit} />
-      )}
     </section>
   );
 }

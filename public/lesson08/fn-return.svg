@@ -1,15 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 280" font-family="PingFang SC, sans-serif">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 280">
   <rect width="880" height="280" rx="24" fill="#F4F7FB"/>
-
-  <rect x="28" y="28" width="400" height="224" rx="16" fill="#FFFFFF" stroke="#1B3A6B" stroke-width="2.5"/>
-  <text x="228" y="72" text-anchor="middle" font-size="22" font-weight="700" fill="#1B3A6B">return square</text>
-  <text x="228" y="122" text-anchor="middle" font-size="18" fill="#1B3A6B">¤Şıpùa</text>
-  <text x="228" y="162" text-anchor="middle" font-size="18" fill="#1B3A6B">(ÿ0„Í/ square</text>
-  <text x="228" y="210" text-anchor="middle" font-size="20" font-weight="600" fill="#1B3A6B">picked(3) ’ 9</text>
-
-  <rect x="452" y="28" width="400" height="224" rx="16" fill="#FFFFFF" stroke="#1B3A6B" stroke-width="2.5"/>
-  <text x="652" y="72" text-anchor="middle" font-size="22" font-weight="700" fill="#1B3A6B">return square()</text>
-  <text x="652" y="122" text-anchor="middle" font-size="18" fill="#1B3A6B">H(¤ŞÓœ</text>
-  <text x="652" y="162" text-anchor="middle" font-size="18" fill="#1B3A6B">square Ùö¡	Âp</text>
-  <text x="652" y="210" text-anchor="middle" font-size="20" font-weight="600" fill="#1B3A6B">(s¥</text>
+  <rect x="36" y="48" width="390" height="196" rx="16" fill="#fff" stroke="#C0392B" stroke-width="2.5"/>
+  <text x="231" y="88" text-anchor="middle" font-size="22" font-weight="700" fill="#C0392B" font-family="PingFang SC, sans-serif">print(å‡åˆ†)</text>
+  <text x="231" y="140" text-anchor="middle" font-size="18" fill="#1B3A6B" font-family="PingFang SC, sans-serif">å†™åˆ°å±å¹•</text>
+  <text x="231" y="184" text-anchor="middle" font-size="22" font-weight="700" fill="#C0392B" font-family="PingFang SC, sans-serif">è°ƒç”¨æ–¹å¾—åˆ° None</text>
+  <rect x="454" y="48" width="390" height="196" rx="16" fill="#E8EEF8" stroke="#1B3A6B" stroke-width="2.5"/>
+  <text x="649" y="88" text-anchor="middle" font-size="22" font-weight="700" fill="#1B3A6B" font-family="PingFang SC, sans-serif">return å‡åˆ†</text>
+  <text x="649" y="140" text-anchor="middle" font-size="18" fill="#1B3A6B" font-family="PingFang SC, sans-serif">äº¤å›ç¨‹åº</text>
+  <text x="649" y="184" text-anchor="middle" font-size="22" font-weight="700" fill="#1B3A6B" font-family="PingFang SC, sans-serif">å¯ä»¥ç»§ç»­è®¡ç®—</text>
 </svg>

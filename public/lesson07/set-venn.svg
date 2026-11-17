@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 360" font-family="PingFang SC, Microsoft YaHei, sans-serif">
+  <rect width="880" height="360" rx="24" fill="#F4F7FB"/>
+  <text x="440" y="42" text-anchor="middle" font-size="20" font-weight="700" fill="#1B3A6B">两份最近播放</text>
+  <circle cx="340" cy="190" r="118" fill="#C45C26" fill-opacity="0.18" stroke="#C45C26" stroke-width="3"/>
+  <circle cx="540" cy="190" r="118" fill="#1B3A6B" fill-opacity="0.18" stroke="#1B3A6B" stroke-width="3"/>
+  <text x="268" y="88" text-anchor="middle" font-size="16" font-weight="700" fill="#C45C26">我听过 mine</text>
+  <text x="612" y="88" text-anchor="middle" font-size="16" font-weight="700" fill="#1B3A6B">同学听过 other</text>
+  <text x="268" y="188" text-anchor="middle" font-size="18" font-weight="700" fill="#C45C26">晴天</text>
+  <text x="268" y="214" text-anchor="middle" font-size="13" fill="#C45C26">mine - other</text>
+  <text x="440" y="178" text-anchor="middle" font-size="18" font-weight="700" fill="#173F35">稻香</text>
+  <text x="440" y="202" text-anchor="middle" font-size="18" font-weight="700" fill="#173F35">夜曲</text>
+  <text x="440" y="226" text-anchor="middle" font-size="13" fill="#173F35">mine &amp; other</text>
+  <text x="612" y="188" text-anchor="middle" font-size="18" font-weight="700" fill="#1B3A6B">七里香</text>
+  <text x="612" y="214" text-anchor="middle" font-size="13" fill="#1B3A6B">other - mine</text>
+  <text x="440" y="338" text-anchor="middle" font-size="14" fill="#475569">合在一起去重：mine | other → 晴天、稻香、夜曲、七里香</text>
+</svg>

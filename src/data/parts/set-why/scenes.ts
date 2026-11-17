@@ -6,69 +6,84 @@ const code = (initial: string) => ({
   resetToInitial: true,
 });
 
-/** 签到名单里同一个人写了两次。列表能存，查重要自己扫。 */
+const HISTORY = `history = ["晴天", "稻香", "晴天", "夜曲", "稻香"]`;
+
+/** 从最近播放切入：列表记下每一次点击，回答不了「听过几首不同的歌」。 */
 export const scenes: DraftScene[] = [
   {
-    id: "set-why-open",
+    id: "set-why-problem",
     title: "引入",
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "需要元素唯一的数据",
+      headline: "最近播放里，听过几首不同的歌？",
+      image: {
+        src: "/lesson07/play-history.svg?v=2",
+        alt: "播放记录：晴天、稻香、晴天、夜曲、稻香",
+      },
+    },
+  },
+  {
+    id: "set-why-list-defect",
+    title: "列表保留重复元素",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "len 统计的是点击次数",
+      body: "同一首歌点两次，列表里就有两项。len(history) 是 5，不是「不同的歌」的数量。",
       bulletPoints: [
-        "记录一组标识",
-        "同一元素只保留一次",
-        "判断某元素是否存在",
-        "比较两个集合的成员",
+        "列表有顺序、允许重复——这正是最近播放需要的",
+        "问「听过几首不同的歌」时，重复反而成了障碍",
       ],
-      preview: "下一页：用列表保存含重复项的数据",
     },
+    code: code(`${HISTORY}
+print(history)
+print(len(history))
+print("晴天" in history)
+print("七里香" in history)`),
   },
   {
-    id: "set-why-list",
-    title: "列表里的重复",
+    id: "set-why-scan-cost",
+    title: "用列表实现去重",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "列表保留重复元素",
-      body: "同一字符串出现两次。列表长度为 3，输出仍包含全部元素。",
-      bulletPoints: ["列表允许重复元素", "元素顺序与写入顺序一致"],
+      headline: "先建空列表，再一首首判断",
+      flowDiagram: [
+        "heard = []",
+        "for name in history:",
+        "    if name not in heard:",
+        "        heard.append(name)",
+      ],
+      body: "列表也能去重，但要自己写循环：碰到还没有的歌才加进去。后面用集合，这一段就不必手写了。",
     },
-    code: code(`arrived = ["周杰伦", "林俊杰", "周杰伦"]
-print(arrived)
-print(len(arrived))`),
-  },
-  {
-    id: "set-why-scan",
-    title: "手动去重",
-    type: "run",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      headline: "用线性扫描实现去重",
-      body: "新建空列表，仅在元素尚未出现时 append。每次插入都要扫描已有元素，数据量增大后开销上升。",
-      bulletPoints: ["not in 判断元素是否已存在", "append 只追加新元素"],
-    },
-    code: code(`arrived = ["周杰伦", "林俊杰", "周杰伦"]
-unique = []
-for name in arrived:
-    if name not in unique:
-        unique.append(name)
-print(unique)`),
+    code: code(`${HISTORY}
+heard = []
+for name in history:
+    if name not in heard:
+        heard.append(name)
+print(heard)
+print(len(heard))`),
   },
   {
     id: "set-why-need",
-    title: "为什么需要集合",
+    title: "集合要解决的问题",
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "成员不重复，用集合",
+      headline: "只要「有没有」，不要次数",
+      image: {
+        src: "/lesson07/set-vs-list.svg",
+        alt: "列表留下每一次点击；集合只留下听过哪些歌",
+      },
       bulletPoints: [
-        "集合里的每个元素只保留一份",
-        "由含重复元素的列表构造集合时，重复元素被去除",
-        "按键检索对应值时使用字典",
+        "字典回答：这首歌对应什么信息（时长、次数）",
+        "列表回答：第几首、点过几次、先后顺序",
+        "现在缺的是：这首歌出现过没有、一共几种",
       ],
+      preview: "下一页：用花括号写出听过的歌",
     },
   },
 ];

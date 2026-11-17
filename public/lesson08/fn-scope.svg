@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 280">
+  <rect width="880" height="280" rx="24" fill="#F4F7FB"/>
+  <rect x="36" y="56" width="300" height="176" rx="16" fill="#fff" stroke="#1B3A6B" stroke-width="2.5"/>
+  <text x="186" y="40" text-anchor="middle" font-size="18" font-weight="700" fill="#1B3A6B" font-family="PingFang SC, sans-serif">函数外面</text>
+  <text x="186" y="120" text-anchor="middle" font-size="22" font-weight="700" fill="#1B3A6B" font-family="PingFang SC, sans-serif">average</text>
+  <text x="186" y="168" text-anchor="middle" font-size="18" fill="#C0392B" font-family="PingFang SC, sans-serif">没有 avg</text>
+  <path d="M336 144 L396 144" stroke="#1B3A6B" stroke-width="3"/>
+  <polygon points="396,136 412,144 396,152" fill="#1B3A6B"/>
+  <rect x="420" y="40" width="424" height="208" rx="16" fill="#E8EEF8" stroke="#1B3A6B" stroke-width="2.5"/>
+  <text x="632" y="78" text-anchor="middle" font-size="18" font-weight="700" fill="#1B3A6B" font-family="PingFang SC, sans-serif">函数里面（调用时才有）</text>
+  <text x="632" y="130" text-anchor="middle" font-size="20" fill="#1B3A6B" font-family="PingFang SC, sans-serif">scores = [80, 90, 70]</text>
+  <text x="632" y="172" text-anchor="middle" font-size="20" fill="#1B3A6B" font-family="PingFang SC, sans-serif">avg = 80.0</text>
+  <text x="632" y="214" text-anchor="middle" font-size="16" fill="#1B3A6B" font-family="PingFang SC, sans-serif">结束调用后，里面的名字消失</text>
+</svg>

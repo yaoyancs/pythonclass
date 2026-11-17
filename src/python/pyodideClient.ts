@@ -1,6 +1,6 @@
-import type { EngineStatus, PythonResult, WorkerRequest, WorkerResponse } from '../types/python';
+import type { EngineStatus, PythonResult, TraceStep, WorkerRequest, WorkerResponse } from '../types/python';
 
-type InputHandler = (prompt: string) => Promise<string>;
+type InputHandler = (prompt: string, stdout: string) => Promise<string>;
 
 let runCounter = 0;
 
@@ -10,6 +10,10 @@ export class PyodideClient {
   private statusMessage?: string;
   private statusListeners = new Set<(s: EngineStatus, msg?: string) => void>();
   private inputSab: SharedArrayBuffer | null = null;
+  private pendingTraces = new Map<
+    string,
+    { resolve: (steps: TraceStep[]) => void; reject: (e: Error) => void }
+  >();
   private pendingRuns = new Map<
     string,
     {
@@ -45,6 +49,17 @@ export class PyodideClient {
 
   getStatus(): EngineStatus {
     return this.status;
+  }
+
+  async traceCode(code: string): Promise<TraceStep[]> {
+    if (!this.worker || this.status !== 'ready') {
+      throw new Error('Python engine not ready');
+    }
+    const id = `trace-${++runCounter}`;
+    return new Promise((resolve, reject) => {
+      this.pendingTraces.set(id, { resolve, reject });
+      this.post({ type: 'TRACE', id, code });
+    });
   }
 
   async runCode(code: string, onInput?: InputHandler): Promise<PythonResult> {
@@ -108,8 +123,17 @@ export class PyodideClient {
         break;
       case 'INPUT_REQUEST': {
         const pending = this.pendingRuns.get(msg.id);
-        const value = pending?.onInput ? await pending.onInput(msg.prompt) : '';
+        const value = pending?.onInput ? await pending.onInput(msg.prompt, msg.stdout ?? '') : '';
         this.fulfillInput(value);
+        break;
+      }
+      case 'TRACE_RESULT': {
+        const pending = this.pendingTraces.get(msg.id);
+        if (pending) {
+          if (msg.error && msg.steps.length === 0) pending.reject(new Error(msg.error));
+          else pending.resolve(msg.steps);
+          this.pendingTraces.delete(msg.id);
+        }
         break;
       }
       case 'RESULT': {

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 320" font-family="PingFang SC, Microsoft YaHei, sans-serif">
+  <rect width="880" height="320" rx="24" fill="#F4F7FB"/>
+  <text x="440" y="40" text-anchor="middle" font-size="18" font-weight="700" fill="#1B3A6B">length[歌名] = 时长</text>
+
+  <rect x="28" y="68" width="390" height="220" rx="16" fill="#FFFFFF" stroke="#C45C26" stroke-width="2"/>
+  <rect x="44" y="84" width="358" height="36" rx="8" fill="#FFF4EC"/>
+  <text x="223" y="108" text-anchor="middle" font-size="16" font-weight="700" fill="#C45C26">歌名不存在：新增</text>
+  <text x="223" y="164" text-anchor="middle" font-size="16" fill="#475569">原来只有 晴天、稻香</text>
+  <text x="223" y="204" text-anchor="middle" font-size="17" font-weight="700" fill="#1B3A6B">length["夜曲"] = "3:46"</text>
+  <text x="223" y="248" text-anchor="middle" font-size="16" fill="#C45C26">歌单里多出夜曲</text>
+
+  <rect x="462" y="68" width="390" height="220" rx="16" fill="#FFFFFF" stroke="#1B3A6B" stroke-width="2.5"/>
+  <rect x="478" y="84" width="358" height="36" rx="8" fill="#E8EEF8"/>
+  <text x="657" y="108" text-anchor="middle" font-size="16" font-weight="700" fill="#1B3A6B">歌名已存在：修改</text>
+  <text x="657" y="164" text-anchor="middle" font-size="16" fill="#475569">晴天原来是 4:29</text>
+  <text x="657" y="204" text-anchor="middle" font-size="17" font-weight="700" fill="#1B3A6B">length["晴天"] = "4:11"</text>
+  <text x="657" y="248" text-anchor="middle" font-size="16" fill="#1B3A6B">时长改成 4:11，没有多一首</text>
+</svg>

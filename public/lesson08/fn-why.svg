@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 300">
+  <rect width="880" height="300" rx="24" fill="#F4F7FB"/>
+  <text x="440" y="42" text-anchor="middle" font-size="22" font-weight="700" fill="#1B3A6B" font-family="PingFang SC, sans-serif">三个班，同一套步骤</text>
+  <rect x="48" y="70" width="150" height="56" rx="12" fill="#fff" stroke="#1B3A6B" stroke-width="2"/>
+  <text x="123" y="106" text-anchor="middle" font-size="20" fill="#1B3A6B" font-family="PingFang SC, sans-serif">一班</text>
+  <rect x="48" y="142" width="150" height="56" rx="12" fill="#fff" stroke="#1B3A6B" stroke-width="2"/>
+  <text x="123" y="178" text-anchor="middle" font-size="20" fill="#1B3A6B" font-family="PingFang SC, sans-serif">二班</text>
+  <rect x="48" y="214" width="150" height="56" rx="12" fill="#fff" stroke="#1B3A6B" stroke-width="2"/>
+  <text x="123" y="250" text-anchor="middle" font-size="20" fill="#1B3A6B" font-family="PingFang SC, sans-serif">三班</text>
+  <path d="M198 98 H250 V170 H330" fill="none" stroke="#1B3A6B" stroke-width="2.5"/>
+  <path d="M198 170 H330" fill="none" stroke="#1B3A6B" stroke-width="2.5"/>
+  <path d="M198 242 H250 V170" fill="none" stroke="#1B3A6B" stroke-width="2.5"/>
+  <rect x="330" y="92" width="170" height="156" rx="14" fill="#E8EEF8" stroke="#1B3A6B" stroke-width="2.5"/>
+  <text x="415" y="140" text-anchor="middle" font-size="20" fill="#1B3A6B" font-family="PingFang SC, sans-serif">过滤</text>
+  <text x="415" y="178" text-anchor="middle" font-size="20" fill="#1B3A6B" font-family="PingFang SC, sans-serif">统计</text>
+  <text x="415" y="216" text-anchor="middle" font-size="20" fill="#1B3A6B" font-family="PingFang SC, sans-serif">打印</text>
+  <path d="M500 170 H548" stroke="#1B3A6B" stroke-width="2.5"/>
+  <rect x="548" y="92" width="292" height="156" rx="14" fill="#fff" stroke="#1B3A6B" stroke-width="2.5"/>
+  <text x="694" y="140" text-anchor="middle" font-size="18" fill="#1B3A6B" font-family="PingFang SC, sans-serif">一班报告</text>
+  <text x="694" y="178" text-anchor="middle" font-size="18" fill="#1B3A6B" font-family="PingFang SC, sans-serif">二班报告</text>
+  <text x="694" y="216" text-anchor="middle" font-size="18" fill="#1B3A6B" font-family="PingFang SC, sans-serif">三班报告</text>
+</svg>

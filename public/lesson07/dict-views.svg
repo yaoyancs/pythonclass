@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 320" font-family="PingFang SC, Microsoft YaHei, sans-serif">
+  <rect width="880" height="320" rx="24" fill="#F4F7FB"/>
+  <text x="440" y="40" text-anchor="middle" font-size="18" font-weight="700" fill="#1B3A6B">同一份歌单：晴天 4:29、稻香 3:43、夜曲 3:46</text>
+
+  <rect x="28" y="64" width="260" height="228" rx="16" fill="#FFFFFF" stroke="#1B3A6B" stroke-width="2"/>
+  <rect x="44" y="80" width="228" height="36" rx="8" fill="#E8EEF8"/>
+  <text x="158" y="104" text-anchor="middle" font-size="16" font-weight="700" fill="#1B3A6B">keys() 全部歌名</text>
+  <text x="158" y="156" text-anchor="middle" font-size="18" fill="#1B3A6B">晴天</text>
+  <text x="158" y="196" text-anchor="middle" font-size="18" fill="#1B3A6B">稻香</text>
+  <text x="158" y="236" text-anchor="middle" font-size="18" fill="#1B3A6B">夜曲</text>
+
+  <rect x="310" y="64" width="260" height="228" rx="16" fill="#FFFFFF" stroke="#C45C26" stroke-width="2"/>
+  <rect x="326" y="80" width="228" height="36" rx="8" fill="#FFF4EC"/>
+  <text x="440" y="104" text-anchor="middle" font-size="16" font-weight="700" fill="#C45C26">values() 全部时长</text>
+  <text x="440" y="156" text-anchor="middle" font-size="18" fill="#C45C26">4:29</text>
+  <text x="440" y="196" text-anchor="middle" font-size="18" fill="#C45C26">3:43</text>
+  <text x="440" y="236" text-anchor="middle" font-size="18" fill="#C45C26">3:46</text>
+
+  <rect x="592" y="64" width="260" height="228" rx="16" fill="#FFFFFF" stroke="#1B3A6B" stroke-width="2.5"/>
+  <rect x="608" y="80" width="228" height="36" rx="8" fill="#E8EEF8"/>
+  <text x="722" y="104" text-anchor="middle" font-size="16" font-weight="700" fill="#1B3A6B">items() 歌名和时长</text>
+  <text x="722" y="156" text-anchor="middle" font-size="16" fill="#1B3A6B">晴天, 4:29</text>
+  <text x="722" y="196" text-anchor="middle" font-size="16" fill="#1B3A6B">稻香, 3:43</text>
+  <text x="722" y="236" text-anchor="middle" font-size="16" fill="#1B3A6B">夜曲, 3:46</text>
+</svg>

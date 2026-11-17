@@ -11,6 +11,7 @@ import {
 import {
   allowRate,
   buildLessonHeat,
+  buildOverview,
   buildSummary,
   classifyDevice,
   isValidDateYmd,
@@ -122,6 +123,9 @@ export function teacherApiMockPlugin(): Plugin {
             const dayHits = hits.filter((h) => h.ts >= startIso && h.ts < endIso);
             const excludeTeacher = query.get('includeTeacher') !== '1';
 
+            if (url === '/api/analytics/overview' && req.method === 'GET') {
+              return json(res, 200, buildOverview(hits, excludeTeacher));
+            }
             if (url === '/api/analytics/summary' && req.method === 'GET') {
               return json(res, 200, buildSummary(dateParam, dayHits, excludeTeacher));
             }

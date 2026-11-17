@@ -6,22 +6,90 @@ const code = (initial: string) => ({
   resetToInitial: true,
 });
 
-/** 成绩单上同一句式写了三遍。 */
+const CLASS_A = `[80, 90, -5, 100]`;
+const CLASS_B = `[75, 85, 95]`;
+const CLASS_C = `[60, 70, 101, 88]`;
+
+/** 三个班要做同一套成绩分析：复制粘贴撑不住，才引入函数。 */
 export const scenes: DraftScene[] = [
   {
+    id: "fn-why-task",
+    title: "引入",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      headline: "多班级共用同一处理流程",
+      image: {
+        src: "/lesson08/fn-why.svg",
+        alt: "一班、二班、三班都经过过滤、统计、打印，得到各自的成绩报告",
+      },
+      bulletPoints: ["步骤相同", "只有数据不同"],
+    },
+  },
+  {
     id: "fn-why-repeat",
-    title: "重复的输出语句",
+    title: "重复的分析代码",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "相同格式的语句重复出现",
-      body: "三条输出语句结构相同，只有姓名和分数不同。格式一旦改变，每一条语句都要修改。",
-      bulletPoints: ["输出格式相同", "变化的是参数数据"],
+      headline: "重复代码难以同步维护",
+      bulletPoints: ["处理逻辑相同", "仅实参数据不同"],
     },
-    code: code(`print("学生A: 数学90分，语文85分")
-print("学生B: 数学78分，语文92分")
-print("学生C: 数学95分，语文88分")`),
+    code: code(`raw_a = ${CLASS_A}
+valid_a = []
+for s in raw_a:
+    if 0 <= s <= 100:
+        valid_a.append(s)
+avg_a = sum(valid_a) / len(valid_a)
+print(f"一班: 有效{len(valid_a)}人, 平均{avg_a:.1f}")
+
+raw_b = ${CLASS_B}
+valid_b = []
+for s in raw_b:
+    if 0 <= s <= 100:
+        valid_b.append(s)
+avg_b = sum(valid_b) / len(valid_b)
+print(f"二班: 有效{len(valid_b)}人, 平均{avg_b:.1f}")`),
+  },
+  {
+    id: "fn-why-modify-format",
+    title: "修改：三处一起改",
+    type: "modify",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "在两处输出中同步增加最高分",
+    },
+    code: code(`raw_a = ${CLASS_A}
+valid_a = []
+for s in raw_a:
+    if 0 <= s <= 100:
+        valid_a.append(s)
+avg_a = sum(valid_a) / len(valid_a)
+print(f"一班: 有效{len(valid_a)}人, 平均{avg_a:.1f}")
+
+raw_b = ${CLASS_B}
+valid_b = []
+for s in raw_b:
+    if 0 <= s <= 100:
+        valid_b.append(s)
+avg_b = sum(valid_b) / len(valid_b)
+print(f"二班: 有效{len(valid_b)}人, 平均{avg_b:.1f}")`),
+    hints: [
+      { level: 1, text: "有效成绩列表已经算好，最高分用 max(valid_a) 和 max(valid_b)。" },
+      { level: 2, text: "把两行 print 都改成带「最高」的 f-string。" },
+      {
+        level: 3,
+        text: 'print(f"一班: 有效{len(valid_a)}人, 平均{avg_a:.1f}, 最高{max(valid_a)}")\nprint(f"二班: 有效{len(valid_b)}人, 平均{avg_b:.1f}, 最高{max(valid_b)}")',
+      },
+    ],
+    reveal: {
+      title: "对照",
+      body: "需求只改了一句，代码却要改两处。班级再增加，改动次数继续增加。",
+    },
+    expectedOutput: `一班: 有效3人, 平均90.0, 最高100
+二班: 有效3人, 平均85.0, 最高95`,
   },
   {
     id: "fn-why-wrap",
@@ -30,16 +98,62 @@ print("学生C: 数学95分，语文88分")`),
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "定义一次，调用多次",
-      body: "将输出逻辑封装为 print_score。姓名和两门分数通过参数传入。新增一条记录时，只增加一次函数调用。",
-      bulletPoints: ["def 定义函数", "调用时写出函数名并传入实参"],
+      headline: "一次定义，多次调用",
+      flowDiagram: [
+        "def make_report(name, raw):",
+        "    ...",
+        "make_report(\"一班\", raw_a)",
+        "make_report(\"二班\", raw_b)",
+      ],
     },
-    code: code(`def print_score(name, math, chinese):
-    print(f"{name}: 数学{math}分，语文{chinese}分")
+    code: code(`def make_report(name, raw):
+    valid = []
+    for s in raw:
+        if 0 <= s <= 100:
+            valid.append(s)
+    avg = sum(valid) / len(valid)
+    print(f"{name}: 有效{len(valid)}人, 平均{avg:.1f}, 最高{max(valid)}")
 
-print_score("学生A", 90, 85)
-print_score("学生B", 78, 92)
-print_score("学生C", 95, 88)`),
+make_report("一班", ${CLASS_A})
+make_report("二班", ${CLASS_B})
+make_report("三班", ${CLASS_C})`),
+  },
+  {
+    id: "fn-why-one-change",
+    title: "修改：只改函数体",
+    type: "modify",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "修改函数体即可更新全部调用",
+      bulletPoints: ["在输出中增加最低分", "调用语句保持不变"],
+    },
+    code: code(`def make_report(name, raw):
+    valid = []
+    for s in raw:
+        if 0 <= s <= 100:
+            valid.append(s)
+    avg = sum(valid) / len(valid)
+    print(f"{name}: 有效{len(valid)}人, 平均{avg:.1f}, 最高{max(valid)}")
+
+make_report("一班", ${CLASS_A})
+make_report("二班", ${CLASS_B})
+make_report("三班", ${CLASS_C})`),
+    hints: [
+      { level: 1, text: "最低分是 min(valid)。" },
+      { level: 2, text: "只改函数体里的 print，不要去改三行调用。" },
+      {
+        level: 3,
+        text: 'print(f"{name}: 有效{len(valid)}人, 平均{avg:.1f}, 最高{max(valid)}, 最低{min(valid)}")',
+      },
+    ],
+    reveal: {
+      title: "对照",
+      body: "调用处不用动。同一逻辑定义一次，修改一次，所有调用都使用新格式。",
+    },
+    expectedOutput: `一班: 有效3人, 平均90.0, 最高100, 最低80
+二班: 有效3人, 平均85.0, 最高95, 最低75
+三班: 有效3人, 平均72.7, 最高88, 最低60`,
   },
   {
     id: "fn-why-roles",
@@ -47,12 +161,11 @@ print_score("学生C", 95, 88)`),
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "一段可重复使用的代码",
+      headline: "函数的作用",
       bulletPoints: [
-        "同一逻辑定义一次，可多次调用",
-        "函数名表明功能，调用处保持简短",
-        "修改格式或计算时，只修改函数体",
-        "复杂任务分解为多个函数",
+        "封装可复用逻辑",
+        "集中修改，所有调用同步生效",
+        "将复杂任务分解为多个函数",
       ],
     },
   },

@@ -6,7 +6,7 @@ const code = (initial: string) => ({
   resetToInitial: true,
 });
 
-/** def、文档字符串、调用，以及函数名。 */
+/** def、文档字符串、调用时机，以及函数名。 */
 export const scenes: DraftScene[] = [
   {
     id: "fn-def-shape",
@@ -17,34 +17,36 @@ export const scenes: DraftScene[] = [
       headline: "定义一个函数",
       flowDiagram: [
         "def 函数名(参数列表):",
-        "    \"\"\"文档字符串\"\"\"",
+        '    """文档字符串"""',
         "    函数体",
         "    return 返回值",
       ],
       bulletPoints: [
-        "def 后面是函数名和圆括号，行末是冒号",
-        "函数体必须缩进，规则与 if、for 相同",
-        "文档字符串说明功能，可以省略",
-        "return 将结果返回调用方；可以没有 return",
+        "def 这一行末尾是冒号",
+        "函数体缩进，和 if、for 一样",
+        "文档字符串、return 都可以没有",
       ],
     },
   },
   {
-    id: "fn-def-greet",
+    id: "fn-def-report",
     title: "定义与调用",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "定义和调用是两步",
-      body: "执行 def 时创建函数对象，函数体不执行。执行 greet(\"周杰伦\") 时，形参 name 绑定实参，再执行 return。",
-      bulletPoints: ["形参 name 接收调用时传入的实参", "print 输出的是 return 的返回值"],
+      headline: "定义与调用分离",
+      bulletPoints: [
+        "def 创建函数对象，此时不执行函数体",
+        "report_student(...) 才进入函数体",
+      ],
     },
-    code: code(`def greet(name):
-    """向指定的人问好"""
-    return f"Hello, {name}!"
+    code: code(`def report_student(name, score):
+    """按统一格式播报一名学生的成绩"""
+    print(f"{name}: {score}分")
 
-print(greet("周杰伦"))`),
+report_student("周杰伦", 95)
+report_student("林俊杰", 88)`),
   },
   {
     id: "fn-def-when",
@@ -53,11 +55,11 @@ print(greet("周杰伦"))`),
     layout: "split",
     editorSide: "left",
     content: {
-      body: "区分函数定义与函数调用。",
+      headline: "定义阶段是否执行函数体？",
     },
-    code: code(`def greet(name):
+    code: code(`def report_student(name, score):
     print("函数体执行了")
-    return f"Hello, {name}!"
+    print(f"{name}: {score}分")
 
 print("定义结束")`),
     prediction: {
@@ -70,8 +72,69 @@ print("定义结束")`),
     },
     reveal: {
       title: "没有调用，函数体不执行",
-      body: "def 只创建函数对象。函数名后没有调用运算符时，函数体不执行。写成 greet(\"周杰伦\") 才会执行函数体。",
+      body: "未经调用时，函数体不执行。",
     },
+  },
+  {
+    id: "fn-def-order",
+    title: "调试：先调用后定义",
+    type: "debug",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "将定义置于首次调用之前",
+    },
+    code: code(`report_student("周杰伦", 95)
+
+def report_student(name, score):
+    print(f"{name}: {score}分")
+`),
+    hints: [
+      { level: 1, text: "Python 从上往下执行。调用时，函数名必须已经绑定。" },
+      { level: 2, text: "报错信息是 NameError: name 'report_student' is not defined。" },
+      {
+        level: 3,
+        text: `def report_student(name, score):
+    print(f"{name}: {score}分")
+
+report_student("周杰伦", 95)`,
+      },
+    ],
+    reveal: {
+      title: "对照",
+      body: "先执行 def，再写调用。定义可以离调用很远，但不能出现在第一次调用之后。",
+    },
+    expectedOutput: "周杰伦: 95分",
+  },
+  {
+    id: "fn-def-syntax",
+    title: "调试：冒号与缩进",
+    type: "debug",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "补全函数头冒号与函数体缩进",
+    },
+    code: code(`def report_student(name, score)
+print(f"{name}: {score}分")
+
+report_student("林俊杰", 88)`),
+    hints: [
+      { level: 1, text: "def 行末必须有冒号。" },
+      { level: 2, text: "print 这一行属于函数体，相对 def 缩进 4 个空格。" },
+      {
+        level: 3,
+        text: `def report_student(name, score):
+    print(f"{name}: {score}分")
+
+report_student("林俊杰", 88)`,
+      },
+    ],
+    reveal: {
+      title: "对照",
+      body: "函数头以冒号结束。函数体必须缩进。调用语句与 def 对齐，不缩进。",
+    },
+    expectedOutput: "林俊杰: 88分",
   },
   {
     id: "fn-def-name",
@@ -79,13 +142,52 @@ print("定义结束")`),
     type: "explain",
     layout: "fullscreen",
     content: {
-      headline: "函数名和变量名同一套规则",
+      headline: "函数命名规范",
       bulletPoints: [
-        "用小写字母，单词之间用下划线",
-        "名称应表明用途，例如 calculate_area、print_score",
-        "不要覆盖内置名，例如不要将自定义函数命名为 print、list、sum",
+        "小写字母与下划线：make_report",
+        "名称应表明功能",
+        "不要覆盖内置名 print、list、sum",
       ],
-      flowDiagram: ["def calculate_area(length, width):", "def print_score(name, math, chinese):"],
+      flowDiagram: [
+        "def make_report(name, raw):",
+        "def report_student(name, score):",
+      ],
     },
+  },
+  {
+    id: "fn-def-practice",
+    title: "练习：定义并调用",
+    type: "challenge",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      headline: "定义 report_student 并完成调用",
+      bulletPoints: [
+        "定义 report_student(name, score)",
+        "打印「姓名: 分数分」",
+        "调用：周杰伦 95，邓紫棋 92",
+      ],
+    },
+    code: code(`# 在这里定义 report_student
+
+`),
+    hints: [
+      { level: 1, text: "先写 def report_student(name, score):，函数体里用 print。" },
+      { level: 2, text: "定义写完后，再写两行调用。" },
+      {
+        level: 3,
+        text: `def report_student(name, score):
+    print(f"{name}: {score}分")
+
+report_student("周杰伦", 95)
+report_student("邓紫棋", 92)`,
+      },
+    ],
+    reveal: {
+      title: "对照",
+      body: "定义一次，调用两次。输出各占一行。",
+    },
+    expectedOutput: `周杰伦: 95分
+邓紫棋: 92分`,
   },
 ];

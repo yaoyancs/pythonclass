@@ -143,6 +143,15 @@ export function sceneReducer(
       return applyRunComplete(next, scene);
     }
 
+    case 'SHOW_OUTPUT':
+      return {
+        ...state,
+        sceneLocal: {
+          ...state.sceneLocal,
+          lastOutput: { stdout: action.stdout, stderr: '' },
+        },
+      };
+
     case 'RESET_CODE': {
       if (!scene.code?.resetToInitial) return state;
       return {
