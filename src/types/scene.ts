@@ -831,8 +831,6 @@ export interface SceneContent {
   typeMap?: TypeMapContent;
   /** 第 7 讲收束：四种容器的读取、增加、删除 */
   containerMap?: TypeMapContent;
-  /** 第 7 讲收束：四种容器的读取、增加、删除 */
-  containerMap?: TypeMapContent;
   typeProbe?: TypeProbeContent;
   intFloat?: IntFloatContent;
   nameLink?: NameLinkContent;
