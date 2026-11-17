@@ -23,13 +23,13 @@ print(heard[0])`),
     hints: [
       { level: 1, text: "集合不能像列表那样写 heard[0]。" },
       { level: 2, text: "TypeError: 'set' object is not subscriptable 表示不支持下标。" },
-      { level: 3, text: "print(sorted(heard))" },
+      { level: 3, text: "print(len(heard))" },
     ],
     reveal: {
       title: "对照",
-      body: "集合没有下标，也不能切片。需要固定顺序时，用 sorted(heard) 得到列表。",
+      body: "集合没有下标，也不能切片。要看有几首，用 len(heard)。",
     },
-    expectedOutput: "['晴天', '稻香']",
+    expectedOutput: "2",
   },
   {
     id: "set-edit-add",
@@ -45,7 +45,7 @@ print(heard[0])`),
     code: code(`${HEARD}
 heard.add("七里香")
 heard.add("晴天")
-print(sorted(heard))
+print(heard)
 print(len(heard))`),
     prediction: {
       question: "两次 add 之后，len(heard) 是？",
@@ -73,32 +73,26 @@ print(len(heard))`),
     },
     code: code(`${HEARD}
 heard.update(["夜曲", "七里香", "晴天"])
-print(sorted(heard))`),
+print(heard)`),
   },
   {
     id: "set-edit-discard",
-    title: "删除元素 discard()方法",
-    type: "predict",
+    title: "删除元素 discard 与 remove",
+    type: "run",
     layout: "split",
     editorSide: "left",
     content: {
+      headline: "删一首：discard 与 remove",
+      flowDiagram: [
+        "集合.discard(元素)",
+        "集合.remove(元素)",
+      ],
+      body: "歌在集合里时，两行都删掉它。差别在这首本来没有：discard 保持原样，程序继续；remove 报 KeyError，停住。",
     },
     code: code(`heard = {"晴天", "稻香", "夜曲"}
 heard.discard("七里香")
-heard.discard("夜曲")
-print(sorted(heard))`),
-    prediction: {
-      question: "discard(\"七里香\") 会不会让程序停？",
-      options: [
-        { id: "go", label: "不会，程序继续", isCorrect: true },
-        { id: "key", label: "会，KeyError 停住" },
-        { id: "type", label: "会，TypeError 停住" },
-      ],
-    },
-    reveal: {
-      title: "discard：有就删，没有也不报错",
-      body: "remove 在元素不存在时才会 KeyError。",
-    },
+heard.remove("夜曲")
+print(heard)`),
   },
   {
     id: "set-edit-summary",
@@ -126,27 +120,35 @@ print(sorted(heard))`),
     type: "challenge",
     layout: "split",
     editorSide: "left",
-    content: {
-      body: "heard 里已有晴天、稻香。加入夜曲，删掉晴天，对可能不存在的七里香用安全删除，最后打印 sorted(heard)。",
-    },
-    code: code(`${HEARD}
+    editorOnly: true,
+    content: {},
+    code: code(`# heard 里已有晴天、稻香。
+# 用 add 加入夜曲。
+# 用 discard 删掉晴天。
+# 七里香可能不在里面，也用 discard 删，没有就跳过。
+# 然后依次打印三行："夜曲" in heard、"晴天" in heard、len(heard)。
+${HEARD}
 `),
     hints: [
-      { level: 1, text: "加入用 add；可能没有的歌用 discard。" },
-      { level: 2, text: "依次 add(\"夜曲\")、discard(\"晴天\")、discard(\"七里香\")。" },
+      { level: 1, text: "加入写 heard.add(\"夜曲\")。删掉写 heard.discard(\"歌名\")。七里香用 discard，不要用 remove，否则这首不在会 KeyError。" },
+      { level: 2, text: "打印用 print(\"夜曲\" in heard)、print(\"晴天\" in heard)、print(len(heard))。" },
       {
         level: 3,
         text: `${HEARD}
 heard.add("夜曲")
 heard.discard("晴天")
 heard.discard("七里香")
-print(sorted(heard))`,
+print("夜曲" in heard)
+print("晴天" in heard)
+print(len(heard))`,
       },
     ],
     reveal: {
       title: "对照",
-      body: "加入夜曲、去掉晴天、忽略没有的七里香后，排序结果为 ['夜曲', '稻香']。",
+      body: "加入夜曲、去掉晴天、忽略没有的七里香。夜曲还在，晴天不在，一共 2 首。",
     },
-    expectedOutput: "['夜曲', '稻香']",
+    expectedOutput: `True
+False
+2`,
   },
 ];

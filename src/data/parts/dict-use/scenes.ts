@@ -6,7 +6,7 @@ const code = (initial: string) => ({
   resetToInitial: true,
 });
 
-const LENGTH = `length = {"晴天": "4:29", "稻香": "3:43", "夜曲": "3:46"}`;
+const TIMES = `times = {"晴天": "4:29", "稻香": "3:43", "夜曲": "3:46"}`;
 
 /** 第七幕：完全对标 playlist-edit 的节奏，将字典的每一个操作拆分为独立单页，配齐总览表、调试题、引用预测与练习。 */
 export const scenes: DraftScene[] = [
@@ -38,14 +38,14 @@ export const scenes: DraftScene[] = [
       ],
       bulletPoints: [
         "字典没有下标 0、1、2，方括号里写的是键（Key）",
-        "length[\"稻香\"] 取出对应的时长 3:43",
+        "times[\"稻香\"] 取出对应的时长 3:43",
         "最后一行键不存在，字典[Key] 会报 KeyError",
       ],
     },
-    code: code(`${LENGTH}
-print(length["晴天"])
-print(length["稻香"])
-print(length["七里香"])`),
+    code: code(`${TIMES}
+print(times["晴天"])
+print(times["稻香"])
+print(times["七里香"])`),
   },
   {
     id: "dict-use-get",
@@ -58,9 +58,9 @@ print(length["七里香"])`),
       flowDiagram: ["字典.get(键, 默认值)"],
       body: "键在就返回时长，键不在就返回默认值，不报错。",
     },
-    code: code(`${LENGTH}
-print(length.get("稻香", "歌单里没有"))
-print(length.get("七里香", "歌单里没有"))`),
+    code: code(`${TIMES}
+print(times.get("稻香", "歌单里没有"))
+print(times.get("七里香", "歌单里没有"))`),
   },
   {
     id: "dict-use-predict-in",
@@ -71,9 +71,9 @@ print(length.get("七里香", "歌单里没有"))`),
     content: {
       body: "🤔 in 用在字典上时，判断的是键 还是 值？",
     },
-    code: code(`${LENGTH}
-print("稻香" in length)
-print("3:43" in length)`),
+    code: code(`${TIMES}
+print("稻香" in times)
+print("3:43" in times)`),
     prediction: {
       question: "两行 print 的结果分别是？",
       options: [
@@ -84,7 +84,7 @@ print("3:43" in length)`),
     },
     reveal: {
       title: "in 默认只检查 Key，不检查 Value",
-      body: "\"稻香\" 是歌名，也就是键，结果为 True。\"3:43\" 是时长，也就是值，不是键，所以 \"3:43\" in length 为 False。",
+      body: "\"稻香\" 是歌名，也就是键，结果为 True。\"3:43\" 是时长，也就是值，不是键，所以 \"3:43\" in times 为 False。",
     },
   },
   {
@@ -98,9 +98,9 @@ print("3:43" in length)`),
       flowDiagram: ["if 键 in 字典:", "    字典[键]"],
       body: "先用 in 问歌名在不在。在，再按键取时长，避免 KeyError。",
     },
-    code: code(`${LENGTH}
-if "稻香" in length:
-    print(length["稻香"])`),
+    code: code(`${TIMES}
+if "稻香" in times:
+    print(times["稻香"])`),
   },
   {
     id: "dict-use-views",
@@ -121,11 +121,11 @@ if "稻香" in length:
       ],
       body: "直接打印 .keys() 得到的是视图 dict_keys，外面套 list() 才变成列表。",
     },
-    code: code(`${LENGTH}
-print(length.keys())
-print(list(length.keys()))
-print(list(length.values()))
-print(list(length.items()))`),
+    code: code(`${TIMES}
+print(times.keys())
+print(list(times.keys()))
+print(list(times.values()))
+print(list(times.items()))`),
   },
   {
     id: "dict-use-assign",
@@ -146,14 +146,14 @@ print(list(length.items()))`),
         "要改某一项，只能通过 Key 找到它",
       ],
     },
-    code: code(`length = {"晴天": "4:29", "稻香": "3:43"}
+    code: code(`times = {"晴天": "4:29", "稻香": "3:43"}
 # Key 不存在 -> 新增一首歌
-length["夜曲"] = "3:46"
-print(length)
+times["夜曲"] = "3:46"
+print(times)
 
 # Key 已存在 -> 修改这首歌的时长
-length["晴天"] = "4:11"
-print(length)`),
+times["晴天"] = "4:11"
+print(times)`),
   },
   {
     id: "dict-use-update",
@@ -166,22 +166,53 @@ print(length)`),
       flowDiagram: ["字典.update(其它字典)"],
       body: "update 按键并入另一份字典。",
     },
-    code: code(`${LENGTH}
+    code: code(`${TIMES}
 more = {"晴天": "4:11", "七里香": "4:59"}
-length.update(more)
-print(length)`),
+times.update(more)
+print(times)`),
     prediction: {
       question: "update 之后，晴天、稻香、七里香的时长分别是？",
       options: [
-        { id: "cover-add", label: "4:11、3:43、4:59", isCorrect: true },
-        { id: "keep-sunny", label: "4:29、3:43、4:59（晴天仍是原来的时长）" },
-        { id: "no-new", label: "4:11、3:43、歌单里没有（七里香加不进去）" },
+        { id: "cover-add", label: "A. 4:11、3:43、4:59", isCorrect: true },
+        { id: "keep-sunny", label: "B 4:29、3:43、4:59" },
+        { id: "no-new", label: "C. 4:11、3:43、歌单里没有七里香" },
       ],
     },
     reveal: {
       title: "已有的键被覆盖，没有的键被新增",
       body: "晴天原来就在，时长改成 4:11。稻香不在 more 里，仍是 3:43。七里香是新键，加进来，时长 4:59。",
     },
+  },
+  {
+    id: "dict-use-update-fix",
+    title: "代码分析",
+    type: "challenge",
+    layout: "split",
+    editorSide: "left",
+    editorOnly: true,
+    content: {},
+    code: code(`
+times = {"晴天": "4:29", "稻香": "3:43"}
+times.update({"雨天":"4:11"})
+times.update({"多云", "4:18"})
+times.update(("七里香", "4:59"),("多云", "4:18"))
+print(times)`),
+    hints: [
+      { level: 1, text: "第一行花括号里是逗号，这是集合。字典要写冒号：{\"晴天\": \"4:11\"}。" },
+      { level: 2, text: "第二行是单独一对元组，update 会把两个字符串各自拆开。一项直接赋值：times[\"七里香\"] = \"4:59\"。若仍用 update，要写成 ((\"七里香\", \"4:59\"),)。" },
+      {
+        level: 3,
+        text: `times = {"晴天": "4:29", "稻香": "3:43"}
+times.update({"晴天": "4:11"})
+times["七里香"] = "4:59"
+print(times)`,
+      },
+    ],
+    reveal: {
+      title: "对照",
+      body: "冒号才是字典，update 按键覆盖晴天。七里香是新的一项，用赋值加进去。逗号的花括号是集合；单独一对元组也不是一串键值对。",
+    },
+    expectedOutput: "{'晴天': '4:11', '稻香': '3:43', '七里香': '4:59'}",
   },
   {
     id: "dict-use-del",
@@ -197,16 +228,16 @@ print(length)`),
       ],
       body: "列表的 pop() 从末尾拿一项。字典的 pop(歌名) 按歌名删，并把时长交回来。del 只删，没有返回值。歌名不存在时，del 会 KeyError。不写第二个参数时，pop(\"七里香\") 同样会 KeyError；只有 pop(歌名, 默认值) 才返回默认值、不报错。",
     },
-    code: code(`${LENGTH}
-val = length.pop("晴天")
+    code: code(`${TIMES}
+val = times.pop("晴天")
 print("取出的时长:", val)
-print("pop 后的歌单:", length)
+print("pop 后的歌单:", times)
 
-del length["稻香"]
-print("del 后的歌单:", length)
+del times["稻香"]
+print("del 后的歌单:", times)
 
-print(length.pop("七里香", "歌单里没有"))
-print("还剩几首:", len(length))`),
+print(times.pop("七里香", "歌单里没有"))
+print("还剩几首:", len(times))`),
   },
   {
     id: "dict-use-alias",
@@ -263,31 +294,29 @@ d["晴天"] = "4:11"`),
       body: "按歌手取出的是列表。点下一步：append 往这张列表里加一格，不是再写一个键。",
       stepRun: true,
     },
-    code: code(`albums = {"周杰伦": ["晴天", "稻香"], "林俊杰": ["江南"]}
-albums["周杰伦"].append("夜曲")`),
+    code: code(`playlist = {"周杰伦": ["晴天", "稻香"], "林俊杰": ["江南"]}
+playlist["周杰伦"].append("夜曲")`),
   },
   {
     id: "dict-use-practice",
-    title: "练习：新歌追加还是整份替换",
+    title: "练习：",
     type: "challenge",
     layout: "split",
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# more 是新上榜的歌
-# 已经在榜上的歌手：新歌追加进去，原来的歌要留着
-# 还没有的歌手：整份加进 chart
-# 各打印一行：Jay 的歌、Jolin 的歌
+    code: code(`# 将added补充到charts中。
+# 打印 Jay 的歌，再打印 Jolin 的歌。
 chart = {"Jay": ["晴天"], "Eason": ["十年"]}
-more = {"Jay": "七里香", "Jolin": "日不落"}
+added = {"Jay": "七里香", "Jolin": "日不落"}
 `),
     hints: [
       { level: 1, text: "Jay 已经在 chart 里，取出的是列表，用 append 加「七里香」。不要用 update，否则原来的「晴天」会被盖掉。" },
       { level: 2, text: "Jolin 不在 chart 里，赋一份新列表：chart[\"Jolin\"] = [\"日不落\"]。" },
       {
         level: 3,
-        text: `chart["Jay"].append(more["Jay"])
-chart["Jolin"] = [more["Jolin"]]
+        text: `chart["Jay"].append(added["Jay"])
+chart["Jolin"] = [added["Jolin"]]
 print(chart["Jay"])
 print(chart["Jolin"])`,
       },

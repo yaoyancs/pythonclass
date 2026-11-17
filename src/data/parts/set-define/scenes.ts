@@ -27,18 +27,23 @@ export const scenes: DraftScene[] = [
       bulletPoints: [
         "和字典一样用 {}，但里面不是 key: value",
         "空集合写成 set()；{} 是空字典",
-        "不要依赖打印顺序，问的是有没有这些歌",
+        "没有顺序：花括号里先写后写，比的是有没有这些歌",
       ],
       stepRun: true,
     },
     code: code(`heard = {"晴天", "稻香", "夜曲"}
+again = {"夜曲", "晴天", "稻香"}
 print(heard)
-print(type(heard))`),
+print(again)
+print(heard == again)
+
+songs = ["晴天", "稻香", "夜曲"]
+print(songs == ["夜曲", "晴天", "稻香"])`),
   },
   {
     id: "set-define-dup",
     title: "元素唯一且不可变",
-    type: "predict",
+    type: "run",
     layout: "split",
     editorSide: "left",
     content: {
@@ -46,6 +51,7 @@ print(type(heard))`),
         "同一元素写两次，只留一份，不报错",
         "元素必须是不可变类型：str / int / tuple 可以；list 不可以",
       ],
+      stepRun: true,
     },
     code: code(`heard = {"晴天", "稻香", "晴天", "夜曲", "稻香"}
 print(heard)
@@ -53,18 +59,6 @@ print(len(heard))
 
 bad = {["晴天", "稻香"]}
 print(bad)`),
-    prediction: {
-      question: "print(len(heard)) 的结果是？",
-      options: [
-        { id: "three", label: "3", isCorrect: true },
-        { id: "five", label: "5" },
-        { id: "error", label: "引发异常" },
-      ],
-    },
-    reveal: {
-      title: "重复只留一份，列表不能当元素",
-      body: "字面量写了 5 项，去重后是晴天、稻香、夜曲，len 为 3。最后一行把列表放进花括号，创建时失败。",
-    },
   },
   {
     id: "set-define-from-list",
@@ -91,35 +85,42 @@ print(len(heard))`),
           "集合解决什么问题？\n只记录元素是否出现过。最近播放用列表；「听过哪些歌」用集合。",
           "定义语法\n{元素1, 元素2, …}；空集合必须写 set()，{} 是空字典。",
           "已有列表怎么去重？\nset(列表) 得到新集合，原列表不变。重复项只留一份。",
+          "有没有顺序？\n没有。写法顺序不同的两个集合，元素一样就相等。列表换个顺序就不相等。打印出来的先后也不要当成「第几首」。",
         ],
       },
     },
   },
   {
     id: "set-define-practice",
-    title: "练习：统计不同元素个数",
+    title: "练习：合并两份歌单并去重",
     type: "challenge",
     layout: "split",
     editorSide: "left",
     content: {
-      body: "history 是最近播放。用集合去重后，打印不同歌曲的数量。",
+      body: "mine 是我的收藏，tips 是同学推荐，两边都有重复。合并成一份不重复的歌单，打印一共几首，以及七里香、晴天在不在。",
     },
-    code: code(`${HISTORY}
+    code: code(`mine = ["晴天", "稻香", "晴天", "夜曲"]
+tips = ["稻香", "七里香", "夜曲", "稻香"]
 `),
     hints: [
-      { level: 1, text: "set(history) 把列表转成集合。" },
-      { level: 2, text: "再用 len() 打印集合里有几首歌。" },
+      { level: 1, text: "先把两个列表接成一个，再 set() 去重。" },
+      { level: 2, text: "len 看去重后有几首，in 看某一首在不在。" },
       {
         level: 3,
-        text: `${HISTORY}
-heard = set(history)
-print(len(heard))`,
+        text: `mine = ["晴天", "稻香", "晴天", "夜曲"]
+tips = ["稻香", "七里香", "夜曲", "稻香"]
+heard = set(mine + tips)
+print(len(heard))
+print("七里香" in heard)
+print("晴天" in heard)`,
       },
     ],
     reveal: {
       title: "对照",
-      body: "5 次点击里只有晴天、稻香、夜曲 3 首，len(set(history)) 为 3。",
+      body: "两份名单接在一起有 8 次出现，去重后是晴天、稻香、夜曲、七里香，共 4 首。集合不保留名单里的先后。",
     },
-    expectedOutput: "3",
+    expectedOutput: `4
+True
+True`,
   },
 ];

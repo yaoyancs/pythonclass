@@ -66,9 +66,9 @@ print("七里香" not in heard)`),
       body: "第一行是交集，第二行是并集。最后一行仍是原来的 mine：运算得到新集合，原来的歌单不变。",
     },
     code: code(`${TWO}
-print(sorted(mine & other))
-print(sorted(mine | other))
-print(sorted(mine))`),
+print(mine & other)
+print(mine | other)
+print(mine)`),
   },
   {
     id: "set-ops-diff",
@@ -82,55 +82,44 @@ print(sorted(mine))`),
       body: "减号左右不能对调。",
     },
     code: code(`${TWO}
-print(sorted(mine - other))
-print(sorted(other - mine))
-print(sorted(mine))`),
+print(mine - other)
+print(other - mine)
+print(mine)`),
   },
   {
     id: "set-ops-predict-diff",
-    title: "预测：原集合变不变",
-    type: "predict",
+    title: "运算得到新集合",
+    type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      body: "交集赋给 both 之后，mine 里还剩哪些歌？",
+      body: "& 得到新集合 both。mine 仍是晴天、稻香、夜曲，len(mine) 还是 3。花括号里的先后不要当成答案。",
     },
     code: code(`${TWO}
 both = mine & other
-print(sorted(both))
-print(sorted(mine))`),
-    prediction: {
-      question: "两行 print 依次是？",
-      options: [
-        { id: "new-and-mine", label: "['夜曲', '稻香'] 和 ['夜曲', '晴天', '稻香']", isCorrect: true },
-        { id: "mine-shrunk", label: "['夜曲', '稻香'] 和 ['夜曲', '稻香']" },
-        { id: "same-three", label: "两行都是 ['夜曲', '晴天', '稻香']" },
-      ],
-    },
-    reveal: {
-      title: "运算得到新集合",
-      body: "& 得到新集合 both。mine 仍是晴天、稻香、夜曲。",
-    },
+print(both)
+print(mine)
+print(len(mine))`),
   },
   {
     id: "set-ops-summary",
-    title: "集合运算小结",
-    type: "explain",
-    layout: "fullscreen",
+    title: "集合运算的方法",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
     content: {
-      compareTable: {
-        indexHeader: "编号",
-        leftHeader: "使用方式",
-        rightHeader: "作用",
-        rows: [
-          { left: "元素 in 集合", right: "这首歌是否出现过" },
-          { left: "mine & other", right: "交集：两个人都听过（新集合）" },
-          { left: "mine | other", right: "并集：合在一起去重（新集合）" },
-          { left: "mine - other", right: "差集：只有我听过（新集合）" },
-        ],
-      },
-      body: "方法名 intersection、union、difference 与 & | - 结果相同。课堂用运算符即可。",
+      headline: "方法与运算符结果相同",
+      flowDiagram: [
+        "mine.intersection(other)  # 同 mine & other，都听过",
+        "mine.union(other)          # 同 mine | other，合在一起",
+        "mine.difference(other)     # 同 mine - other，只有我听过",
+      ],
+      body: "三行都得到新集合，mine 和 other 不变。",
     },
+    code: code(`${TWO}
+print(mine.intersection(other))
+print(mine.union(other))
+print(mine.difference(other))`),
   },
   {
     id: "set-ops-practice",
@@ -139,27 +128,26 @@ print(sorted(mine))`),
     layout: "split",
     editorSide: "left",
     content: {
-      body: "先输出共同听过的歌，再输出只有我听过的歌。每组按字典序，每首歌一行。",
+      body: "先打印共同听过有几首，再打印只有我听过的是不是晴天、是不是稻香。",
     },
     code: code(`${TWO}
 `),
     hints: [
       { level: 1, text: "共同听过用 mine & other，只有我听过用 mine - other。" },
-      { level: 2, text: "sorted() 排好序，再用 for 一行打印一首。" },
+      { level: 2, text: "用 len 看共同听过几首，用 in 看某一首在不在差集里。" },
       {
         level: 3,
-        text: `for name in sorted(mine & other):
-    print(name)
-for name in sorted(mine - other):
-    print(name)`,
+        text: `print(len(mine & other))
+print("晴天" in (mine - other))
+print("稻香" in (mine - other))`,
       },
     ],
     reveal: {
       title: "对照",
-      body: "先是夜曲、稻香，然后是晴天。",
+      body: "共同听过稻香和夜曲，共 2 首。只有我听过的是晴天，不是稻香。",
     },
-    expectedOutput: `夜曲
-稻香
-晴天`,
+    expectedOutput: `2
+True
+False`,
   },
 ];

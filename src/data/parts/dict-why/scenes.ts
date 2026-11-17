@@ -84,15 +84,15 @@ print(durations["稻香"])`),
     content: {
       
       flowDiagram: [
-        "length = dict(zip(songs, durations))",
+        "times = dict(zip(songs, durations))",
         "liked = {}    # 空字典，今晚还没点歌",
       ],
       body: "zip 按同一下标把歌名和时长配成一对，dict 收成映射。两列长度应相同。空字典写成 {}。",
     },
     code: code(`songs = ["晴天", "稻香", "夜曲"]
 durations = ["4:29", "3:43", "3:46"]
-length = dict(zip(songs, durations))
-print(length)
+times = dict(zip(songs, durations))
+print(times)
 
 liked = {}
 print(liked)`),
@@ -116,8 +116,8 @@ print(liked)`),
 print(durations)
 print(durations["晴天"])
 
-length = {["周杰伦", "晴天"]: "4:29"}
-print(length)`),
+bad = {["周杰伦", "晴天"]: "4:29"}
+print(bad)`),
   },
   {
     id: "dict-why-nest",
@@ -173,20 +173,20 @@ songs = ["晴天", "十年", "光年之外", "七里香"]
 singers = ["Jay", "Eason", "Gem", "Jay"]
 `),
     hints: [
-      { level: 1, text: "dict(zip(songs, durations)) 按位置配对。" },
-      { level: 2, text: "赋给 length 后，用 length[\"稻香\"] 取值。" },
+      { level: 1, text: "dict(zip(singers, songs)) 按位置把歌手和歌名配成一对。" },
+      { level: 2, text: "赋给 times 后，用 times[\"Jay\"] 取值。Jay 出现两次，后写的覆盖先写的。" },
       {
         level: 3,
         text: `songs = ["晴天", "十年", "光年之外", "七里香"]
 singers = ["Jay", "Eason", "Gem", "Jay"]
-length = dict(zip(singers, singers))
-print(length["七里香"])`,
+times = dict(zip(singers, songs))
+print(times["Jay"])`,
       },
     ],
     reveal: {
       title: "对照",
-      body: "歌名和时长两列构造成映射后，按键「Jay」取值，结果为 七里香。",
+      body: "歌手是键、歌名是值。Jay 写了两次，后写的七里香覆盖晴天，所以 times[\"Jay\"] 是七里香。",
     },
-    expectedOutput: "3:43",
+    expectedOutput: "七里香",
   },
 ];

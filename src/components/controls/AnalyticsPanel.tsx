@@ -350,11 +350,11 @@ function TotalsColumn({
 
 function WeekLines({ days }: { days: OverviewDay[] }) {
   const width = 640;
-  const height = 168;
-  const left = 36;
-  const right = 36;
-  const top = 16;
-  const bottom = 28;
+  const height = 200;
+  const left = 40;
+  const right = 44;
+  const top = 28;
+  const bottom = 32;
   const innerW = width - left - right;
   const innerH = height - top - bottom;
   const maxPv = Math.max(1, ...days.map((day) => day.pv));
@@ -364,32 +364,54 @@ function WeekLines({ days }: { days: OverviewDay[] }) {
   const ySessions = (value: number) => top + innerH - (value / maxSessions) * innerH;
   const line = (values: number[], yAt: (value: number) => number) =>
     values.map((value, index) => `${index === 0 ? 'M' : 'L'}${xAt(index).toFixed(1)} ${yAt(value).toFixed(1)}`).join(' ');
+  const pvLine = line(days.map((day) => day.pv), yPv);
+  const area = `${pvLine} L${xAt(days.length - 1).toFixed(1)} ${(top + innerH).toFixed(1)} L${xAt(0).toFixed(1)} ${(top + innerH).toFixed(1)} Z`;
+  const grids = [0.25, 0.5, 0.75, 1];
   return (
     <div>
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" role="img" aria-label="近七日访问">
-        <line x1={left} y1={top} x2={left} y2={top + innerH} className="stroke-classroom-border" />
-        <line x1={width - right} y1={top} x2={width - right} y2={top + innerH} className="stroke-classroom-border" />
-        <path d={line(days.map((day) => day.pv), yPv)} className="fill-none stroke-accent" strokeWidth={2} />
-        <path d={line(days.map((day) => day.sessions), ySessions)} className="fill-none stroke-text-primary" strokeWidth={2} />
+        <rect x={0} y={0} width={width} height={height} rx={16} className="fill-classroom-playground" />
+        {grids.map((step) => (
+          <line
+            key={step}
+            x1={left}
+            x2={width - right}
+            y1={top + innerH * (1 - step)}
+            y2={top + innerH * (1 - step)}
+            className="stroke-classroom-border"
+            strokeDasharray="3 4"
+          />
+        ))}
+        <path d={area} className="fill-accent/15" />
+        <path d={pvLine} className="fill-none stroke-accent" strokeWidth={2.5} strokeLinejoin="round" />
+        <path d={line(days.map((day) => day.sessions), ySessions)} className="fill-none stroke-text-primary" strokeWidth={2} strokeLinejoin="round" />
         <path
           d={line(days.map((day) => day.homeworkOpens), ySessions)}
-          className="fill-none stroke-text-secondary"
-          strokeWidth={1.5}
-          strokeDasharray="4 3"
+          className="fill-none stroke-highlight"
+          strokeWidth={2}
+          strokeDasharray="5 4"
+          strokeLinejoin="round"
         />
         {days.map((day, index) => (
-          <text key={day.date} x={xAt(index)} y={height - 8} textAnchor="middle" className="fill-text-secondary" fontSize={11}>
-            {day.date.slice(5)}
-          </text>
+          <g key={day.date}>
+            <circle cx={xAt(index)} cy={yPv(day.pv)} r={3.5} className="fill-classroom-playground stroke-accent" strokeWidth={2} />
+            <text x={xAt(index)} y={height - 10} textAnchor="middle" className="fill-text-secondary" fontSize={12}>
+              {day.date.slice(5)}
+            </text>
+          </g>
         ))}
-        <text x={4} y={12} className="fill-accent" fontSize={11}>
-          {maxPv}
+        <text x={left} y={16} className="fill-accent" fontSize={12}>
+          浏览 {maxPv}
         </text>
-        <text x={width - 4} y={12} textAnchor="end" className="fill-text-primary" fontSize={11}>
-          {maxSessions}
+        <text x={width - right} y={16} textAnchor="end" className="fill-text-primary" fontSize={12}>
+          会话 {maxSessions}
         </text>
       </svg>
-      <p className="text-xs text-text-secondary">强调色为浏览次数（左轴），深色为会话，虚线为作业打开（右轴）。</p>
+      <div className="mt-2 flex flex-wrap gap-4 text-xs text-text-secondary">
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-0.5 w-4 bg-accent" />浏览次数</span>
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-0.5 w-4 bg-text-primary" />会话</span>
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-0.5 w-4 border-t-2 border-dashed border-highlight" />作业打开</span>
+      </div>
     </div>
   );
 }
