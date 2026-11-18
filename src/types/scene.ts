@@ -838,6 +838,8 @@ export interface SceneContent {
   playlistBoard?: PlaylistBoardContent;
   /** 播放次数窗口，操作与 demos/play_counts.py 相同 */
   playCountsApp?: boolean;
+  /** 第 8 讲：歌单窗口，对应 normalize / add_song / render */
+  playlistFormApp?: boolean;
   /** 按行回放这次运行，高亮当前行并显示变量 */
   stepRun?: boolean;
   stringCut?: StringCutContent;

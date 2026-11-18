@@ -1,6 +1,6 @@
 import { json, requireTeacherSession, type TeacherEnv } from '../teacher/_shared';
-import { buildLessonHeat, isValidDateYmd, shanghaiDate, shanghaiDayUtcRange } from './_logic';
-import { loadHitsInRange } from './_db';
+import { buildLessonHeat, resolveQueryRange } from './_logic';
+import { loadHitsWindow } from './_db';
 
 type PagesContext = {
   request: Request;
@@ -17,16 +17,23 @@ export const onRequestGet = async (context: PagesContext): Promise<Response> => 
   }
 
   const url = new URL(request.url);
-  const dateParam = url.searchParams.get('date')?.trim() || shanghaiDate(new Date());
-  if (!isValidDateYmd(dateParam)) {
-    return json({ error: '日期格式无效' }, 400);
+  const resolved = resolveQueryRange(url.searchParams);
+  if (!resolved.ok) {
+    return json({ error: resolved.error }, 400);
   }
 
-  const { startIso, endIso } = shanghaiDayUtcRange(dateParam);
   const excludeTeacher = url.searchParams.get('includeTeacher') !== '1';
   try {
-    const hits = await loadHitsInRange(env.ANALYTICS_DB, startIso, endIso);
-    return json({ date: dateParam, lessons: buildLessonHeat(hits, excludeTeacher) });
+    const { hits, truncated } = await loadHitsWindow(
+      env.ANALYTICS_DB,
+      resolved.startIso,
+      resolved.endIso,
+    );
+    return json({
+      date: resolved.label,
+      truncated,
+      lessons: buildLessonHeat(hits, excludeTeacher),
+    });
   } catch (err) {
     console.error('analytics lessons', err);
     return json({ error: '读取失败' }, 503);

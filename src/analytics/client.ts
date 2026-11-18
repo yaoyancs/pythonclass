@@ -1,12 +1,14 @@
 import { loadTeacherToken } from '../api/teacherApi';
 
 const SESSION_KEY = 'pyclass-analytics-sid';
+const VISITOR_KEY = 'pyclass-analytics-vid';
 const STARTED_KEY = 'pyclass-analytics-started';
 
 export const DWELL_MIN_SECONDS = 10;
+export const DWELL_MAX_SECONDS = 600;
 export const SCENE_VIEW_DEDUP_MS = 10_000;
 export const SCENE_VIEW_DEBOUNCE_MS = 400;
-export const RUN_DEDUP_MS = 15_000;
+export const RUN_DEDUP_MS = 1_500;
 
 export function getAnalyticsSessionId(): string {
   try {
@@ -17,6 +19,18 @@ export function getAnalyticsSessionId(): string {
     return id;
   } catch {
     return 'anon00000000';
+  }
+}
+
+export function getAnalyticsVisitorId(): string {
+  try {
+    const existing = localStorage.getItem(VISITOR_KEY);
+    if (existing && /^[A-Za-z0-9_-]{8,64}$/.test(existing)) return existing;
+    const id = crypto.randomUUID().replace(/-/g, '');
+    localStorage.setItem(VISITOR_KEY, id);
+    return id;
+  } catch {
+    return getAnalyticsSessionId();
   }
 }
 
@@ -36,6 +50,7 @@ export function track(payload: Record<string, unknown>): void {
     const body = JSON.stringify({
       ...payload,
       sessionId: getAnalyticsSessionId(),
+      visitorId: getAnalyticsVisitorId(),
       ts: new Date().toISOString(),
       teacher: !!loadTeacherToken(),
     });
@@ -175,7 +190,7 @@ export function trackSceneDwell(input: {
     type: 'scene_dwell',
     lessonId: input.lessonId,
     sceneIndex: input.sceneIndex,
-    seconds: Math.round(input.seconds),
+    seconds: Math.min(Math.round(input.seconds), DWELL_MAX_SECONDS),
     sceneId: input.sceneId,
     partId: input.partId,
   });
@@ -183,8 +198,8 @@ export function trackSceneDwell(input: {
 
 const runLast = new Map<string, number>();
 
-export function trackRun(lessonId: string, sceneIndex: number): boolean {
-  const key = `${getAnalyticsSessionId()}:${lessonId}:${sceneIndex}`;
+export function trackRun(lessonId: string, sceneIndex: number, scope = 'main'): boolean {
+  const key = `${getAnalyticsSessionId()}:${lessonId}:${sceneIndex}:${scope}`;
   const now = Date.now();
   const prev = runLast.get(key) ?? 0;
   if (now - prev < RUN_DEDUP_MS) return false;
@@ -239,5 +254,49 @@ export function trackChoice(input: {
     choiceId: input.choiceId,
     correct: input.correct,
     attempt,
+  });
+}
+
+const seenHints = new Set<string>();
+
+export function trackHintView(input: {
+  lessonId: string;
+  sceneIndex: number;
+  sceneId?: string;
+  partId?: string;
+  hintLevel: number;
+}): void {
+  const key = `${getAnalyticsSessionId()}:${input.lessonId}:${input.sceneIndex}:${input.hintLevel}`;
+  if (seenHints.has(key)) return;
+  seenHints.add(key);
+  track({
+    type: 'hint_view',
+    lessonId: input.lessonId,
+    sceneIndex: input.sceneIndex,
+    sceneId: input.sceneId,
+    partId: input.partId,
+    hintLevel: input.hintLevel,
+  });
+}
+
+const seenAiReviews = new Set<string>();
+
+export function trackAiReview(input: {
+  lessonId: string;
+  sceneIndex: number;
+  sceneId?: string;
+  partId?: string;
+  hintLevel: number;
+}): void {
+  const key = `${getAnalyticsSessionId()}:${input.lessonId}:${input.sceneIndex}:${input.hintLevel}`;
+  if (seenAiReviews.has(key)) return;
+  seenAiReviews.add(key);
+  track({
+    type: 'ai_review',
+    lessonId: input.lessonId,
+    sceneIndex: input.sceneIndex,
+    sceneId: input.sceneId,
+    partId: input.partId,
+    hintLevel: input.hintLevel,
   });
 }

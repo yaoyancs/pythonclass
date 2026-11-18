@@ -28,7 +28,7 @@ export interface TraceStep {
 
 export type WorkerRequest =
   | { type: 'INIT' }
-  | { type: 'RUN'; id: string; code: string; stdin: string[] }
+  | { type: 'RUN'; id: string; code: string; stdin: string[]; files?: Record<string, string> }
   | { type: 'TRACE'; id: string; code: string }
   | { type: 'INPUT'; id: string; value: string }
   | { type: 'INTERRUPT'; id: string };

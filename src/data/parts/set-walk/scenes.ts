@@ -151,6 +151,67 @@ fixed[0] = "夜曲"`),
     code: code(APP),
   },
   {
+    id: "set-walk-practice",
+    title: "练习：选择合适的数据类型",
+    type: "challenge",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      compareTable: {
+        leftHeader: "变量",
+        rightHeader: "校园无人配送车要存的数据",
+        rows: [
+          {
+            left: "home",
+            right: "充电站经纬度 116.98、35.59（位置固定不变）",
+          },
+          {
+            left: "stops",
+            right: "依次经过 \"驿站\"、\"梅园\"、\"驿站\"、\"理科楼\"，后面还要接着记下一站",
+          },
+          {
+            left: "places",
+            right: "上面这趟跑下来，一共去过哪几个不同的地方",
+          },
+          {
+            left: "orders",
+            right: "每个地方要送几件快递：\"梅园\" 12 件、\"理科楼\" 5 件",
+          },
+        ],
+      },
+    },
+    code: code(`# 为无人配送车选择合适的数据类型，替换四个 None
+home = None
+stops = None
+places = None
+orders = None
+print(type(home), type(stops), type(places), type(orders))
+print(home[0], len(stops), len(places), orders["梅园"] - 1)`),
+    hints: [
+      {
+        level: 1,
+        text: "固定不变的坐标用元组 ()；按先后记下每一站、后面还要追加用列表 []。",
+      },
+      {
+        level: 2,
+        text: "只看去过哪几个不同的地方用集合 {} 或 set(stops)；地方对应件数用字典 {地点: 件数}。",
+      },
+      {
+        level: 3,
+        text: `home = (116.98, 35.59)
+stops = ["驿站", "梅园", "驿站", "理科楼"]
+places = {"驿站", "梅园", "理科楼"}
+orders = {"梅园": 12, "理科楼": 5}`,
+      },
+    ],
+    reveal: {
+      title: "对照",
+      body: "充电站坐标固定用 tuple；行车路线有先后、有折返且要继续记录用 list；去过几个不同地点用 set 去重；按地点查改快递件数用 dict。",
+    },
+    expectedOutput: `<class 'tuple'> <class 'list'> <class 'set'> <class 'dict'>
+116.98 4 3 11`,
+  },
+  {
     id: "set-walk-homework",
     title: "课后作业",
     type: "explain",

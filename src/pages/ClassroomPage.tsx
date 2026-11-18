@@ -27,11 +27,14 @@ export function ClassroomPage() {
 
   const openHomework = params.get('page') === 'homework';
   const homeworkIndex = openHomework ? findHomeworkSceneIndex(lesson) : -1;
-  const startIndex = homeworkIndex >= 0 ? homeworkIndex : undefined;
+  const sceneParam = params.get('scene');
+  const parsedScene = sceneParam != null && /^\d+$/.test(sceneParam) ? Number(sceneParam) : -1;
+  const startIndex = homeworkIndex >= 0 ? homeworkIndex : parsedScene >= 0 ? parsedScene : undefined;
+  const modeKey = openHomework ? 'hw' : parsedScene >= 0 ? `scene-${parsedScene}` : 'saved';
 
   return (
     <SceneEngineProvider
-      key={`${lesson.id}-${openHomework ? 'hw' : 'saved'}`}
+      key={`${lesson.id}-${modeKey}`}
       lesson={lesson}
       initialSceneIndex={startIndex}
     >

@@ -1,20 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DWELL_MAX_SECONDS,
   DWELL_MIN_SECONDS,
+  SESSION_RATE_LIMIT_PER_MIN,
+  allowClassroomHitRate,
   allowRate,
   buildLessonHeat,
   buildSummary,
   classifyDevice,
   parseIncomingHit,
+  resolveQueryRange,
   shanghaiDate,
   shanghaiDayUtcRange,
   shanghaiLast7Range,
   shapeOverview,
   uniqueSessionCount,
+  uniqueVisitorCount,
   visitCityName,
+  visitProvinceName,
   type StoredHit,
 } from '../../functions/api/analytics/_logic';
 import { track } from '../../src/analytics/client';
+import { CITY_COORDS } from '../../src/analytics/cityCoords';
 import { formatVisitRegion } from '../../functions/api/analytics/_geo';
 
 function hit(partial: Partial<StoredHit> & Pick<StoredHit, 'sessionId' | 'type' | 'ts'>): StoredHit {
@@ -344,5 +351,107 @@ describe('analytics D1 reads', () => {
     expect(execCalls).toBe(0);
     expect(hits).toHaveLength(1);
     expect(hits[0]?.sessionId).toBe('abcdefghij');
+  });
+});
+
+describe('analytics enhancements', () => {
+  it('maps nationwide prefecture cities and aggregates province heat', () => {
+    expect(formatVisitRegion({ country: 'CN', region: 'Shandong', city: 'Qufu' })).toBe('山东省曲阜市');
+    expect(formatVisitRegion({ country: 'CN', region: 'Henan', city: 'Luoyang' })).toBe('河南省洛阳市');
+    expect(formatVisitRegion({ country: 'CN', region: 'Zhejiang', city: 'Taizhou' })).toBe('浙江省台州市');
+    expect(formatVisitRegion({ country: 'CN', region: 'Jiangsu', city: 'Taizhou' })).toBe('江苏省泰州市');
+    expect(CITY_COORDS['曲阜']).toBeDefined();
+    expect(CITY_COORDS['洛阳']).toBeDefined();
+    expect(CITY_COORDS['台州']).toBeDefined();
+    expect(CITY_COORDS['泰州']).toBeDefined();
+
+    expect(visitProvinceName('山东省日照市')).toBe('山东省');
+    expect(visitProvinceName('山东省')).toBe('山东省');
+    expect(visitProvinceName('广西壮族自治区南宁市')).toBe('广西壮族自治区');
+
+    const overview = shapeOverview({
+      excludeTeacher: true,
+      days: ['2026-11-18'],
+      totals: { sessions: 5, visitors: 4, pv: 10, homeworkOpens: 1 },
+      last7: { sessions: 5, visitors: 4, pv: 10, homeworkOpens: 1 },
+      dayRows: [{ day: '2026-11-18', sessions: 5, visitors: 4, pv: 10, homeworkOpens: 1 }],
+      cityRows: [
+        { key: '山东省日照市', total: 3, last7: 2 },
+        { key: '山东省', total: 2, last7: 1 },
+      ],
+    });
+    expect(overview.provinces).toEqual([{ name: '山东省', total: 5, last7: 3 }]);
+  });
+
+  it('allows 100 concurrent students behind a shared campus NAT IP while throttling single-session floods', () => {
+    const buckets = new Map<string, number[]>();
+    const campusIp = '202.194.188.10';
+    const now = 5_000_000;
+    for (let i = 0; i < 100; i++) {
+      const sid = `studentSession${String(i).padStart(4, '0')}`;
+      expect(allowClassroomHitRate(buckets, campusIp, sid, now + i)).toBe(true);
+    }
+
+    const noisySid = 'noisyStudent0001';
+    for (let i = 0; i < SESSION_RATE_LIMIT_PER_MIN; i++) {
+      expect(allowClassroomHitRate(buckets, campusIp, noisySid, now + 200 + i)).toBe(true);
+    }
+    expect(allowClassroomHitRate(buckets, campusIp, noisySid, now + 500)).toBe(false);
+    // Another student on the same campus IP remains unaffected:
+    expect(allowClassroomHitRate(buckets, campusIp, 'normalStudent999', now + 501)).toBe(true);
+  });
+
+  it('deduplicates multi-tab sessions by visitorId, caps extreme dwell, and tracks error recovery + hints', () => {
+    const parsedDwell = parseIncomingHit(
+      {
+        type: 'scene_dwell',
+        sessionId: 'tabSession001',
+        visitorId: 'deviceVisitor01',
+        lessonId: 'lesson07',
+        sceneIndex: 2,
+        seconds: 7200,
+      },
+      { ip: '1.1.1.1', device: 'desktop' },
+    );
+    expect(parsedDwell.ok).toBe(true);
+    if (parsedDwell.ok) {
+      expect(parsedDwell.hit.dwellSeconds).toBe(DWELL_MAX_SECONDS);
+      expect(parsedDwell.hit.visitorId).toBe('deviceVisitor01');
+    }
+
+    const hits: StoredHit[] = [
+      hit({ type: 'scene_dwell', sessionId: 'tab0000001', visitorId: 'devA000001', ts: '2026-11-18T01:00:00.000Z', lessonId: 'lesson07', sceneIndex: 0, dwellSeconds: 30 }),
+      hit({ type: 'scene_dwell', sessionId: 'tab0000002', visitorId: 'devA000001', ts: '2026-11-18T01:01:00.000Z', lessonId: 'lesson07', sceneIndex: 0, dwellSeconds: 40 }),
+      hit({ type: 'scene_dwell', sessionId: 'tab0000003', visitorId: 'devB000002', ts: '2026-11-18T01:02:00.000Z', lessonId: 'lesson07', sceneIndex: 0, dwellSeconds: 500 }),
+      hit({ type: 'run_result', sessionId: 'tab0000001', visitorId: 'devA000001', ts: '2026-11-18T01:03:00.000Z', lessonId: 'lesson07', sceneIndex: 0, outcome: 'error', errorType: 'KeyError' }),
+      hit({ type: 'hint_view', sessionId: 'tab0000001', visitorId: 'devA000001', ts: '2026-11-18T01:03:05.000Z', lessonId: 'lesson07', sceneIndex: 0, hintLevel: 1 }),
+      hit({ type: 'run_result', sessionId: 'tab0000001', visitorId: 'devA000001', ts: '2026-11-18T01:03:10.000Z', lessonId: 'lesson07', sceneIndex: 0, outcome: 'ok', codeChanged: true }),
+      hit({ type: 'run_result', sessionId: 'tab0000003', visitorId: 'devB000002', ts: '2026-11-18T01:04:00.000Z', lessonId: 'lesson07', sceneIndex: 0, outcome: 'error', errorType: 'SyntaxError' }),
+    ];
+
+    expect(uniqueSessionCount(hits)).toBe(3);
+    expect(uniqueVisitorCount(hits)).toBe(2);
+
+    const heat = buildLessonHeat(hits);
+    expect(heat[0]?.sessions).toBe(3);
+    expect(heat[0]?.visitors).toBe(2);
+    expect(heat[0]?.medianDwellSeconds).toBe(40);
+    expect(heat[0]?.errorSessions).toBe(2);
+    expect(heat[0]?.fixedErrors).toBe(1);
+    expect(heat[0]?.hintViews).toBe(1);
+    expect(heat[0]?.hintSessions).toBe(1);
+  });
+
+  it('resolves flexible query ranges (day, custom span, last7, all)', () => {
+    const span = resolveQueryRange(new URLSearchParams('start=2026-11-10&end=2026-11-18'));
+    expect(span.ok).toBe(true);
+    if (span.ok) expect(span.label).toBe('2026-11-10 ~ 2026-11-18');
+
+    const all = resolveQueryRange(new URLSearchParams('range=all'));
+    expect(all.ok).toBe(true);
+    if (all.ok) expect(all.label).toBe('累计全部');
+
+    const bad = resolveQueryRange(new URLSearchParams('start=2026/11/10&end=2026-11-18'));
+    expect(bad.ok).toBe(false);
   });
 });

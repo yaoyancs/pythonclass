@@ -1,10 +1,9 @@
 import { json, type TeacherEnv } from '../teacher/_shared';
 import { formatVisitRegion } from './_geo';
 import {
-  allowRate,
+  allowClassroomHitRate,
   classifyDevice,
   parseIncomingHit,
-  RATE_LIMIT_PER_MIN,
   type IncomingHit,
 } from './_logic';
 import { insertHit } from './_db';
@@ -27,12 +26,6 @@ function clientIp(request: Request): string {
 export const onRequestPost = async (context: PagesContext): Promise<Response> => {
   const { request, env } = context;
   const ip = clientIp(request);
-  const now = Date.now();
-  const gated = allowRate(buckets.get(ip) ?? [], now, RATE_LIMIT_PER_MIN);
-  buckets.set(ip, gated.next);
-  if (!gated.ok) {
-    return json({ error: '请求过于频繁' }, 429);
-  }
 
   if (!env.ANALYTICS_DB) {
     return json({ error: '未绑定 ANALYTICS_DB' }, 503);
@@ -43,6 +36,11 @@ export const onRequestPost = async (context: PagesContext): Promise<Response> =>
     body = (await request.json()) as IncomingHit;
   } catch {
     return json({ error: '请求格式错误' }, 400);
+  }
+
+  const sid = typeof body?.sessionId === 'string' ? body.sessionId : null;
+  if (!allowClassroomHitRate(buckets, ip, sid, Date.now())) {
+    return json({ error: '请求过于频繁' }, 429);
   }
 
   const cf = (request as Request & { cf?: { country?: string; region?: string; city?: string } }).cf;

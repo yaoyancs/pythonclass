@@ -119,8 +119,9 @@ def __pyclass_run():
     sys.stdout = io.StringIO()
     sys.stderr = io.StringIO()
     exc_name = ""
+    ns = {"__name__": "__main__"}
     try:
-        exec(compile(src, "<stdin>", "exec"), globals())
+        exec(compile(src, "<stdin>", "exec"), ns)
     except BaseException as exc:
         exc_name = type(exc).__name__
         sys.stderr.write(_pyclass_format_exc(exc))
@@ -157,7 +158,7 @@ async function traceCode(id: string, code: string) {
   }
 }
 
-async function runCode(id: string, code: string) {
+async function runCode(id: string, code: string, files?: Record<string, string>) {
   if (!pyodide) {
     post({
       type: 'RESULT',
@@ -171,6 +172,21 @@ async function runCode(id: string, code: string) {
 
   currentRunId = id;
   try {
+    if (files) {
+      const modNames: string[] = [];
+      const encoder = new TextEncoder();
+      for (const [filename, content] of Object.entries(files)) {
+        pyodide.FS.writeFile(filename, encoder.encode(content));
+        if (filename.endsWith('.py')) {
+          modNames.push(filename.slice(0, -3));
+        }
+      }
+      if (modNames.length > 0) {
+        await pyodide.runPythonAsync(
+          `import importlib, sys\nimportlib.invalidate_caches()\nfor _m in ${JSON.stringify(modNames)}:\n    sys.modules.pop(_m, None)`,
+        );
+      }
+    }
     pyodide.globals.set('__pyclass_source', code);
     const packed = String(await pyodide.runPythonAsync('__pyclass_run()'));
     const [stdout = '', stderr = '', excType = ''] = packed.split('\u001e');
@@ -206,7 +222,7 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
       void initPyodide();
       break;
     case 'RUN':
-      void runCode(msg.id, msg.code);
+      void runCode(msg.id, msg.code, msg.files);
       break;
     case 'TRACE':
       void traceCode(msg.id, msg.code);

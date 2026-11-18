@@ -9,15 +9,13 @@ import {
   retryAfterSec,
 } from './functions/api/teacher/lockout';
 import {
-  allowRate,
+  allowClassroomHitRate,
   buildLessonHeat,
   buildOverview,
   buildSummary,
   classifyDevice,
-  isValidDateYmd,
   parseIncomingHit,
-  shanghaiDate,
-  shanghaiDayUtcRange,
+  resolveQueryRange,
   type IncomingHit,
   type StoredHit,
 } from './functions/api/analytics/_logic';
@@ -84,13 +82,12 @@ export function teacherApiMockPlugin(): Plugin {
           try {
             if (url === '/api/analytics/hit' && req.method === 'POST') {
               const ip = req.socket.remoteAddress || 'local';
-              const gated = allowRate(analyticsRate.get(ip) ?? [], Date.now());
-              analyticsRate.set(ip, gated.next);
-              if (!gated.ok) {
-                return json(res, 429, { error: '请求过于频繁' });
-              }
               const raw = await readBody(req);
               const body = JSON.parse(raw || '{}') as IncomingHit;
+              const sid = typeof body?.sessionId === 'string' ? body.sessionId : null;
+              if (!allowClassroomHitRate(analyticsRate, ip, sid, Date.now())) {
+                return json(res, 429, { error: '请求过于频繁' });
+              }
               const ua = String(req.headers['user-agent'] || '');
               const ch = String(req.headers['sec-ch-ua-mobile'] || '');
               const parsed = parseIncomingHit(body, { ip, device: classifyDevice(ua, ch) });
@@ -115,22 +112,26 @@ export function teacherApiMockPlugin(): Plugin {
               return json(res, 401, { error: '未登录教师台' });
             }
 
-            const dateParam = query.get('date')?.trim() || shanghaiDate(new Date());
-            if (!isValidDateYmd(dateParam)) {
-              return json(res, 400, { error: '日期格式无效' });
-            }
-            const { startIso, endIso } = shanghaiDayUtcRange(dateParam);
-            const dayHits = hits.filter((h) => h.ts >= startIso && h.ts < endIso);
             const excludeTeacher = query.get('includeTeacher') !== '1';
-
             if (url === '/api/analytics/overview' && req.method === 'GET') {
               return json(res, 200, buildOverview(hits, excludeTeacher));
             }
+
+            const resolved = resolveQueryRange(query);
+            if (!resolved.ok) {
+              return json(res, 400, { error: resolved.error });
+            }
+            const rangeHits = hits.filter((h) => h.ts >= resolved.startIso && h.ts < resolved.endIso);
+
             if (url === '/api/analytics/summary' && req.method === 'GET') {
-              return json(res, 200, buildSummary(dateParam, dayHits, excludeTeacher));
+              return json(res, 200, buildSummary(resolved.label, rangeHits, excludeTeacher, false));
             }
             if (url === '/api/analytics/lessons' && req.method === 'GET') {
-              return json(res, 200, { date: dateParam, lessons: buildLessonHeat(dayHits, excludeTeacher) });
+              return json(res, 200, {
+                date: resolved.label,
+                truncated: false,
+                lessons: buildLessonHeat(rangeHits, excludeTeacher),
+              });
             }
             return json(res, 404, { error: 'Not found' });
           } catch (err) {

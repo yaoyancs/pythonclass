@@ -62,7 +62,11 @@ export class PyodideClient {
     });
   }
 
-  async runCode(code: string, onInput?: InputHandler): Promise<PythonResult> {
+  async runCode(
+    code: string,
+    onInput?: InputHandler,
+    files?: Record<string, string>,
+  ): Promise<PythonResult> {
     if (!this.worker || this.status !== 'ready') {
       return {
         stdout: '',
@@ -74,7 +78,7 @@ export class PyodideClient {
     const id = `run-${++runCounter}`;
     return new Promise((resolve, reject) => {
       this.pendingRuns.set(id, { resolve, reject, onInput });
-      this.post({ type: 'RUN', id, code, stdin: [] });
+      this.post({ type: 'RUN', id, code, stdin: [], ...(files ? { files } : {}) });
     });
   }
 

@@ -26,7 +26,7 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
   const stepLine = useStepCursor(scene.id);
   const mode = scene.content.branchContest?.mode ?? scene.content.conditionPath?.mode;
   const tracing = mode === 'trace' || mode === 'lab' || mode === 'extend' || mode === 'walk';
-  const hideRun = Boolean(scene.content.playCountsApp) || (scene.content.branchContest
+  const hideRun = Boolean(scene.content.playCountsApp || scene.content.playlistFormApp) || (scene.content.branchContest
     ? mode === 'trace' || mode === 'lab'
     : scene.content.conditionPath?.mode === 'lab' || scene.content.conditionPath?.mode === 'walk');
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import china from '../../analytics/chinaProvinces.json';
 import { CITY_COORDS } from '../../analytics/cityCoords';
-import type { OverviewCity } from '../../analytics/types';
+import type { OverviewCity, OverviewProvince } from '../../analytics/types';
 
 type Ring = number[][];
 type Geom =
@@ -134,27 +134,43 @@ export type MapMetric = 'total' | 'last7';
 
 interface VisitMapProps {
   cities: OverviewCity[];
+  provinces?: OverviewProvince[];
   metric: MapMetric;
 }
 
-export function VisitMap({ cities, metric }: VisitMapProps) {
+export function VisitMap({ cities, provinces = [], metric }: VisitMapProps) {
   const width = 640;
   const height = 520;
   const [cam, setCam] = useState({ k: 1, x: 0, y: 0 });
   const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
+  const [hoverText, setHoverText] = useState<string | null>(null);
   const projectMain = makeProject(mainlandBounds, { x: 0, y: 0, width, height: height - 8 });
   const inset = { x: 500, y: 390, width: 124, height: 116 };
   const projectSouth = Number.isFinite(southBounds.minX)
     ? makeProject(southBounds, { x: inset.x + 6, y: inset.y + 18, width: inset.width - 12, height: inset.height - 26 })
     : null;
 
+  const provMap = new Map<string, OverviewProvince>();
+  for (const prov of provinces) {
+    provMap.set(prov.name, prov);
+  }
+  const maxProv = Math.max(
+    1,
+    ...provinces.map((p) => (metric === 'last7' ? p.last7 : p.total)),
+  );
+
   const placed = new Map<string, { name: string; total: number; last7: number; lng: number; lat: number }>();
   let unplaced = 0;
+  let provinceOnlyPlaced = 0;
   for (const city of cities) {
     const count = metric === 'last7' ? city.last7 : city.total;
     const coord = city.name ? CITY_COORDS[city.name] : undefined;
     if (!city.name || !coord) {
-      unplaced += count;
+      if (city.key && city.key !== '未知地区' && provMap.has(city.key)) {
+        provinceOnlyPlaced += count;
+      } else {
+        unplaced += count;
+      }
       continue;
     }
     const prev = placed.get(city.name);
@@ -185,23 +201,31 @@ export function VisitMap({ cities, metric }: VisitMapProps) {
 
   return (
     <div>
-      <div className="mb-2 flex items-center gap-2 text-sm">
-        <button type="button" className="rounded-lg border border-classroom-border px-3 py-1" onClick={() => zoom(1.25)}>
-          放大
-        </button>
-        <button type="button" className="rounded-lg border border-classroom-border px-3 py-1" onClick={() => zoom(0.8)}>
-          缩小
-        </button>
-        <button type="button" className="rounded-lg border border-classroom-border px-3 py-1" onClick={() => setCam({ k: 1, x: 0, y: 0 })}>
-          还原
-        </button>
-        <span className="text-text-secondary">滚轮缩放，拖动平移</span>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+        <div className="flex items-center gap-2">
+          <button type="button" className="rounded-lg border border-classroom-border px-3 py-1" onClick={() => zoom(1.25)}>
+            放大
+          </button>
+          <button type="button" className="rounded-lg border border-classroom-border px-3 py-1" onClick={() => zoom(0.8)}>
+            缩小
+          </button>
+          <button type="button" className="rounded-lg border border-classroom-border px-3 py-1" onClick={() => setCam({ k: 1, x: 0, y: 0 })}>
+            还原
+          </button>
+          <span className="text-text-secondary">滚轮缩放，拖动平移</span>
+        </div>
+        {hoverText && (
+          <span className="rounded-lg bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
+            {hoverText}
+          </span>
+        )}
       </div>
       <svg
         viewBox={`0 0 ${width} ${height}`}
         className="w-full h-auto touch-none cursor-grab"
         role="img"
-        aria-label="访问城市分布"
+        aria-label="访问城市与省份分布"
+        onMouseLeave={() => setHoverText(null)}
         onWheel={(event) => {
           event.preventDefault();
           zoom(event.deltaY < 0 ? 1.12 : 0.9);
@@ -226,29 +250,50 @@ export function VisitMap({ cities, metric }: VisitMapProps) {
         </clipPath>
         <g clipPath="url(#visit-map-clip)">
           <g transform={`translate(${width / 2 + cam.x} ${height / 2 + cam.y}) scale(${cam.k}) translate(${-width / 2} ${-height / 2})`}>
-            {mainland.map((feature, index) => (
-              <path
-                key={`${feature.properties.name}-${index}`}
-                d={pathOf(feature.rings, projectMain)}
-                fillRule="evenodd"
-                className="fill-accent/15 stroke-classroom-border"
-                strokeWidth={0.6}
-              >
-                <title>{feature.properties.name}</title>
-              </path>
-            ))}
+            {mainland.map((feature, index) => {
+              const prov = provMap.get(feature.properties.name);
+              const provVal = prov ? (metric === 'last7' ? prov.last7 : prov.total) : 0;
+              const fillOpacity = provVal > 0 ? 0.16 + 0.36 * Math.sqrt(provVal / maxProv) : 0.08;
+              const label = prov
+                ? `${feature.properties.name} · 累计 ${prov.total} · 近 7 天 ${prov.last7}`
+                : feature.properties.name;
+              return (
+                <path
+                  key={`${feature.properties.name}-${index}`}
+                  d={pathOf(feature.rings, projectMain)}
+                  fillRule="evenodd"
+                  className="fill-accent stroke-classroom-border transition-opacity"
+                  fillOpacity={fillOpacity}
+                  strokeWidth={0.6}
+                  onMouseEnter={() => setHoverText(label)}
+                >
+                  <title>{label}</title>
+                </path>
+              );
+            })}
             {dots.map((dot) => {
               const count = metric === 'last7' ? dot.last7 : dot.total;
               const [x, y] = projectMain(dot.lng, dot.lat);
-              const r = 5 + 16 * Math.sqrt(count / max);
+              const r = 4.5 + 15 * Math.sqrt(count / max);
               const recent = dot.last7 > 0;
+              const tip = `${dot.name} · 累计 ${dot.total} · 近 7 天 ${dot.last7}`;
               return (
-                <g key={dot.name}>
-                  <circle cx={x} cy={y} r={r} className={recent ? 'fill-accent/80' : 'fill-text-secondary/50'}>
-                    <title>{`${dot.name} · 累计 ${dot.total} · 近 7 天 ${dot.last7}`}</title>
+                <g key={dot.name} onMouseEnter={() => setHoverText(tip)}>
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={r}
+                    className={
+                      recent
+                        ? 'fill-accent/85 stroke-classroom-playground'
+                        : 'fill-text-secondary/55 stroke-classroom-playground'
+                    }
+                    strokeWidth={1}
+                  >
+                    <title>{tip}</title>
                   </circle>
                   {labeled.has(dot.name) && (
-                    <text x={x + r + 2} y={y + 4} className="fill-text-primary" fontSize={12}>
+                    <text x={x + r + 2} y={y + 4} className="fill-text-primary pointer-events-none" fontSize={12}>
                       {dot.name} {count}
                     </text>
                   )}
@@ -280,9 +325,9 @@ export function VisitMap({ cities, metric }: VisitMapProps) {
         </text>
       </svg>
       <p className="text-xs text-text-secondary mt-2">
-        底图为省级边界，低纬度岛礁收在右下角。圆的面积是{metric === 'last7' ? '近 7 天' : '累计'}会话数。强调色表示近 7 天仍有访问。
-        「未知地区」是没有记下位置的会话：这套地区记录上线之前的旧访问、边缘节点没给出省市，或地名对不上。它不是某一个市，所以不会出现在地图上。
-        {unplaced > 0 ? ` 这类会话共 ${unplaced} 个。` : ''}
+        省份底色深浅反映省级会话热力，圆点面积表示地市{metric === 'last7' ? '近 7 天' : '累计'}会话数（强调色表示近 7 天仍有访问）。
+        {provinceOnlyPlaced > 0 ? ` 仅识别到省级的 ${provinceOnlyPlaced} 个会话已计入对应省份热力底色。` : ''}
+        {unplaced > 0 ? ` 另有 ${unplaced} 个未知或境外会话未在境内地图落点。` : ''}
       </p>
     </div>
   );

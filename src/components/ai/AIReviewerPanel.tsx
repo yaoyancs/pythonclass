@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { trackAiReview } from '../../analytics/client';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { useAIReviewer } from '../../ai/useAIReviewer';
 import { Button } from '../ui/Button';
@@ -15,6 +16,17 @@ export function AIReviewerPanel() {
   useEffect(() => {
     reset();
   }, [scene.id, reset]);
+
+  useEffect(() => {
+    if (!showPanel || !response) return;
+    trackAiReview({
+      lessonId: state.lessonId,
+      sceneIndex: state.currentSceneIndex,
+      sceneId: scene.id,
+      partId: scene.partId,
+      hintLevel: hintLevel > 0 ? hintLevel : 1,
+    });
+  }, [hintLevel, response, scene.id, scene.partId, showPanel, state.currentSceneIndex, state.lessonId]);
 
   useEffect(() => {
     if (state.scenePhase === 'aiReview' && scene.aiReview && !response && !loading) {

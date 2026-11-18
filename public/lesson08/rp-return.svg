@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 270" font-family="PingFang SC, Microsoft YaHei, sans-serif">
+  <rect width="880" height="270" rx="24" fill="#F4F7FB"/>
+
+  <rect x="36" y="36" width="390" height="198" rx="18" fill="#FFFFFF" stroke="#C0392B" stroke-width="2.5"/>
+  <text x="231" y="78" text-anchor="middle" font-family="Menlo, Monaco, monospace" font-size="22" font-weight="700" fill="#C0392B">print(packets)</text>
+  <text x="231" y="126" text-anchor="middle" font-size="18" fill="#1B3A6B">κ…ΉSp(OU
+ΩΊ</text>
+  <text x="231" y="168" text-anchor="middle" font-size="20" font-weight="700" fill="#C0392B">(ÿ0 None</text>
+  <text x="231" y="206" text-anchor="middle" font-size="16" fill="#64748B">νΰΥΆΆΰΥην ;</text>
+
+  <rect x="454" y="36" width="390" height="198" rx="18" fill="#E8EEF8" stroke="#1B3A6B" stroke-width="2.5"/>
+  <text x="649" y="78" text-anchor="middle" font-family="Menlo, Monaco, monospace" font-size="22" font-weight="700" fill="#1B3A6B">return packets</text>
+  <text x="649" y="126" text-anchor="middle" font-size="18" fill="#1B3A6B">—}„pn¤ή(</text>
+  <text x="649" y="168" text-anchor="middle" font-size="20" font-weight="700" fill="#1B3A6B">ΨΟ¥OΣ</text>
+  <text x="649" y="206" text-anchor="middle" font-size="16" fill="#1B3A6B">νοεΡΆ/ Ρ</text>
+</svg>

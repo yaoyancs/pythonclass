@@ -15,8 +15,12 @@ export function usePythonEngine() {
   }, []);
 
   const runCode = useCallback(
-    async (code: string, onInput?: (prompt: string, stdout: string) => Promise<string>): Promise<PythonResult> => {
-      return pyodideClient.runCode(code, onInput);
+    async (
+      code: string,
+      onInput?: (prompt: string, stdout: string) => Promise<string>,
+      files?: Record<string, string>,
+    ): Promise<PythonResult> => {
+      return pyodideClient.runCode(code, onInput, files);
     },
     [],
   );

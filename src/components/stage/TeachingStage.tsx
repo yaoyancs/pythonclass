@@ -69,6 +69,7 @@ import { NameLinkStage } from './NameLinkStage';
 import { StringBoardStage } from './StringBoardStage';
 import { PlaylistBoardStage } from './PlaylistBoardStage';
 import { PlayCountsStage } from './PlayCountsStage';
+import { PlaylistFormStage } from './PlaylistFormStage';
 import { StepRunStage } from './StepRunStage';
 import { StringCutStage } from './StringCutStage';
 import { StringTemplateStage } from './StringTemplateStage';
@@ -599,6 +600,7 @@ export function TeachingStage() {
               <PlaylistBoardStage content={content.playlistBoard} sceneId={scene.id} />
             )}
             {content.playCountsApp && <PlayCountsStage />}
+            {content.playlistFormApp && <PlaylistFormStage />}
             {content.stringCut && (
               <StringCutStage content={content.stringCut} sceneId={scene.id} />
             )}

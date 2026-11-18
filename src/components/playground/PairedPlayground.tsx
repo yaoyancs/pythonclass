@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Editor, { type BeforeMount } from '@monaco-editor/react';
+import { trackRun, trackRunResult } from '../../analytics/client';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { usePythonEngine } from '../../python/usePythonEngine';
 import { Button } from '../ui/Button';
@@ -25,7 +26,7 @@ const defineTheme: BeforeMount = (monaco) => {
 const PAIRED_EDITOR_HEIGHT = 520;
 
 export function PairedPlayground() {
-  const { scene } = useSceneEngine();
+  const { scene, state } = useSceneEngine();
   const paired = scene.pairedCode;
   const { isReady, runCode } = usePythonEngine();
   const [code, setCode] = useState(paired?.initial ?? '');
@@ -42,8 +43,36 @@ export function PairedPlayground() {
   const run = async () => {
     if (!isReady || running) return;
     setRunning(true);
+    const counted = trackRun(state.lessonId, state.currentSceneIndex, 'paired');
+    const codeChanged = code.trim() !== paired.initial.trim();
     try {
-      setOutput(await runCode(code));
+      const matchPy = paired.peerLabel.trim().match(/^([A-Za-z_]\w*\.py)\b/);
+      const peerFile = matchPy ? { [matchPy[1]!]: state.sceneLocal.code } : undefined;
+      const result = await runCode(code, undefined, peerFile);
+      setOutput(result);
+      if (counted) {
+        trackRunResult({
+          lessonId: state.lessonId,
+          sceneIndex: state.currentSceneIndex,
+          sceneId: scene.id,
+          partId: scene.partId,
+          ok: result.error == null,
+          errorType: result.error?.type,
+          codeChanged,
+        });
+      }
+    } catch {
+      if (counted) {
+        trackRunResult({
+          lessonId: state.lessonId,
+          sceneIndex: state.currentSceneIndex,
+          sceneId: scene.id,
+          partId: scene.partId,
+          ok: false,
+          errorType: 'Error',
+          codeChanged,
+        });
+      }
     } finally {
       setRunning(false);
     }

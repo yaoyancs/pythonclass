@@ -1,10 +1,25 @@
+import { useEffect } from 'react';
+import { trackHintView } from '../../analytics/client';
 import { useSceneEngine } from '../../engine/SceneEngine';
 
 export function HintPanel() {
   const { state, scene } = useSceneEngine();
-  if (!scene.hints?.length || state.sceneLocal.hintLevel === 0) return null;
+  const level = state.sceneLocal.hintLevel;
 
-  const visibleHints = scene.hints.slice(0, state.sceneLocal.hintLevel);
+  useEffect(() => {
+    if (!scene.hints?.length || level <= 0) return;
+    trackHintView({
+      lessonId: state.lessonId,
+      sceneIndex: state.currentSceneIndex,
+      sceneId: scene.id,
+      partId: scene.partId,
+      hintLevel: level,
+    });
+  }, [level, scene.hints?.length, scene.id, scene.partId, state.currentSceneIndex, state.lessonId]);
+
+  if (!scene.hints?.length || level === 0) return null;
+
+  const visibleHints = scene.hints.slice(0, level);
 
   return (
     <div className="mt-8 space-y-4">

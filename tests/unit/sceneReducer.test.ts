@@ -56,6 +56,7 @@ describe('sceneReducer', () => {
       '05',
       '06',
       '07',
+      '08',
     ]);
     expect(lesson02.scenes.length).toBeGreaterThan(20);
     expect(lesson02.scenes.some((s) => s.id === 'lesson02-catalog')).toBe(true);
