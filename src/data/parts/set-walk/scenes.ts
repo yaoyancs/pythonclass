@@ -152,64 +152,70 @@ fixed[0] = "夜曲"`),
   },
   {
     id: "set-walk-practice",
-    title: "练习：选择合适的数据类型",
+    title: "练习：选择数据类型并完成操作",
     type: "challenge",
     layout: "split",
     editorSide: "left",
     content: {
       compareTable: {
-        leftHeader: "变量",
-        rightHeader: "校园无人配送车要存的数据",
+        leftHeader: "项目",
+        rightHeader: "校园无人配送车任务要求",
         rows: [
           {
-            left: "home",
-            right: "充电站经纬度 116.98、35.59（位置固定不变）",
+            left: "充电站坐标",
+            right: "经纬度 116.98、35.59（位置固定不变）",
           },
           {
-            left: "stops",
-            right: "依次经过 \"驿站\"、\"梅园\"、\"驿站\"、\"理科楼\"，后面还要接着记下一站",
+            left: "行车路线",
+            right: "依次经过 \"驿站\"、\"梅园\"、\"驿站\"、\"理科楼\"",
           },
           {
-            left: "places",
-            right: "上面这趟跑下来，一共去过哪几个不同的地方",
+            left: "去过的地点",
+            right: "这趟跑下来去过哪几个不同的地方",
           },
           {
-            left: "orders",
-            right: "每个地方要送几件快递：\"梅园\" 12 件、\"理科楼\" 5 件",
+            left: "待送件数",
+            right: "\"梅园\" 12 件、\"理科楼\" 5 件",
+          },
+          {
+            left: "派送更新",
+            right: "\"梅园\" 送出 1 件；接着开往 \"竹园\"（更新路线、去过的地点，并新增竹园 3 件待送）",
+          },
+          {
+            left: "打印输出",
+            right: "一行依次打印：充电站纬度、最后一站、总站次数、不同地点数、梅园余量、竹园件数",
           },
         ],
       },
     },
-    code: code(`# 为无人配送车选择合适的数据类型，替换四个 None
-home = None
-stops = None
-places = None
-orders = None
-print(type(home), type(stops), type(places), type(orders))
-print(home[0], len(stops), len(places), orders["梅园"] - 1)`),
+    code: code(""),
     hints: [
       {
         level: 1,
-        text: "固定不变的坐标用元组 ()；按先后记下每一站、后面还要追加用列表 []。",
+        text: "坐标固定不变用元组 ()；路线按顺序留重用列表 []；不同地点用集合 {}；地点对应件数用字典 {}。",
       },
       {
         level: 2,
-        text: "只看去过哪几个不同的地方用集合 {} 或 set(stops)；地方对应件数用字典 {地点: 件数}。",
+        text: "不同类型操作方法不同：列表用 .append(\"竹园\")，集合用 .add(\"竹园\")，字典用 [\"梅园\"] -= 1 与 [\"竹园\"] = 3，元组用 [1] 取纬度。",
       },
       {
         level: 3,
         text: `home = (116.98, 35.59)
 stops = ["驿站", "梅园", "驿站", "理科楼"]
 places = {"驿站", "梅园", "理科楼"}
-orders = {"梅园": 12, "理科楼": 5}`,
+orders = {"梅园": 12, "理科楼": 5}
+orders["梅园"] -= 1
+stops.append("竹园")
+places.add("竹园")
+orders["竹园"] = 3
+print(home[1], stops[-1], len(stops), len(places), orders["梅园"], orders["竹园"])`,
       },
     ],
     reveal: {
       title: "对照",
-      body: "充电站坐标固定用 tuple；行车路线有先后、有折返且要继续记录用 list；去过几个不同地点用 set 去重；按地点查改快递件数用 dict。",
+      body: "坐标固定选 tuple（按下标 [1] 只读）；路线选 list（用 append 追加末尾）；地点去重选 set（用 add 加入成员）；待送件数选 dict（按键修改或新增）。",
     },
-    expectedOutput: `<class 'tuple'> <class 'list'> <class 'set'> <class 'dict'>
-116.98 4 3 11`,
+    expectedOutput: "35.59 竹园 5 4 11 3",
   },
   {
     id: "set-walk-homework",
