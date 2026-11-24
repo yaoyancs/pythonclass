@@ -5,6 +5,7 @@ import { ClassroomHeader } from './ClassroomHeader';
 import { ClassroomFooter } from './ClassroomFooter';
 import { TeachingStage } from '../stage/TeachingStage';
 import { PythonPlayground } from '../playground/PythonPlayground';
+import { CodeEvolutionStage } from '../stage/CodeEvolutionStage';
 import { PairedPlayground } from '../playground/PairedPlayground';
 import { KeyboardShortcuts } from '../controls/KeyboardShortcuts';
 import { AnnotationCanvas } from '../controls/AnnotationCanvas';
@@ -16,6 +17,7 @@ const MAX_RIGHT_PCT = 72;
 export function ClassroomShell() {
   useLessonAnalytics();
   const { dispatch, scene } = useSceneEngine();
+  const evolution = Boolean(scene.content.codeEvolution);
   const editorOnly = Boolean(scene.editorOnly);
   const paired = Boolean(scene.pairedCode);
   const isFullscreenLayout = scene.layout === 'fullscreen' && !editorOnly;
@@ -99,7 +101,9 @@ export function ClassroomShell() {
             : { gridTemplateColumns: editorLeft ? `${100 - rightPct}% 6px ${rightPct}%` : `minmax(0, 1fr) 6px ${rightPct}%` }
         }
       >
-        {paired && !isFullscreenLayout ? (
+        {evolution ? (
+          <div className="min-h-0 overflow-hidden"><CodeEvolutionStage /></div>
+        ) : paired && !isFullscreenLayout ? (
           <>
             <div className="min-h-0 overflow-hidden">
               <PythonPlayground />
