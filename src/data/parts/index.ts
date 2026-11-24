@@ -1,5 +1,5 @@
 import type { ContentPart } from "../../types/scene";
-import { videoEvolutionByPart } from "../videoEvolution";
+import { codeEvolutionScenesByPart } from "../codeEvolutionScenes";
 import { scenes as coursePrelude } from "./course-prelude/scenes";
 import { scenes as aiWhyLearn } from "./ai-why-learn/scenes";
 import { scenes as languageHistory } from "./language-history/scenes";
@@ -161,19 +161,19 @@ export const PARTS: Record<string, ContentPart> = {
   "dict-why": { id: "dict-why", scenes: dictWhy },
   "dict-use": { id: "dict-use", scenes: dictUse },
   "dict-walk": { id: "dict-walk", scenes: dictWalk },
-  "fn-why": { id: "fn-why", scenes: [...videoEvolutionByPart["fn-why"], ...fnWhy] },
-  "fn-def": { id: "fn-def", scenes: [...videoEvolutionByPart["fn-def"], ...fnDef] },
+  "fn-why": { id: "fn-why", scenes: [...codeEvolutionScenesByPart["fn-why"], ...fnWhy] },
+  "fn-def": { id: "fn-def", scenes: [...codeEvolutionScenesByPart["fn-def"], ...fnDef] },
   "fn-param": { id: "fn-param", scenes: fnParam },
   "fn-return": { id: "fn-return", scenes: fnReturn },
-  "fn-call": { id: "fn-call", scenes: [...videoEvolutionByPart["fn-call"], ...fnCall] },
+  "fn-call": { id: "fn-call", scenes: [...codeEvolutionScenesByPart["fn-call"], ...fnCall] },
   "fn-close": { id: "fn-close", scenes: fnClose },
-  "fn-ext": { id: "fn-ext", scenes: [...videoEvolutionByPart["fn-ext"], ...fnExt] },
-  "fn-varargs": { id: "fn-varargs", scenes: [...videoEvolutionByPart["fn-varargs"], ...fnVarargs] },
-  "fn-unpack": { id: "fn-unpack", scenes: [...videoEvolutionByPart["fn-unpack"], ...fnUnpack] },
-  "fn-fnarg": { id: "fn-fnarg", scenes: [...videoEvolutionByPart["fn-fnarg"], ...fnFnarg] },
-  "fn-higher": { id: "fn-higher", scenes: [...videoEvolutionByPart["fn-higher"], ...fnHigher] },
-  "fn-lambda": { id: "fn-lambda", scenes: [...videoEvolutionByPart["fn-lambda"], ...fnLambda] },
-  "fn-recur": { id: "fn-recur", scenes: [...videoEvolutionByPart["fn-recur"], ...fnRecur] },
+  "fn-ext": { id: "fn-ext", scenes: [...codeEvolutionScenesByPart["fn-ext"], ...fnExt] },
+  "fn-varargs": { id: "fn-varargs", scenes: [...codeEvolutionScenesByPart["fn-varargs"], ...fnVarargs] },
+  "fn-unpack": { id: "fn-unpack", scenes: [...codeEvolutionScenesByPart["fn-unpack"], ...fnUnpack] },
+  "fn-fnarg": { id: "fn-fnarg", scenes: [...codeEvolutionScenesByPart["fn-fnarg"], ...fnFnarg] },
+  "fn-higher": { id: "fn-higher", scenes: [...codeEvolutionScenesByPart["fn-higher"], ...fnHigher] },
+  "fn-lambda": { id: "fn-lambda", scenes: [...codeEvolutionScenesByPart["fn-lambda"], ...fnLambda] },
+  "fn-recur": { id: "fn-recur", scenes: [...codeEvolutionScenesByPart["fn-recur"], ...fnRecur] },
   "fn-wrap": { id: "fn-wrap", scenes: fnWrap },
   "mod-import": { id: "mod-import", scenes: modImport },
   "file-why": { id: "file-why", scenes: fileWhy },
