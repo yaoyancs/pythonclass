@@ -128,6 +128,56 @@ def __pyclass_run():
     return "\\x1e".join((sys.stdout.getvalue(), sys.stderr.getvalue(), exc_name))
 `);
 
+    try {
+      await pyodide.loadPackage('micropip');
+      await pyodide.runPythonAsync(`
+import micropip
+await micropip.install("jedi==0.19.2")
+`);
+      await pyodide.runPythonAsync(`
+import json
+import jedi
+
+def __pyclass_complete(src, line, col):
+    try:
+        out = []
+        for item in jedi.Script(src).complete(int(line), int(col)):
+            doc = ""
+            try:
+                doc = (item.docstring(raw=True) or "")[:240]
+            except Exception:
+                doc = ""
+            out.append({"name": item.name, "type": item.type, "doc": doc})
+            if len(out) >= 40:
+                break
+        return json.dumps(out, ensure_ascii=False)
+    except Exception:
+        return "[]"
+
+def __pyclass_signature(src, line, col):
+    try:
+        sigs = jedi.Script(src).get_signatures(int(line), int(col))
+        if not sigs:
+            return "null"
+        sig = sigs[0]
+        params = [p.description or p.name for p in sig.params]
+        return json.dumps({
+            "label": sig.name + "(" + ", ".join(params) + ")",
+            "params": params,
+            "index": sig.index or 0,
+        }, ensure_ascii=False)
+    except Exception:
+        return "null"
+`);
+    } catch {
+      await pyodide.runPythonAsync(`
+def __pyclass_complete(src, line, col):
+    return "[]"
+def __pyclass_signature(src, line, col):
+    return "null"
+`);
+    }
+
     post({ type: 'STATUS', status: 'ready', message: 'Python Ready', inputBuffer: INPUT_SAB });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to load Pyodide';
@@ -142,6 +192,40 @@ function formatError(err: unknown): { type: string; message: string; traceback?:
     if (pyType) return { type: pyType, message: e.message, traceback: e.stack };
   }
   return { type: 'Error', message: String(err) };
+}
+
+function jediQuery(fn: '__pyclass_complete' | '__pyclass_signature', code: string, line: number, column: number) {
+  if (!pyodide) return fn === '__pyclass_complete' ? '[]' : 'null';
+  pyodide.globals.set('__pyclass_src', code);
+  pyodide.globals.set('__pyclass_line', line);
+  pyodide.globals.set('__pyclass_col', column);
+  return String(pyodide.runPython(`${fn}(__pyclass_src, __pyclass_line, __pyclass_col)`));
+}
+
+function completeCode(id: string, code: string, line: number, column: number) {
+  try {
+    const items = JSON.parse(jediQuery('__pyclass_complete', code, line, column)) as {
+      name: string;
+      type: string;
+      doc: string;
+    }[];
+    post({ type: 'COMPLETE_RESULT', id, items });
+  } catch {
+    post({ type: 'COMPLETE_RESULT', id, items: [] });
+  }
+}
+
+function signatureCode(id: string, code: string, line: number, column: number) {
+  try {
+    const hint = JSON.parse(jediQuery('__pyclass_signature', code, line, column)) as {
+      label: string;
+      params: string[];
+      index: number;
+    } | null;
+    post({ type: 'SIGNATURE_RESULT', id, hint });
+  } catch {
+    post({ type: 'SIGNATURE_RESULT', id, hint: null });
+  }
 }
 
 async function traceCode(id: string, code: string) {
@@ -226,6 +310,12 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
       break;
     case 'TRACE':
       void traceCode(msg.id, msg.code);
+      break;
+    case 'COMPLETE':
+      void completeCode(msg.id, msg.code, msg.line, msg.column);
+      break;
+    case 'SIGNATURE':
+      void signatureCode(msg.id, msg.code, msg.line, msg.column);
       break;
     case 'INPUT':
       if (inputResolve) {

@@ -27,6 +27,8 @@ def split_lucky(total, count=4):
 
 def find_lucky_king(records):
     """返回抢包字典中的 (手气最佳姓名, 金额)"""
+    if len(records) == 0:
+        return "无人", 0.0
     king_name, king_money = "", -1.0
     for name, money in records.items():
         if money > king_money:
@@ -162,12 +164,12 @@ print("需要建群数:", ceil(17 / 5))`),
   {
     id: "mod-star",
     title: "避坑：为什么不推荐 from 模块 import *",
-    type: "predict",
+    type: "run",
     layout: "split",
     editorSide: "left",
     content: {
       headline: "通配符 * 会一次性导入大量名字，极易悄悄覆盖同名函数",
-      body: "程序员自己写了一个 choice(packets) 函数默认取第一包，随后写了一句 from random import *。看看调用 choice 时执行的是哪一个？",
+      body: "程序员先定义了取第一包的 choice，随后执行 from random import *。导入的 random.choice 会静默覆盖同名函数，因此运行结果是随机选出的 8.66，而不是第一项 3.28。",
     },
     code: code(`def choice(packets):
     return packets[0]
@@ -177,18 +179,11 @@ from random import *
 seed(0)
 packets = [3.28, 8.66, 1.42]
 print(choice(packets))`),
-    prediction: {
-      question: "print(choice(packets)) 的输出是什么？",
-      options: [
-        { id: "first", label: "3.28（自己定义的函数：取第 0 项）" },
-        { id: "rand", label: "8.66（被 random.choice 覆盖后的随机结果）", isCorrect: true },
-        { id: "err", label: "报命名冲突错误" },
-      ],
-    },
     reveal: {
       title: "后导入的同名函数静默覆盖了先定义的函数",
       body: "Python 不会对同名覆盖报错，from random import * 会把几十个名字全部倒进当前作用域，排错非常困难。工程上应坚持写 import random 或按需明确列出函数名。",
     },
+    expectedOutput: "8.66",
   },
   {
     id: "mod-debug",
@@ -226,6 +221,28 @@ print(ceil(17 / 5))`,
     },
     expectedOutput: `8.66
 4`,
+  },
+  {
+    id: "mod-path-name",
+    title: "自定义模块排错：目录、文件名与缓存",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      headline: "import 失败时，先检查模块在哪里、叫什么",
+      body: "初学者最常见的问题不是函数写错，而是 Python 没找到正确的模块，或自己的文件名遮蔽了标准库。",
+      bulletPoints: [
+        "同目录最简单：main.py 与 redpacket.py 放在同一文件夹，再写 import redpacket",
+        "不要把自己的文件命名为 random.py、math.py、json.py 等标准库名称，否则 import 可能导入错文件",
+        "出现 ModuleNotFoundError 时，先检查文件是否存在、文件名和 import 拼写是否一致、运行入口所在目录是否正确",
+        "导入后可能自动出现 __pycache__ 文件夹，它保存字节码缓存，通常无需手工编辑或提交",
+      ],
+      note: {
+        title: "快速诊断",
+        points: [
+          "可以临时打印模块的 __file__ 属性，例如 print(random.__file__)，确认实际导入的是哪个文件。",
+        ],
+      },
+    },
   },
   {
     id: "mod-own-intro",

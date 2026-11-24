@@ -337,6 +337,17 @@ export interface StepExecContent {
   conclusion: string;
 }
 
+/** 递归执行可视化：代码行、调用栈与返回值同步推进。 */
+export interface RecursionTraceContent {
+  functionName: 'fact';
+  argument: number;
+}
+
+/** 汉诺塔可视化：圆盘移动与递归调用栈同步推进。 */
+export interface HanoiTraceContent {
+  disks: 3;
+}
+
 /** 带着色 token 的代码演示 */
 export interface TypedDemoContent {
   lead?: string;
@@ -525,6 +536,12 @@ export interface WhyLearnWrapContent {
 /** 数据类型思维导图：每种类型一行适用场景 */
 export interface TypeMapContent {
   note?: string;
+}
+
+/** 语法小结思维导图：主题在上，分支卡片并排；每个分支给语法代码和要点 */
+export interface SyntaxMapContent {
+  root: string;
+  branches: { title: string; code?: string; notes?: string[] }[];
 }
 
 /** 第 10 页：整数精确存放，浮点数拆成符号、指数、尾数 */
@@ -742,6 +759,8 @@ export interface SceneContent {
   headline?: string;
   /** 点击右侧逐条出现，顺序即出现顺序 */
   clickLines?: string[];
+  /** 左侧代码首次运行后，右侧才显示的要点 */
+  afterRunPoints?: string[];
   /** 两列表头对照，如自然语言与 Python 条件 */
   compareTable?: {
     leftHeader: string;
@@ -809,6 +828,8 @@ export interface SceneContent {
   pythonVerify?: PythonVerifyContent;
   replDemo?: ReplDemoContent;
   stepExec?: StepExecContent;
+  recursionTrace?: RecursionTraceContent;
+  hanoiTrace?: HanoiTraceContent;
   typedDemo?: TypedDemoContent;
   exprOrder?: ExprOrderContent;
   syntaxRules?: SyntaxRulesContent;
@@ -831,6 +852,7 @@ export interface SceneContent {
   typeMap?: TypeMapContent;
   /** 第 7 讲收束：四种容器的读取、增加、删除 */
   containerMap?: TypeMapContent;
+  syntaxMap?: SyntaxMapContent;
   typeProbe?: TypeProbeContent;
   intFloat?: IntFloatContent;
   nameLink?: NameLinkContent;

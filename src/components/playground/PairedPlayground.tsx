@@ -5,20 +5,29 @@ import { useSceneEngine } from '../../engine/SceneEngine';
 import { usePythonEngine } from '../../python/usePythonEngine';
 import { Button } from '../ui/Button';
 import type { PythonResult } from '../../types/python';
+import { registerJediCompletion } from '../../python/jediCompletion';
 
 const defineTheme: BeforeMount = (monaco) => {
+  registerJediCompletion(monaco);
+  const colors = {
+    'editor.background': '#12211c',
+    'editor.lineHighlightBackground': '#1a2f27',
+    'editorLineNumber.foreground': '#4f7267',
+    'editorLineNumber.activeForeground': '#9ab5a8',
+    'editorCursor.foreground': '#5eead4',
+    'editor.selectionBackground': '#2c453c',
+  };
   monaco.editor.defineTheme('classroom', {
     base: 'vs-dark',
     inherit: true,
     rules: [],
-    colors: {
-      'editor.background': '#12211c',
-      'editor.lineHighlightBackground': '#1a2f27',
-      'editorLineNumber.foreground': '#4f7267',
-      'editorLineNumber.activeForeground': '#9ab5a8',
-      'editorCursor.foreground': '#5eead4',
-      'editor.selectionBackground': '#2c453c',
-    },
+    colors,
+  });
+  monaco.editor.defineTheme('classroom-comment-red', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [{ token: 'comment', foreground: 'FF2A2A', fontStyle: 'bold' }],
+    colors,
   });
 };
 
@@ -88,12 +97,15 @@ export function PairedPlayground() {
           <Editor
             height="100%"
             defaultLanguage="python"
-            theme="classroom"
+            theme={state.lessonId === 'lesson08' ? 'classroom-comment-red' : 'classroom'}
             beforeMount={defineTheme}
             value={code}
             onChange={(value) => setCode(value ?? '')}
             options={{
               fontSize: 24,
+              quickSuggestions: { other: true, comments: false, strings: false },
+              suggestOnTriggerCharacters: true,
+              parameterHints: { enabled: true },
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
               padding: { top: 18, bottom: 18 },

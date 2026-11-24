@@ -6,234 +6,321 @@ const code = (initial: string) => ({
   resetToInitial: true,
 });
 
-/** 第二部分：解剖函数定义五要素、调用执行时机、文档字符串说明书与 help()、命名陷阱，最后完成红包系统的第 1 个核心核验函数。 */
+/** 定义函数：无参数 → 形参实参 → 位置与个数 → 返回值 → 提前返回 → 多返回值 → 互相调用。 */
 export const scenes: DraftScene[] = [
   {
     id: "fn-def-shape",
-    title: "自定义函数的语法结构",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      headline: "函数定义五要素",
-      image: {
-        src: "/lesson08/rp-anatomy.svg",
-        alt: "函数定义五要素解剖图：def、函数名与参数、冒号、文档字符串、缩进函数体与return",
-      },
-      body: "定义一个函数就像制作一台专用工具机：函数头声明名字和输入口，缩进块规定内部加工步骤。",
-      bulletPoints: [
-        "函数头：以关键字 def 开头，后接函数名、圆括号 (参数列表) 和英文冒号 :",
-        "函数体：冒号下方整体缩进 4 个空格的所有语句；缩进结束即代表函数定义结束",
-        "可选成员：第一行的三引号「文档字符串」用于写说明书；return 用于把计算结果交回",
-      ],
-    },
-  },
-  {
-    id: "fn-def-when",
-    title: "定义时不执行，调用时才执行",
-    type: "predict",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      headline: "只写 def 不调用，函数体一行都不会跑",
-      body: "观察左侧代码：定义了发红包提示函数 send_notice()，但后面只写了一行普通 print。",
-    },
-    code: code(`def send_notice():
-    print("🧧 有人发了一个大红包！")
-    print("快去群里抢！")
-
-print("群聊已打开")`),
-    prediction: {
-      question: "运行这段代码，屏幕会输出什么？",
-      options: [
-        { id: "all", label: "先输出两行红包提示，再输出「群聊已打开」" },
-        { id: "only-open", label: "只输出「群聊已打开」", isCorrect: true },
-        { id: "only-fn", label: "只输出两行红包提示" },
-      ],
-    },
-    reveal: {
-      title: "def 只是注册工具，加括号调用才触发执行",
-      body: "执行 def 时，Python 只把函数体打包存起来并绑定到名字 send_notice 上；没有写 send_notice() 调用，里面的语句不会运行。",
-    },
-  },
-  {
-    id: "fn-def-order",
-    title: "调用顺序：先定义，后调用",
-    type: "debug",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      headline: "Python 从上往下执行，调用前名字必须已定义",
-      body: "左侧代码试图在 def 之前调用 send_notice()，先运行观察报错，再调整代码顺序修复它。",
-    },
-    code: code(`send_notice("恭喜发财，大吉大利")
-
-def send_notice(wish):
-    print(f"🧧 [微信红包] {wish}")`),
-    hints: [
-      { level: 1, text: "报错为 NameError: name 'send_notice' is not defined——执行第 1 行时解释器还不认识这个名字。" },
-      { level: 2, text: "把 def send_notice(wish): 整段定义挪到调用语句之前。" },
-      {
-        level: 3,
-        text: `def send_notice(wish):
-    print(f"🧧 [微信红包] {wish}")
-
-send_notice("恭喜发财，大吉大利")`,
-      },
-    ],
-    reveal: {
-      title: "先造工具，再使用工具",
-      body: "Python 按从上到下的顺序逐行执行，必须先执行完 def 完成函数绑定，后面才能调用它。",
-    },
-    expectedOutput: "🧧 [微信红包] 恭喜发财，大吉大利",
-  },
-  {
-    id: "fn-def-syntax",
-    title: "语法排错：冒号与函数体缩进",
-    type: "debug",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      headline: "函数头末尾要有冒号，函数体必须缩进",
-      body: "左侧代码存在两处初学者最常犯的语法错误，请根据报错信息逐一修正。",
-    },
-    code: code(`def send_notice(wish)
-print(f"🧧 [微信红包] {wish}")
-
-send_notice("万事如意")`),
-    hints: [
-      { level: 1, text: "第 1 行 def 函数头末尾漏掉了英文冒号 :。" },
-      { level: 2, text: "第 2 行属于函数体，必须向右缩进 4 个空格；第 4 行是外部调用，顶格不缩进。" },
-      {
-        level: 3,
-        text: `def send_notice(wish):
-    print(f"🧧 [微信红包] {wish}")
-
-send_notice("万事如意")`,
-      },
-    ],
-    reveal: {
-      title: "缩进划定了函数的边界",
-      body: "缩进在 def 下方的语句属于函数内部；一旦恢复顶格对齐（如第 4 行），就代表回到了函数外部。",
-    },
-    expectedOutput: "🧧 [微信红包] 万事如意",
-  },
-  {
-    id: "fn-def-doc",
-    title: "文档字符串：函数的官方说明书",
+    title: "定义函数",
     type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "三引号写说明书，随时用 help() 查阅",
-      body: "紧跟在 def 下一行缩进的 \"\"\"三引号字符串\"\"\" 叫做文档字符串（Docstring），用来向调用者说明「函数做什么、参数是什么、返回什么」。",
-      compareTable: {
-        leftHeader: "对比项",
-        rightHeader: "作用与运行期表现",
-        rows: [
-          { left: "# 普通注释", right: "写给改源码的人看，解释器运行时直接忽略，外部查不到" },
-          { left: '"""文档字符串"""', right: "绑定在函数对象上，可用 help(函数名) 打印说明书，编辑器悬停也会自动提示" },
-        ],
+      image: {
+        src: "/lesson08/syntax/fn-def-shape.svg",
+        alt: "定义函数的结构：def 开头、函数名、括号、冒号、缩进的函数体，调用时才执行",
       },
     },
-    code: code(`def show_wish(sender, wish):
-    """打印微信群红包的发包人与祝福语卡片。
-    参数：sender 为发包人姓名，wish 为红包祝福语。
-    """
-    print(f"{sender} 发出的红包：{wish}")
+    code: code(`# 没有参数，没有返回值
+def print_box():
+    print("+------+")
+    print("|  OK  |")
+    print("+------+")
 
-# 查看函数的官方说明书
-help(show_wish)
-
-# 正常调用函数
-show_wish("班长", "期末全过！")`),
+print_box()`),
+    expectedOutput: `+------+
+|  OK  |
++------+`,
   },
   {
-    id: "fn-def-name",
-    title: "命名规范与误盖内置函数陷阱",
+    id: "fn-def-param",
+    title: "形参与实参",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      image: {
+        src: "/lesson08/syntax/fn-def-param.svg",
+        alt: "形参与实参：定义时的 phone 是形参，调用时的 \"13812345678\" 是实参",
+      },
+    },
+    code: code(`# phone 是形参，调用时传入的 "13812345678" 是实参
+def mask_phone(phone):
+    masked = phone[:3] + "****" + phone[-4:]
+    print(masked)
+
+mask_phone("13812345678")
+mask_phone("19987654321")`),
+    expectedOutput: `138****5678
+199****4321`,
+  },
+  {
+    id: "fn-def-pos",
+    title: "位置对应",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      image: {
+        src: "/lesson08/syntax/fn-def-pos.svg",
+        alt: "位置实参从左到右对应形参：(100, 10) 得到 10.0，换成 (10, 100) 得到 0.1",
+      },
+    },
+    code: code(`# 位置实参按从左到右顺序绑定形参
+def download_time(size_mb, speed):
+    seconds = round(size_mb / speed, 2)
+    print(seconds)
+
+download_time(100, 10)
+download_time(10, 100)`),
+    expectedOutput: `10.0
+0.1`,
+  },
+  {
+    id: "fn-def-missing",
+    title: "实参个数",
     type: "debug",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "小写加下划线，切勿占用内置函数名",
-      bulletPoints: [
-        "规范写法：使用小写字母与下划线（如 check_budget、split_lucky），动词开头、见名知义",
-        "高频大坑：如果把变量或函数起名叫 sum、max、min、list，就会把同名内置函数覆盖掉！",
-      ],
+      image: {
+        src: "/lesson08/syntax/fn-def-missing.svg",
+        alt: "实参个数不够：download_time(100) 只给了 size_mb，speed 没有实参，报 TypeError",
+      },
     },
-    code: code(`# 错误示范：用 sum 当普通变量存上一轮金额
-sum = 10
-print("上一轮抢到:", sum)
+    code: code(`# 无默认值的形参各需要一个实参
+def download_time(size_mb, speed):
+    seconds = round(size_mb / speed, 2)
+    print(seconds)
 
-# 这一轮想调用内置函数 sum() 求和，看看会发生什么？
-amounts = [3.28, 6.72]
-print("本轮总额:", sum(amounts))`),
+download_time(100)`),
     hints: [
-      { level: 1, text: "报错 TypeError: 'int' object is not callable——因为当前名字 sum 已经指向整数 10，不再是求和函数了！" },
-      { level: 2, text: "把第 2、3 行的变量名 sum 改成不冲突的名字（如 last_money）。" },
+      { level: 1, text: "TypeError: download_time() missing 1 required positional argument: 'speed'" },
+      { level: 2, text: "补上第二个实参，写成 download_time(100, 10)。" },
       {
         level: 3,
-        text: `last_money = 10
-print("上一轮抢到:", last_money)
+        text: `def download_time(size_mb, speed):
+    seconds = round(size_mb / speed, 2)
+    print(seconds)
 
-amounts = [3.28, 6.72]
-print("本轮总额:", sum(amounts))`,
+download_time(100, 10)`,
       },
     ],
     reveal: {
-      title: "函数名也是普通名字，被重新赋值就会失去原功能",
-      body: "内置函数名并不是语法保留字。一旦执行了 sum = 10，名字 sum 就改指整数 10，后面写 sum(amounts) 相当于写 10(amounts)，自然报错不可调用。",
+      title: "无默认值的形参各需要一个实参",
+      body: "download_time 需要 size_mb 和 speed，调用只传了 100。",
     },
-    expectedOutput: `上一轮抢到: 10
-本轮总额: 10.0`,
+    expectedOutput: "10.0",
   },
   {
-    id: "fn-def-practice",
-    title: "实战练习：红包发包核验函数",
-    type: "challenge",
+    id: "fn-def-none",
+    title: "没有 return",
+    type: "run",
     layout: "split",
     editorSide: "left",
     content: {
-      headline: "模块组件 ①：check_budget(total, count)",
-      body: "发微信群红包前，系统必须先核验金额是否合规：每个红包至少要有 0.01 元，且单次发包总额不超过 200 元。请编写核验函数并测试三种情况：",
-      bulletPoints: [
-        "若 total < count * 0.01：打印「金额不足：每人至少 0.01 元」",
-        "若 total > 200：打印「超额提醒：单次不超过 200 元」",
-        "其余合规情况：打印「核验通过：共 {count} 包，总额 {total} 元」",
-        "依次调用 check_budget(0.03, 5)、check_budget(250, 5)、check_budget(20, 4)",
-      ],
+      image: {
+        src: "/lesson08/syntax/fn-def-none.svg",
+        alt: "没有 return：download_time 只在屏幕打印 10.0，调用结果是 None，t 得到 None",
+      },
     },
-    code: code(`# 请定义 check_budget(total, count)，建议写上一句文档字符串
+    code: code(`# 不写 return 时，调用结果默认是 None
+def download_time(size_mb, speed):
+    seconds = round(size_mb / speed, 2)
+    print(seconds)
 
+t = download_time(100, 10)
+print(t)`),
+    expectedOutput: `10.0
+None`,
+  },
+  {
+    id: "fn-def-return",
+    title: "返回值",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      image: {
+        src: "/lesson08/syntax/fn-def-return.svg",
+        alt: "return 把结果交回调用处：两次调用分别得到 10.0 和 2.5，相加后 total 为 12.5",
+      },
+    },
+    code: code(`# 用 return 返回结果，调用表达式可以继续参加运算
+def download_time(size_mb, speed):
+    seconds = round(size_mb / speed, 2)
+    return seconds
 
-# 依次测试三种发包输入
-check_budget(0.03, 5)
-check_budget(250, 5)
-check_budget(20, 4)`),
+total = download_time(100, 10) + download_time(25, 10)
+print(total)`),
+    expectedOutput: "12.5",
+  },
+  {
+    id: "fn-def-stop",
+    title: "return 结束调用",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      image: {
+        src: "/lesson08/syntax/fn-def-stop.svg",
+        alt: "执行到 return 立即结束：长度不足、纯数字、通过三个出口，最后一行 print 不会执行",
+      },
+    },
+    code: code(`# 一旦执行到 return，函数立即结束，下方语句不再执行
+def check_password(pwd):
+    if len(pwd) < 8:
+        return "长度不足"
+    if pwd.isdigit():
+        return "不能纯数字"
+    return "通过"
+    print("这一行永远不会执行")
+
+print(check_password("12345"))
+print(check_password("12345678"))
+print(check_password("py2026ok"))`),
+    expectedOutput: `长度不足
+不能纯数字
+通过`,
+  },
+  {
+    id: "fn-def-many",
+    title: "多个返回值",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      image: {
+        src: "/lesson08/syntax/fn-def-many.svg",
+        alt: "多个返回值：return mins, secs 打包成元组 (2, 15)，再分别交给 m 和 s",
+      },
+    },
+    code: code(`# 把视频总秒数拆成「分钟」和「剩余秒数」
+def parse_duration(seconds):
+    mins = seconds // 60
+    secs = seconds % 60
+    return mins, secs
+
+m, s = parse_duration(135)
+print(m, "分", s, "秒")`),
+    expectedOutput: "2 分 15 秒",
+  },
+  {
+    id: "fn-def-mutual",
+    title: "函数互相调用",
+    type: "debug",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      image: {
+        src: "/lesson08/syntax/fn-def-mutual.svg",
+        alt: "函数互相调用：ping 和 pong 互相调用没有出口会 RecursionError；pong 不再调用 ping 就能结束",
+      },
+    },
+    code: code(`# ping 与 pong 互相调用，没有出口会报 RecursionError
+def ping():
+    print("ping")
+    pong()
+
+def pong():
+    print("pong")
+    ping()
+
+ping()`),
     hints: [
-      { level: 1, text: "函数头写成 def check_budget(total, count):，内部用 if - elif - else 判断三种情况。" },
-      { level: 2, text: "先判断 total < count * 0.01，再 elif total > 200，最后 else 打印核验通过信息。" },
+      { level: 1, text: "RecursionError: maximum recursion depth exceeded" },
+      { level: 2, text: "删掉 pong() 里的 ping()，让调用在 pong 处停止。" },
       {
         level: 3,
-        text: `def check_budget(total, count):
-    """核验群红包总金额与个数是否符合发包规则"""
-    if total < count * 0.01:
-        print("金额不足：每人至少 0.01 元")
-    elif total > 200:
-        print("超额提醒：单次不超过 200 元")
-    else:
-        print(f"核验通过：共 {count} 包，总额 {total} 元")
+        text: `def ping():
+    print("ping")
+    pong()
 
-check_budget(0.03, 5)
-check_budget(250, 5)
-check_budget(20, 4)`,
+def pong():
+    print("pong")
+
+ping()`,
       },
     ],
     reveal: {
-      title: "对照：综合系统的第一块积木",
-      body: "0.03 元不够分给 5 个人（至少需 0.05 元），250 元超出上限，20 元发 4 包顺利通过。这个函数在最终的综合红包程序里将直接负责发包前拦截非法输入。",
+      title: "ping 与 pong 互相调用没有终止",
+      body: "调用链必须有一层不再回调对方。",
     },
-    expectedOutput: `金额不足：每人至少 0.01 元
-超额提醒：单次不超过 200 元
-核验通过：共 4 包，总额 20 元`,
+    expectedOutput: `ping
+pong`,
+  },
+  {
+    id: "fn-def-practice",
+    title: "练习",
+    type: "challenge",
+    layout: "split",
+    editorSide: "left",
+    editorOnly: true,
+    content: {},
+    code: code(`# 定义函数，功能是： 判断一个正整数是否为素数
+
+
+`),
+    hints: [
+      { level: 1, text: "先写 if n < 2: return False，再用 for i in range(2, n): 判断 n % i == 0。" },
+      { level: 2, text: "循环内发现 n % i == 0 时立即 return False，循环结束后 return True。" },
+      {
+        level: 3,
+        text: `def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, n):
+        if n % i == 0:
+            return False
+    return True
+
+print(is_prime(1))
+print(is_prime(9))
+print(is_prime(17))`,
+      },
+    ],
+    reveal: {
+      title: "利用提前 return 判断素数",
+      body: "1 不是素数，9 能被 3 整除提前返回 False，17 循环结束返回 True。",
+    },
+    expectedOutput: `False
+False
+True`,
+  },
+  {
+    id: "fn-def-syntax",
+    title: "语法小结：定义函数",
+    type: "explain",
+    layout: "fullscreen",
+    content: {
+      syntaxMap: {
+        root: "定义函数",
+        branches: [
+          {
+            title: "定义",
+            code: `def 函数名(形参):
+    函数体`,
+            notes: ["函数体缩进", "定义后调用才执行"],
+          },
+          {
+            title: "形参与实参",
+            code: `def f(size, speed): ...
+f(100, 10)`,
+            notes: ["实参按位置对应形参", "个数要一致"],
+          },
+          {
+            title: "return",
+            code: `return 结果
+return a, b`,
+            notes: ["执行到 return 立即结束", "没有 return 得到 None"],
+          },
+          {
+            title: "互相调用",
+            code: `def a():
+    b()`,
+            notes: ["函数里可以调用别的函数", "必须有一层停下来"],
+          },
+        ],
+      },
+    },
   },
 ];

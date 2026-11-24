@@ -1,4 +1,12 @@
-import type { EngineStatus, PythonResult, TraceStep, WorkerRequest, WorkerResponse } from '../types/python';
+import type {
+  CompletionItem,
+  EngineStatus,
+  PythonResult,
+  SignatureHint,
+  TraceStep,
+  WorkerRequest,
+  WorkerResponse,
+} from '../types/python';
 
 type InputHandler = (prompt: string, stdout: string) => Promise<string>;
 
@@ -14,6 +22,8 @@ export class PyodideClient {
     string,
     { resolve: (steps: TraceStep[]) => void; reject: (e: Error) => void }
   >();
+  private pendingCompletes = new Map<string, (items: CompletionItem[]) => void>();
+  private pendingSignatures = new Map<string, (hint: SignatureHint | null) => void>();
   private pendingRuns = new Map<
     string,
     {
@@ -59,6 +69,24 @@ export class PyodideClient {
     return new Promise((resolve, reject) => {
       this.pendingTraces.set(id, { resolve, reject });
       this.post({ type: 'TRACE', id, code });
+    });
+  }
+
+  async complete(code: string, line: number, column: number): Promise<CompletionItem[]> {
+    if (!this.worker || this.status !== 'ready') return [];
+    const id = `complete-${++runCounter}`;
+    return new Promise((resolve) => {
+      this.pendingCompletes.set(id, resolve);
+      this.post({ type: 'COMPLETE', id, code, line, column });
+    });
+  }
+
+  async signature(code: string, line: number, column: number): Promise<SignatureHint | null> {
+    if (!this.worker || this.status !== 'ready') return null;
+    const id = `sig-${++runCounter}`;
+    return new Promise((resolve) => {
+      this.pendingSignatures.set(id, resolve);
+      this.post({ type: 'SIGNATURE', id, code, line, column });
     });
   }
 
@@ -131,6 +159,14 @@ export class PyodideClient {
         this.fulfillInput(value);
         break;
       }
+      case 'COMPLETE_RESULT':
+        this.pendingCompletes.get(msg.id)?.(msg.items);
+        this.pendingCompletes.delete(msg.id);
+        break;
+      case 'SIGNATURE_RESULT':
+        this.pendingSignatures.get(msg.id)?.(msg.hint);
+        this.pendingSignatures.delete(msg.id);
+        break;
       case 'TRACE_RESULT': {
         const pending = this.pendingTraces.get(msg.id);
         if (pending) {

@@ -5,7 +5,7 @@ import { pyodideClient } from '../../python/pyodideClient';
 let cursor = { sceneId: '', line: null as number | null };
 const listeners = new Set<() => void>();
 
-function setStepCursor(sceneId: string, line: number | null) {
+export function setStepCursor(sceneId: string, line: number | null) {
   cursor = { sceneId, line };
   listeners.forEach((listener) => listener());
 }

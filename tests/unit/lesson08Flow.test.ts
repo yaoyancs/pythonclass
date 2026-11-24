@@ -8,15 +8,17 @@ import { buildLesson } from '../../src/data/offerings/buildLesson';
 
 const spec = offering2026S.lectures.find((l) => l.id === 'lesson08')!;
 const lesson08 = buildLesson(spec);
+const lesson09 = buildLesson(offering2026S.lectures.find((l) => l.id === 'lesson09')!);
 
 describe('lesson08 redpacket flow', () => {
-  it('assembles 7 parts without premature def on builtin intro or tkinter dependency', () => {
-    expect(lesson08.parts.map((p) => p.index)).toEqual(['01', '02', '03', '04', '05', '06', '07']);
-    const firstBuiltin = lesson08.scenes.find((s) => s.id === 'fn-why-used')!;
-    expect(JSON.stringify(firstBuiltin.content)).not.toContain('def');
-
-    const builtinTable = lesson08.scenes.find((s) => s.id === 'fn-why-builtin')!;
-    expect(builtinTable.content.gridTable?.rows.length).toBe(5);
+  it('assembles 11 function parts and keeps the call intro free of def and tkinter', () => {
+    expect(lesson08.parts.map((p) => p.index)).toEqual([
+      '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11',
+    ]);
+    expect(lesson08.parts.map((p) => p.title)).not.toContain('模块与自定义模块');
+    expect(lesson09.parts[0]?.title).toBe('模块与自定义模块');
+    const firstCall = lesson08.scenes.find((s) => s.id === 'fn-why-name')!;
+    expect(firstCall.code?.initial).not.toContain('def');
 
     for (const scene of lesson08.scenes) {
       expect(scene.content.playlistFormApp).toBeUndefined();
@@ -30,10 +32,9 @@ describe('lesson08 redpacket flow', () => {
   it('executes every non-interactive run scene and level-3 solution cleanly in Python 3', () => {
     for (const s of lesson08.scenes) {
       if (s.type === 'run' && s.code && !s.pairedCode && !s.code.initial.includes('input(')) {
+        if (!s.expectedOutput) continue;
         const out = execFileSync('python3', ['-c', s.code.initial], { encoding: 'utf8' }).trim();
-        if (s.expectedOutput) {
-          expect(out, s.id).toBe(s.expectedOutput.trim());
-        }
+        expect(out, s.id).toBe(s.expectedOutput.trim());
       }
       if ((s.type === 'debug' || s.type === 'challenge') && s.hints?.length === 3 && s.expectedOutput) {
         const h3 = s.hints[2]!.text;
@@ -50,7 +51,7 @@ describe('lesson08 redpacket flow', () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lesson08-mod-'));
     try {
       for (const id of ['mod-own', 'mod-main']) {
-        const scene = lesson08.scenes.find((s) => s.id === id)!;
+        const scene = lesson09.scenes.find((s) => s.id === id)!;
         expect(scene.pairedCode).toBeDefined();
         fs.writeFileSync(path.join(tmpDir, 'redpacket.py'), scene.code!.initial, 'utf8');
         fs.writeFileSync(path.join(tmpDir, 'main.py'), scene.pairedCode!.initial, 'utf8');

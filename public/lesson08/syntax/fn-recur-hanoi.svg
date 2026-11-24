@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-labelledby="title desc">
+  <title id="title">Tower of Hanoi with three disks</title>
+  <desc id="desc">Seven animated moves transfer three disks from rod A to rod C.</desc>
+  <style>
+    text { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .code { font-family: Menlo, Consolas, monospace; }
+    .disk { transform-box: fill-box; transform-origin: center; }
+    .small { animation: small-moves 14s ease-in-out infinite; }
+    .medium { animation: medium-moves 14s ease-in-out infinite; }
+    .large { animation: large-move 14s ease-in-out infinite; }
+    .pulse { animation: pulse 14s ease-in-out infinite; }
+    @keyframes small-moves {
+      0%, 2% { transform: translate(0, 0); }
+      6% { transform: translate(0, -174px); }
+      10% { transform: translate(440px, -174px); }
+      14%, 28% { transform: translate(440px, 60px); }
+      32% { transform: translate(440px, -174px); }
+      36% { transform: translate(220px, -174px); }
+      40%, 54% { transform: translate(220px, 30px); }
+      58% { transform: translate(220px, -174px); }
+      62% { transform: translate(0, -174px); }
+      66%, 80% { transform: translate(0, 60px); }
+      84% { transform: translate(0, -174px); }
+      88% { transform: translate(440px, -174px); }
+      92%, 100% { transform: translate(440px, 0); }
+    }
+    @keyframes medium-moves {
+      0%, 14% { transform: translate(0, 0); }
+      18% { transform: translate(0, -204px); }
+      22% { transform: translate(220px, -204px); }
+      26%, 66% { transform: translate(220px, 30px); }
+      70% { transform: translate(220px, -204px); }
+      74% { transform: translate(440px, -204px); }
+      78%, 100% { transform: translate(440px, 0); }
+    }
+    @keyframes large-move {
+      0%, 40% { transform: translate(0, 0); }
+      44% { transform: translate(0, -234px); }
+      48% { transform: translate(440px, -234px); }
+      52%, 100% { transform: translate(440px, 0); }
+    }
+    @keyframes pulse {
+      0%, 92% { opacity: .45; }
+      96%, 100% { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .small { animation: none; transform: translate(440px, 0); }
+      .medium, .large { animation: none; transform: translate(440px, 0); }
+      .pulse { animation: none; opacity: 1; }
+    }
+  </style>
+  <rect width="800" height="480" rx="24" fill="#F4F7FB"/>
+  <text x="400" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#1B3A6B">Tower of Hanoi: n = 3</text>
+  <text x="400" y="75" text-anchor="middle" font-size="17" fill="#4A5A75">3 steps: move n-1, move largest, move n-1</text>
+
+  <rect x="75" y="404" width="650" height="14" rx="7" fill="#8A97AB"/>
+  <rect x="174" y="135" width="12" height="275" rx="6" fill="#8A97AB"/>
+  <rect x="394" y="135" width="12" height="275" rx="6" fill="#8A97AB"/>
+  <rect x="614" y="135" width="12" height="275" rx="6" fill="#8A97AB"/>
+
+  <g class="disk large">
+    <rect x="105" y="374" width="150" height="28" rx="14" fill="#1B3A6B"/>
+    <text class="code" x="180" y="394" text-anchor="middle" font-size="15" font-weight="700" fill="#FFFFFF">3</text>
+  </g>
+  <g class="disk medium">
+    <rect x="120" y="344" width="120" height="26" rx="13" fill="#D9822B"/>
+    <text class="code" x="180" y="363" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">2</text>
+  </g>
+  <g class="disk small">
+    <rect x="135" y="314" width="90" height="26" rx="13" fill="#2E8B57"/>
+    <text class="code" x="180" y="333" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">1</text>
+  </g>
+
+  <text class="code" x="180" y="450" text-anchor="middle" font-size="24" font-weight="700" fill="#1B3A6B">A</text>
+  <text class="code" x="400" y="450" text-anchor="middle" font-size="24" font-weight="700" fill="#1B3A6B">B</text>
+  <text class="code" x="620" y="450" text-anchor="middle" font-size="24" font-weight="700" fill="#1B3A6B">C</text>
+  <g class="pulse">
+    <rect x="285" y="92" width="230" height="36" rx="18" fill="#E3F3EA" stroke="#2E8B57" stroke-width="2"/>
+    <text class="code" x="400" y="116" text-anchor="middle" font-size="16" font-weight="700" fill="#2E8B57">7 moves = 2^3 - 1</text>
+  </g>
+</svg>

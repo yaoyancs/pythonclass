@@ -71,6 +71,14 @@ import { scenes as fnParam } from "./fn-param/scenes";
 import { scenes as fnReturn } from "./fn-return/scenes";
 import { scenes as fnCall } from "./fn-call/scenes";
 import { scenes as fnClose } from "./fn-close/scenes";
+import { scenes as fnExt } from "./fn-ext/scenes";
+import { scenes as fnVarargs } from "./fn-varargs/scenes";
+import { scenes as fnUnpack } from "./fn-unpack/scenes";
+import { scenes as fnFnarg } from "./fn-fnarg/scenes";
+import { scenes as fnHigher } from "./fn-higher/scenes";
+import { scenes as fnLambda } from "./fn-lambda/scenes";
+import { scenes as fnRecur } from "./fn-recur/scenes";
+import { scenes as fnWrap } from "./fn-wrap/scenes";
 import { scenes as modImport } from "./mod-import/scenes";
 import { scenes as fileWhy } from "./file-why/scenes";
 import { scenes as fileOpen } from "./file-open/scenes";
@@ -158,6 +166,14 @@ export const PARTS: Record<string, ContentPart> = {
   "fn-return": { id: "fn-return", scenes: fnReturn },
   "fn-call": { id: "fn-call", scenes: fnCall },
   "fn-close": { id: "fn-close", scenes: fnClose },
+  "fn-ext": { id: "fn-ext", scenes: fnExt },
+  "fn-varargs": { id: "fn-varargs", scenes: fnVarargs },
+  "fn-unpack": { id: "fn-unpack", scenes: fnUnpack },
+  "fn-fnarg": { id: "fn-fnarg", scenes: fnFnarg },
+  "fn-higher": { id: "fn-higher", scenes: fnHigher },
+  "fn-lambda": { id: "fn-lambda", scenes: fnLambda },
+  "fn-recur": { id: "fn-recur", scenes: fnRecur },
+  "fn-wrap": { id: "fn-wrap", scenes: fnWrap },
   "mod-import": { id: "mod-import", scenes: modImport },
   "file-why": { id: "file-why", scenes: fileWhy },
   "file-open": { id: "file-open", scenes: fileOpen },

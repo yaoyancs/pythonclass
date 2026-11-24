@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480">
+<defs><marker id="m-navy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1B3A6B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#2E8B57"/></marker><marker id="m-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#D9822B"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#C0392B"/></marker><marker id="m-grey" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8A97AB"/></marker></defs>
+<style>
+svg &gt; path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw-flow 6s ease-in-out infinite;
+}
+svg &gt; path:nth-of-type(2), svg &gt; path:nth-of-type(4),
+svg &gt; path:nth-of-type(6), svg &gt; path:nth-of-type(8) {
+  animation-delay: 2.8s;
+}
+svg &gt; rect:not(:first-of-type) {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: frame-pulse 6s ease-in-out infinite;
+}
+svg &gt; rect:nth-of-type(3) { animation-delay: .45s; }
+svg &gt; rect:nth-of-type(4) { animation-delay: .9s; }
+svg &gt; rect:nth-of-type(5) { animation-delay: 1.35s; }
+svg &gt; rect:nth-of-type(6) { animation-delay: 1.8s; }
+@keyframes draw-flow {
+  0%, 8% { stroke-dashoffset: 1000; opacity: .2; }
+  30%, 82% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: -1000; opacity: .2; }
+}
+@keyframes frame-pulse {
+  0%, 12%, 100% { transform: scale(1); }
+  6% { transform: scale(1.035); }
+}
+@media (prefers-reduced-motion: reduce) {
+  svg &gt; path, svg &gt; rect { animation: none; stroke-dashoffset: 0; }
+}
+</style>
+<rect width="800" height="480" rx="24" fill="#F4F7FB"/>
+<text x="400.0" y="40.0" text-anchor="middle" font-size="26" font-weight="700" fill="#1B3A6B" font-family="PingFang SC, Microsoft YaHei, sans-serif" xml:space="preserve">递归：先一层层调用，再一层层返回</text><text x="100.0" y="84.0" text-anchor="middle" font-size="18" font-weight="700" fill="#1B3A6B" font-family="PingFang SC, Microsoft YaHei, sans-serif" xml:space="preserve">递（调用）</text><text x="700.0" y="84.0" text-anchor="middle" font-size="18" font-weight="700" fill="#D9822B" font-family="PingFang SC, Microsoft YaHei, sans-serif" xml:space="preserve">归（返回）</text><rect x="60.0" y="104.0" width="150.0" height="46.0" rx="10" fill="#E8EEF8" stroke="#1B3A6B" stroke-width="2.5"/><text x="135.0" y="134.0" text-anchor="middle" font-size="20" font-weight="700" fill="#1B3A6B" font-family="Menlo, Consolas, monospace" xml:space="preserve">fact(5)</text><text x="230.0" y="134.0" text-anchor="start" font-size="17" fill="#4A5A75" font-family="Menlo, Consolas, monospace" xml:space="preserve">5 * fact(4)</text><text x="770.0" y="134.0" text-anchor="end" font-size="19" font-weight="700" fill="#D9822B" font-family="Menlo, Consolas, monospace" xml:space="preserve">5 * 24 = 120</text><path d="M110.0 150.0 L144.0 174.0" fill="none" stroke="#1B3A6B" stroke-width="2.5" stroke-linecap="round" marker-end="url(#m-navy)"/><path d="M640.0 170.0 L640.0 150.0" fill="none" stroke="#D9822B" stroke-width="2.5" stroke-linecap="round" marker-end="url(#m-orange)"/><rect x="94.0" y="174.0" width="150.0" height="46.0" rx="10" fill="#E8EEF8" stroke="#1B3A6B" stroke-width="2.5"/><text x="169.0" y="204.0" text-anchor="middle" font-size="20" font-weight="700" fill="#1B3A6B" font-family="Menlo, Consolas, monospace" xml:space="preserve">fact(4)</text><text x="264.0" y="204.0" text-anchor="start" font-size="17" fill="#4A5A75" font-family="Menlo, Consolas, monospace" xml:space="preserve">4 * fact(3)</text><text x="770.0" y="204.0" text-anchor="end" font-size="19" font-weight="700" fill="#D9822B" font-family="Menlo, Consolas, monospace" xml:space="preserve">4 * 6 = 24</text><path d="M144.0 220.0 L178.0 244.0" fill="none" stroke="#1B3A6B" stroke-width="2.5" stroke-linecap="round" marker-end="url(#m-navy)"/><path d="M640.0 240.0 L640.0 220.0" fill="none" stroke="#D9822B" stroke-width="2.5" stroke-linecap="round" marker-end="url(#m-orange)"/><rect x="128.0" y="244.0" width="150.0" height="46.0" rx="10" fill="#E8EEF8" stroke="#1B3A6B" stroke-width="2.5"/><text x="203.0" y="274.0" text-anchor="middle" font-size="20" font-weight="700" fill="#1B3A6B" font-family="Menlo, Consolas, monospace" xml:space="preserve">fact(3)</text><text x="298.0" y="274.0" text-anchor="start" font-size="17" fill="#4A5A75" font-family="Menlo, Consolas, monospace" xml:space="preserve">3 * fact(2)</text><text x="770.0" y="274.0" text-anchor="end" font-size="19" font-weight="700" fill="#D9822B" font-family="Menlo, Consolas, monospace" xml:space="preserve">3 * 2 = 6</text><path d="M178.0 290.0 L212.0 314.0" fill="none" stroke="#1B3A6B" stroke-width="2.5" stroke-linecap="round" marker-end="url(#m-navy)"/><path d="M640.0 310.0 L640.0 290.0" fill="none" stroke="#D9822B" stroke-width="2.5" stroke-linecap="round" marker-end="url(#m-orange)"/><rect x="162.0" y="314.0" width="150.0" height="46.0" rx="10" fill="#E8EEF8" stroke="#1B3A6B" stroke-width="2.5"/><text x="237.0" y="344.0" text-anchor="middle" font-size="20" font-weight="700" fill="#1B3A6B" font-family="Menlo, Consolas, monospace" xml:space="preserve">fact(2)</text><text x="332.0" y="344.0" text-anchor="start" font-size="17" fill="#4A5A75" font-family="Menlo, Consolas, monospace" xml:space="preserve">2 * fact(1)</text><text x="770.0" y="344.0" text-anchor="end" font-size="19" font-weight="700" fill="#D9822B" font-family="Menlo, Consolas, monospace" xml:space="preserve">2 * 1 = 2</text><path d="M212.0 360.0 L246.0 384.0" fill="none" stroke="#1B3A6B" stroke-width="2.5" stroke-linecap="round" marker-end="url(#m-navy)"/><path d="M640.0 380.0 L640.0 360.0" fill="none" stroke="#D9822B" stroke-width="2.5" stroke-linecap="round" marker-end="url(#m-orange)"/><rect x="196.0" y="384.0" width="150.0" height="46.0" rx="10" fill="#E3F3EA" stroke="#2E8B57" stroke-width="2.5"/><text x="271.0" y="414.0" text-anchor="middle" font-size="20" font-weight="700" fill="#2E8B57" font-family="Menlo, Consolas, monospace" xml:space="preserve">fact(1)</text><text x="366.0" y="414.0" text-anchor="start" font-size="17" font-weight="700" fill="#2E8B57" font-family="Menlo, Consolas, monospace" xml:space="preserve">n &lt;= 1</text><text x="770.0" y="414.0" text-anchor="end" font-size="19" font-weight="700" fill="#D9822B" font-family="Menlo, Consolas, monospace" xml:space="preserve">return 1</text><text x="496.0" y="414.0" text-anchor="start" font-size="17" font-weight="700" fill="#2E8B57" font-family="PingFang SC, Microsoft YaHei, sans-serif" xml:space="preserve">← 终止条件</text>
+</svg>

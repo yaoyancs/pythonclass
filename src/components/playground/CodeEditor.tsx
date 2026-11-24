@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Editor, { type BeforeMount, type OnMount } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { useSceneEngine } from '../../engine/SceneEngine';
+import { registerJediCompletion } from '../../python/jediCompletion';
 
 interface CodeEditorProps {
   onFocusChange?: (focused: boolean) => void;
@@ -22,6 +23,7 @@ interface CodeEditorProps {
 
 // 让编辑器底色与输出区一致，避免深色块之间色调不统一
 const defineTheme: BeforeMount = (monaco) => {
+  registerJediCompletion(monaco);
   const colors = {
     'editor.background': '#12211c',
     'editor.lineHighlightBackground': '#1a2f27',
@@ -35,6 +37,12 @@ const defineTheme: BeforeMount = (monaco) => {
     base: 'vs-dark',
     inherit: true,
     rules: [],
+    colors,
+  });
+  monaco.editor.defineTheme('classroom-comment-red', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [{ token: 'comment', foreground: 'FF2A2A', fontStyle: 'bold' }],
     colors,
   });
   const yellow = 'FDE047';
@@ -121,7 +129,7 @@ export function CodeEditor({
         height="100%"
         defaultLanguage="python"
         value={code}
-        theme={yellow ? 'classroom-yellow' : 'classroom'}
+        theme={yellow ? 'classroom-yellow' : state.lessonId === 'lesson08' ? 'classroom-comment-red' : 'classroom'}
         beforeMount={defineTheme}
         onMount={handleMount}
         onChange={(value) => {
@@ -130,6 +138,9 @@ export function CodeEditor({
         }}
         options={{
           fontSize,
+          quickSuggestions: { other: true, comments: false, strings: false },
+          suggestOnTriggerCharacters: true,
+          parameterHints: { enabled: true },
           lineNumbers: 'on',
           minimap: { enabled: false },
           scrollBeyondLastLine: false,

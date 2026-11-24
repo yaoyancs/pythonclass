@@ -54,6 +54,7 @@ import { AssignIntroStage } from './AssignIntroStage';
 import { BindingModelStage } from './BindingModelStage';
 import { TypeMapStage } from './TypeMapStage';
 import { ContainerMapStage } from './ContainerMapStage';
+import { SyntaxMapStage } from './SyntaxMapStage';
 import { TypeProbeStage } from './TypeProbeStage';
 import { IntFloatStage } from './IntFloatStage';
 import { VarPredictStage } from './VarPredictStage';
@@ -71,6 +72,8 @@ import { PlaylistBoardStage } from './PlaylistBoardStage';
 import { PlayCountsStage } from './PlayCountsStage';
 import { PlaylistFormStage } from './PlaylistFormStage';
 import { StepRunStage } from './StepRunStage';
+import { RecursionTraceStage } from './RecursionTraceStage';
+import { HanoiTraceStage } from './HanoiTraceStage';
 import { StringCutStage } from './StringCutStage';
 import { StringTemplateStage } from './StringTemplateStage';
 import { StringCastStage } from './StringCastStage';
@@ -87,7 +90,7 @@ import { LoopWrapStage } from './LoopWrapStage';
 import { CodeBeatsStage } from './CodeBeatsStage';
 
 export function TeachingStage() {
-  const { scene, lesson, dispatch } = useSceneEngine();
+  const { scene, lesson, state, dispatch } = useSceneEngine();
   const clickLines = scene.content.clickLines ?? [];
   const clickReveal = useStageAdvance(scene.id, clickLines.length, clickLines.length > 0);
   const { content } = scene;
@@ -127,6 +130,8 @@ export function TeachingStage() {
       content.pythonVerify ||
       content.replDemo ||
       content.stepExec ||
+      content.recursionTrace ||
+      content.hanoiTrace ||
       content.typedDemo ||
       content.exprOrder ||
       content.syntaxRules ||
@@ -139,6 +144,7 @@ export function TeachingStage() {
       content.bindingModel ||
       content.typeMap ||
       content.containerMap ||
+      content.syntaxMap ||
       content.typeProbe ||
       content.intFloat ||
       content.varPredict ||
@@ -239,6 +245,12 @@ export function TeachingStage() {
             {content.stepRun && scene.code && (
               <StepRunStage sceneId={scene.id} code={scene.code.initial} />
             )}
+            {content.recursionTrace && (
+              <RecursionTraceStage sceneId={scene.id} config={content.recursionTrace} />
+            )}
+            {content.hanoiTrace && (
+              <HanoiTraceStage sceneId={scene.id} config={content.hanoiTrace} />
+            )}
             {content.flowDiagram && (
               <div className="mt-2 overflow-x-auto rounded-2xl bg-classroom-playground border border-classroom-border px-4 py-2 space-y-0.5 whitespace-pre font-mono text-sm leading-snug text-text-primary font-medium">
                 {content.flowDiagram.map((line, index) => (
@@ -315,6 +327,20 @@ export function TeachingStage() {
                           ? 'text-2xl'
                           : 'text-stage-sub'
                     } font-medium flex items-baseline gap-4 text-text-primary`}
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full bg-accent shrink-0 translate-y-[-0.28em]" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {content.afterRunPoints && state.sceneLocal.runCount > 0 && (
+              <ul className="mt-10 space-y-5 timeline-node-in">
+                {content.afterRunPoints.map((point) => (
+                  <li
+                    key={point}
+                    className="text-stage-sub font-medium flex items-baseline gap-4 text-text-primary"
                   >
                     <span className="h-2.5 w-2.5 rounded-full bg-accent shrink-0 translate-y-[-0.28em]" />
                     {point}
@@ -557,6 +583,7 @@ export function TeachingStage() {
             )}
             {content.typeMap && <TypeMapStage />}
             {content.containerMap && <ContainerMapStage />}
+            {content.syntaxMap && <SyntaxMapStage content={content.syntaxMap} />}
             {content.typeProbe && (
               <TypeProbeStage content={content.typeProbe} sceneId={scene.id} />
             )}

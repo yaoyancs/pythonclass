@@ -1,11 +1,26 @@
 import { useSyncExternalStore } from 'react';
 import { useSceneEngine } from '../../engine/SceneEngine';
 import { getBeatPhase, subscribeBeatPhase } from '../../hooks/useStageAdvance';
+import { Button } from '../ui/Button';
 
 export function RevealPanel() {
-  const { state, scene } = useSceneEngine();
+  const { state, scene, dispatch } = useSceneEngine();
   const beatPhase = useSyncExternalStore(subscribeBeatPhase, getBeatPhase, getBeatPhase);
-  if (!scene.reveal || !state.sceneLocal.revealShown || beatPhase > 0) return null;
+  if (!scene.reveal || beatPhase > 0) return null;
+
+  const waitingPrediction =
+    (scene.prediction || scene.requiresPrediction) && !state.sceneLocal.predictionSubmitted;
+
+  if (!state.sceneLocal.revealShown) {
+    if (waitingPrediction) return null;
+    return (
+      <div className="mt-8">
+        <Button variant="secondary" size="md" onClick={() => dispatch({ type: 'REVEAL' })}>
+          揭晓答案
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-8 rounded-2xl bg-accent-muted border border-classroom-border p-8">

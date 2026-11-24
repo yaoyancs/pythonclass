@@ -64,7 +64,7 @@ function applyRunComplete(state: ClassroomState, scene: Scene): ClassroomState {
     phase = 'output';
   }
 
-  if (scene.reveal && (scene.prediction || scene.requiresPrediction)) {
+  if (scene.reveal && (scene.type !== 'debug' || !local.lastOutput?.error)) {
     local = { ...local, revealShown: true };
     phase = 'reveal';
   }
