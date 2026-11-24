@@ -3,7 +3,6 @@ import { useSceneEngine } from '../../engine/SceneEngine';
 import { publishBeatPhase } from '../../hooks/useStageAdvance';
 import { CodeEditor } from '../playground/CodeEditor';
 import { usePythonEngine } from '../../python/usePythonEngine';
-import type { CodeEvolutionStep } from '../../types/scene';
 
 /**
  * Embedded inside the existing classroom/scene engine, NOT a separate player.
@@ -36,7 +35,7 @@ function changedLine(before: string, after: string): number {
 }
 
 export function CodeEvolutionStage() {
-  const { scene, state, dispatch } = useSceneEngine();
+  const { scene, dispatch } = useSceneEngine();
   const steps = scene.content.codeEvolution?.steps ?? [];
   const [index, setIndex] = useState(0);
   const [animating, setAnimating] = useState(false);
@@ -44,6 +43,7 @@ export function CodeEvolutionStage() {
   const [showNotes, setShowNotes] = useState(false);
   const [output, setOutput] = useState<{ text: string; error?: boolean; preview?: boolean } | null>(null);
   const [ran, setRan] = useState(false);
+  const [replayVersion, setReplayVersion] = useState(0);
   const { isReady, runCode, statusMessage } = usePythonEngine();
   const oldCode = useRef('');
   const step = steps[index];
@@ -98,7 +98,7 @@ export function CodeEvolutionStage() {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [index, scene.id, dispatch, step]);
+  }, [index, replayVersion, scene.id, dispatch, step]);
 
   const execute = useCallback(async () => {
     if (!step || !isReady || current.current.animating || current.current.ran) return;
@@ -136,11 +136,11 @@ export function CodeEvolutionStage() {
   useEffect(() => {
     window.__pyclassStageAdvance = next;
     window.__pyclassStageRetreat = prev;
-    window.__pyclassRun = () => { void execute(); };
+    (window as Window & { __pyclassRun?: () => void }).__pyclassRun = () => { void execute(); };
     return () => {
       delete window.__pyclassStageAdvance;
       delete window.__pyclassStageRetreat;
-      delete window.__pyclassRun;
+      delete (window as Window & { __pyclassRun?: () => void }).__pyclassRun;
       publishBeatPhase(0);
     };
   }, [next, prev, execute]);
@@ -188,8 +188,8 @@ export function CodeEvolutionStage() {
       </div>
       <div className="flex shrink-0 items-center gap-3 rounded-xl border border-classroom-border bg-classroom-stage px-4 py-2">
         <button type="button" onClick={() => go(-1)} disabled={index === 0} className="px-4 py-2 rounded-lg border border-classroom-border text-text-primary disabled:opacity-30">← 上一步</button>
-        <button type="button" onClick={() => { setAuto(x => !x); }} className={`px-4 py-2 rounded-lg text-white ${auto ? 'bg-amber-600' : 'bg-slate-600'}`}>{auto ? 'Ⅱ 暂停自动播放' : '▶ 自动播放'}</button>
-        <button type="button" onClick={() => { setIndex(i => i); oldCode.current = ''; dispatch({ type: 'UPDATE_CODE', code: '', clearOutput: true }); setIndex(i => i === 0 ? 0 : i - 1); }} className="px-3 py-2 rounded-lg border border-classroom-border text-text-primary">重演上步</button>
+        <button type="button" onClick={() => { if (!auto && step.pauseForQuestion) { next(); setAuto(true); } else setAuto(x => !x); }} className={`px-4 py-2 rounded-lg text-white ${auto ? 'bg-amber-600' : 'bg-slate-600'}`}>{auto ? 'Ⅱ 暂停自动播放' : '▶ 自动播放'}</button>
+        <button type="button" onClick={() => { setAuto(false); oldCode.current = index > 0 ? steps[index - 1]!.code : ''; setReplayVersion(v => v + 1); }} className="px-3 py-2 rounded-lg border border-classroom-border text-text-primary">重播本步</button>
         <div className="text-sm text-text-secondary ml-auto">{step.pauseForQuestion ? '课堂提问 · 等待手动继续' : '讲解步骤'}</div>
         <button type="button" onClick={next} disabled={index >= steps.length - 1} className="px-5 py-2 rounded-lg bg-accent text-white disabled:opacity-30">下一步 →</button>
       </div>
