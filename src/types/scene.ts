@@ -755,7 +755,26 @@ export interface MarkedSpan {
   mark?: boolean;
 }
 
+export interface CodeEvolutionStep {
+  id: string;
+  phaseLabel: string;
+  prompt: string;
+  code: string;
+  talk: string;
+  question?: string;
+  teacherNotes?: string;
+  expectedOutput?: string;
+  highlightLine?: number;
+  mode?: 'write' | 'predict' | 'run' | 'explain';
+  pauseForQuestion?: boolean;
+  charDelayMs?: number;
+  holdMs?: number;
+}
+export interface CodeEvolutionContent { steps: CodeEvolutionStep[]; }
+
 export interface SceneContent {
+  /** 单屏代码演进：使用已有课程引擎与 Monaco 编辑器 */
+  codeEvolution?: CodeEvolutionContent;
   headline?: string;
   /** 点击右侧逐条出现，顺序即出现顺序 */
   clickLines?: string[];
