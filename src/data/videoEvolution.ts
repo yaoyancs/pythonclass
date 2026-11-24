@@ -1,4 +1,4 @@
-import type { DraftScene } from '../../types/scene';
+import type { DraftScene } from '../types/scene';
 
 /**
  * 函数专题：依据用户提供的 13 节教学视频中可核对的屏幕代码案例整理。
