@@ -94,7 +94,7 @@ export const codeEvolutionScenesByPart: Record<string, DraftScene[]> = Object.fr
       type: 'run',
       layout: 'fullscreen',
       content: { codeEvolution: { steps: makeSteps(part) } },
-      code: { initial: '', editable: false, resetToInitial: false },
+      code: { initial: '', editable: true, resetToInitial: false },
     }],
   ]),
 );
