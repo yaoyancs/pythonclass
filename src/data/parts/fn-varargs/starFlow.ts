@@ -43,7 +43,7 @@ export interface StarStep {
 
 export interface StarControls {
   count: number;
-  mode: 'spread' | 'whole' | 'echo' | 'keyword' | 'head' | 'mid' | 'tail';
+  mode: 'spread' | 'whole' | 'echo' | 'keyword' | 'head' | 'mid' | 'tail' | 'tuple' | 'str' | 'range' | 'dictstar' | 'bad';
 }
 
 const PACK_COUNTS = [0, 1, 2, 3, 5];

@@ -7,7 +7,7 @@ export function SceneSideImage({ image, stacked = false }: { image: SceneImage; 
       <img
         src={image.src}
         alt={image.alt}
-        className="w-full h-auto rounded-3xl bg-classroom-stage shadow-card object-contain"
+        className={`w-full rounded-3xl bg-classroom-stage shadow-card object-contain ${stacked ? 'max-h-[28vh]' : 'h-auto'}`}
       />
       {image.caption && (
         <figcaption className="mt-4 text-center text-lg text-text-secondary">{image.caption}</figcaption>
