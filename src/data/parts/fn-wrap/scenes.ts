@@ -34,7 +34,7 @@ print(add())`),
     },
     reveal: {
       title: "函数里一旦给 count 赋值，count 就是局部变量",
-      body: "count = ... 让整个函数里的 count 都成了局部变量，右边的 count + 1 读取的是还没赋值的局部变量，引发 UnboundLocalError。\n改法：把 count 作为参数传入，用 return 交回新值：def add(count): return count + 1。",
+      body: "函数里只要出现 count = ...，整个函数中的 count 都是局部名字，包括赋值右边的读取，所以报 UnboundLocalError。\n改法要接到调用处：def add(count): return count + 1，然后写 count = add(count)。只定义函数不会改外面的 count。",
     },
   },
   {
@@ -116,7 +116,7 @@ print(nums)`),
             title: "作用域",
             code: `def add(count):
     return count + 1`,
-            notes: ["函数内赋值即局部变量", "参数传入，return 交回"],
+            notes: ["有赋值则整个函数都是局部名字", "调用处要接收 return"],
           },
           {
             title: "函数作数据",

@@ -1,177 +1,83 @@
 import type { DraftScene } from "../../../types/scene";
 
-const code = (initial: string) => ({
-  initial,
-  editable: true,
-  resetToInitial: true,
+const flow = (
+  kind: "pack" | "unpack" | "compare" | "kwargs" | "kwunpack" | "mixed" | "bench" | "forward" | "quiz",
+): DraftScene["content"] => ({
+  starFlow: { kind },
 });
 
-/** *args 与 **kwargs。 */
+function runFlow(
+  id: string,
+  title: string,
+  kind: "pack" | "unpack" | "compare" | "kwargs" | "kwunpack" | "mixed" | "bench" | "forward" | "quiz",
+  initial: string,
+  expectedOutput?: string,
+): DraftScene {
+  return {
+    id,
+    title,
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: flow(kind),
+    code: { initial, editable: true, resetToInitial: true },
+    ...(expectedOutput ? { expectedOutput } : {}),
+  };
+}
+
+/** 不定个数：位置参数与关键字参数的打包、解包和绑定。 */
 export const scenes: DraftScene[] = [
   {
-    id: "fn-var-args",
-    title: "可变位置参数 *args",
+    id: "fn-var-why",
+    title: "从固定个数到不定个数",
     type: "run",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      image: {
-        src: "/lesson08/syntax/fn-var-args.svg",
-        alt: "*args：调用时的多个位置实参被收集成一个元组 args，再用 \"/\".join 拼成路径",
-      },
-    },
-    code: code(`# *args：在形参前加单星号 *，将调用时传入的任意多个位置实参自动收集成一个元组（tuple）
-def join_path(*args):
-    print(args)
-    return "/".join(args)
-
-print(join_path("src", "app.py"))
-print(join_path("data", "2026", "11", "log.txt"))`),
-    expectedOutput: `('src', 'app.py')
-src/app.py
-('data', '2026', '11', 'log.txt')
-data/2026/11/log.txt`,
-  },
-  {
-    id: "fn-var-kwargs",
-    title: "可变关键字参数 **kwargs",
-    type: "run",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      image: {
-        src: "/lesson08/syntax/fn-var-kwargs.svg",
-        alt: "**kwargs：调用时的多个 名=值 关键字实参被收集成一个字典 kwargs",
-      },
-    },
-    code: code(`#在形参前加双星号 **，将调用时传入的任意多个 名=值 关键字实参自动收集成一个字典（dict
-def make_config(**kwargs):
-    print(kwargs)
-
-make_config(lr=0.01, epochs=50, batch=32)`),
-    expectedOutput: "{'lr': 0.01, 'epochs': 50, 'batch': 32}",
-  },
-  {
-    id: "fn-var-both",
-    title: "三类参数混合定义顺序",
-    type: "run",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      image: {
-        src: "/lesson08/syntax/fn-var-both.svg",
-        alt: "三类形参的顺序：task 接第一个位置实参，*files 收集其余位置实参成元组，**options 收集关键字实参成字典",
-      },
-    },
-    code: code(`# 普通形参、*args、**kwargs 可以按顺序组合使用，
-#普通形参在前，*args 在中，**kwargs 在后
-def run_task(task, *files, **options):
-    print(task)
-    print(files)
-    print(options)
-
-run_task("compress", "a.png", "b.png", quality=80, fmt="webp")`),
-    expectedOutput: `compress
-('a.png', 'b.png')
-{'quality': 80, 'fmt': 'webp'}`,
-  },
-  {
-    id: "fn-var-kwonly",
-    title: "仅限关键字参数",
-    type: "run",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      image: {
-        src: "/lesson08/syntax/fn-var-kwonly.svg",
-        alt: "仅限关键字参数：*parts 后面的 sep 只能写 sep=\"-\"；按位置写的 \"-\" 会被 *parts 收走，结果变成 src/app.py/-",
-      },
-    },
-    code: code(`# 写在 *args 后面的形参，只能用 名=值 传入
-# 按位置写的实参都会被 *parts 收走
-def join_path(*parts, sep="/"):
-    return sep.join(parts)
-
-print(join_path("src", "app.py"))
-print(join_path("src", "app.py", sep="-"))
-print(join_path("src", "app.py", "-"))`),
-    expectedOutput: `src/app.py
-src-app.py
-src/app.py/-`,
-  },
-  {
-    id: "fn-var-practice",
-    title: "练习",
-    type: "challenge",
     layout: "split",
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 定义 span(*values)，返回任意个数采样值的极差（最大值 - 最小值）
-# 若未传入任何数（len(values) == 0），返回 0
-def span(*values):
-    pass
+    code: {
+      initial: `# max 和 print 都能接收不同个数的参数。
+print(max(10, 20))
+print(max(10, 20, 30, 40))
+print("Python", "AI", 2026)
 
-print(span(12, 18, 9, 25))
-print(span(7))
-print(span())`),
-    hints: [
-      { level: 1, text: "先判断 if len(values) == 0: return 0，再返回 max(values) - min(values)。" },
-      { level: 2, text: "values 是一个元组，可以直接传给 max() 和 min()。" },
-      {
-        level: 3,
-        text: `def span(*values):
-    if len(values) == 0:
-        return 0
-    return max(values) - min(values)
+def add(a, b):
+    return a + b
 
-print(span(12, 18, 9, 25))
-print(span(7))
-print(span())`,
-      },
-    ],
-    reveal: {
-      title: "*values 在无实参时为空元组 ()",
-      body: "4 个数的极差为 25 - 9 = 16，单个数的极差为 0，空调用返回 0。",
+def total(*nums):
+    return sum(nums)
+
+print(total(10, 20, 30))
+print(total())`,
+      editable: true,
+      resetToInitial: true,
     },
-    expectedOutput: `16
-0
+    expectedOutput: `20
+40
+Python AI 2026
+60
 0`,
   },
   {
-    id: "fn-var-syntax",
-    title: "语法小结：可变参数",
-    type: "explain",
-    layout: "fullscreen",
-    content: {
-      syntaxMap: {
-        root: "可变参数",
-        branches: [
-          {
-            title: "*args",
-            code: `def f(*args): ...
-f("src", "app.py")`,
-            notes: ["收集任意多个位置实参", "得到元组"],
-          },
-          {
-            title: "**kwargs",
-            code: `def f(**kwargs): ...
-f(lr=0.01, epochs=50)`,
-            notes: ["收集任意多个 名=值", "得到字典"],
-          },
-          {
-            title: "定义顺序",
-            code: `def f(task, *files, **opts): ...`,
-            notes: ["普通形参在前", "*args 在中", "**kwargs 在后"],
-          },
-          {
-            title: "仅限关键字参数",
-            code: `def f(*parts, sep="/"): ...
-f("a", "b", sep="-")`,
-            notes: ["写在 *args 后面", "只能用 名=值 传入"],
-          },
-        ],
-      },
+    id: "fn-star-pack",
+    title: "位置参数打包",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: flow("pack"),
+    code: {
+      initial: "def add(*nums):\n    return sum(nums)\n\nprint(add(10, 20, 30))",
+      editable: true,
+      resetToInitial: true,
     },
+    expectedOutput: "60",
   },
+  runFlow("fn-star-unpack", "位置参数解包", "unpack", "def add(a, b, c):\n    return a + b + c\n\nnums = [10, 20, 30]\nprint(add(*nums))", "60"),
+  runFlow("fn-star-compare", "打包与解包", "compare", "def f(*args):\n    return args\n\nnums = [10, 20, 30]\nprint(f(10, 20, 30))\nprint(f(*nums))", "(10, 20, 30)\n(10, 20, 30)"),
+  runFlow("fn-star-kwargs", "关键字参数打包", "kwargs", "def f(**kwargs):\n    print(kwargs)\n\nf(x=10, y=20, z=30)", "{'x': 10, 'y': 20, 'z': 30}"),
+  runFlow("fn-star-kwunpack", "关键字参数解包", "kwunpack", "def f(a, b):\n    print(a, b)\n\ndata = {\"b\": 20, \"a\": 10}\nf(**data)", "10 20"),
+  runFlow("fn-star-mixed", "参数混合与绑定", "mixed", "def f(a, b, *args):\n    print(a)\n    print(b)\n    print(args)\n\nf(10, 20, 30, 40, 50)", "10\n20\n(30, 40, 50)"),
+  runFlow("fn-star-bench", "参数绑定实验", "bench", "def f(a, b=0, *args, c=100, **kwargs):\n    print(a, b, args, c, kwargs)\n\nf(10, 20, 30, c=50)", "10 20 (30,) 50 {}"),
+  runFlow("fn-star-forward", "参数转发", "forward", "def show(*args, **kwargs):\n    print(*args, **kwargs)\n\nshow(\"Python\", \"AI\", sep=\" | \", end=\"!\")", "Python | AI!"),
+  runFlow("fn-star-quiz", "课堂互动", "quiz", "def f(*args):\n    print(args)\n\nf([1, 2, 3])", "([1, 2, 3],)"),
 ];

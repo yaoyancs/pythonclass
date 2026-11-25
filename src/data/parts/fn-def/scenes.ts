@@ -32,6 +32,82 @@ print_box()`),
 +------+`,
   },
   {
+    id: "fn-def-flow",
+    title: "定义时不执行函数体",
+    type: "predict",
+    layout: "split",
+    editorSide: "left",
+    content: {
+      body: "先预测输出顺序，再运行。",
+    },
+    code: code(`print("A")
+
+def show():
+    print("B")
+
+print("C")
+show()
+print("D")`),
+    prediction: {
+      question: "输出顺序是？",
+      options: [
+        { id: "abcd", label: "A. A B C D" },
+        { id: "acbd", label: "B. A C B D", isCorrect: true },
+        { id: "acd", label: "C. A C D" },
+      ],
+    },
+    reveal: {
+      title: "def 只创建函数，show() 才执行函数体",
+      body: "print(\"A\") 和 print(\"C\") 先执行。执行 def 时函数体里的 print(\"B\") 不运行。调用 show() 才打印 B，然后继续 print(\"D\")。",
+    },
+    expectedOutput: `A
+C
+B
+D`,
+  },
+  {
+    id: "fn-def-print-return",
+    title: "print 和 return",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    editorOnly: true,
+    content: {
+      codeEvolution: {
+        captions: [
+          "屏幕上有 10，result 是 None",
+          "return 把 10 交给调用处",
+          "返回值可以继续运算",
+        ],
+        focus: [5, 2, 4],
+        steps: [
+          `def double(x):
+    print(x * 2)
+
+result = double(5)
+print(result)`,
+          `def double(x):
+    return x * 2
+
+result = double(5)
+print(result)`,
+          `def double(x):
+    return x * 2
+
+print(double(5) + 3)
+print(double(double(5)))`,
+        ],
+      },
+    },
+    code: code(`def double(x):
+    print(x * 2)
+
+result = double(5)
+print(result)`),
+    expectedOutput: `10
+None`,
+  },
+  {
     id: "fn-def-param",
     title: "形参与实参",
     type: "run",
@@ -163,10 +239,11 @@ print(total)`),
     content: {
       image: {
         src: "/lesson08/syntax/fn-def-stop.svg",
-        alt: "执行到 return 立即结束：长度不足、纯数字、通过三个出口，最后一行 print 不会执行",
+        alt: "某一次 return 执行到了，这次调用才结束。前面的 if 没成立时，下面的 return 仍会执行",
       },
     },
-    code: code(`# 一旦执行到 return，函数立即结束，下方语句不再执行
+    code: code(`# 执行到某一次 return，这次调用结束
+# if 里的 return 没执行到时，下面的语句仍会运行
 def check_password(pwd):
     if len(pwd) < 8:
         return "长度不足"
@@ -256,35 +333,37 @@ pong`,
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 定义函数，功能是： 判断一个正整数是否为素数
+    code: code(`# 社交平台通常使用以 # 开头的词语作为话题标签。
+# 定义函数 get_tags(message)，接收一条聊天消息字符串（各词语以空格分隔），
+# 提取其中所有以 # 开头的词语，并以列表形式返回。
 
-
-`),
+print(get_tags("今天学习 #Python 一起 #编程"))
+print(get_tags("周末去旅行 #生活 #旅行"))
+print(get_tags("今天很开心"))`),
     hints: [
-      { level: 1, text: "先写 if n < 2: return False，再用 for i in range(2, n): 判断 n % i == 0。" },
-      { level: 2, text: "循环内发现 n % i == 0 时立即 return False，循环结束后 return True。" },
+      { level: 1, text: "用 message.split() 按空格分成词语，再判断每个词是否以 # 开头。" },
+      { level: 2, text: "在函数里准备一个空列表，符合条件的词 append 进去，最后 return 这个列表。没有标签时返回空列表。" },
       {
         level: 3,
-        text: `def is_prime(n):
-    if n < 2:
-        return False
-    for i in range(2, n):
-        if n % i == 0:
-            return False
-    return True
+        text: `def get_tags(message):
+    tags = []
+    for word in message.split():
+        if word.startswith("#"):
+            tags.append(word)
+    return tags
 
-print(is_prime(1))
-print(is_prime(9))
-print(is_prime(17))`,
+print(get_tags("今天学习 #Python 一起 #编程"))
+print(get_tags("周末去旅行 #生活 #旅行"))
+print(get_tags("今天很开心"))`,
       },
     ],
     reveal: {
-      title: "利用提前 return 判断素数",
-      body: "1 不是素数，9 能被 3 整除提前返回 False，17 循环结束返回 True。",
+      title: "按空格拆开消息，收集以 # 开头的词",
+      body: "前两条消息分别得到 ['#Python', '#编程'] 和 ['#生活', '#旅行']，没有标签时返回 []。",
     },
-    expectedOutput: `False
-False
-True`,
+    expectedOutput: `['#Python', '#编程']
+['#生活', '#旅行']
+[]`,
   },
   {
     id: "fn-def-syntax",

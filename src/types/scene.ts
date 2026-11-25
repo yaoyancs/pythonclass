@@ -348,6 +348,25 @@ export interface HanoiTraceContent {
   disks: 3;
 }
 
+/** 第 8 讲：星号的打包、解包与绑定。kind 决定这一页演示哪一种写法。 */
+export interface StarFlowContent {
+  kind:
+    | 'pack'
+    | 'unpack'
+    | 'compare'
+    | 'both'
+    | 'kwargs'
+    | 'kwunpack'
+    | 'mixed'
+    | 'bench'
+    | 'forward'
+    | 'quiz'
+    | 'assign'
+    | 'nest'
+    | 'dictmerge'
+    | 'extquiz';
+}
+
 /** 带着色 token 的代码演示 */
 export interface TypedDemoContent {
   lead?: string;
@@ -757,6 +776,25 @@ export interface MarkedSpan {
 
 export interface SceneContent {
   headline?: string;
+  /** 同一页内逐步写出的代码快照；前进/后退按快照切换。 */
+  codeEvolution?: {
+    steps: string[];
+    /** 每步要高亮的行号（1-based），与 steps 等长。 */
+    focus?: number[];
+    /** 每步一句屏幕提示，与 steps 等长。只写当前代码变化，不写讲稿。 */
+    captions?: string[];
+  };
+  /** 教师照读提示：用于视频拆解后的逐步授课页。 */
+  teachingScript?: {
+    cue: string;
+    lines: string[];
+    question?: string;
+    keyPoint?: string;
+    pauseSeconds?: number;
+  };
+  /** 代码区需要强调的行（1-based）。 */
+  codeFocusLine?: number;
+  codeFocusNote?: string;
   /** 点击右侧逐条出现，顺序即出现顺序 */
   clickLines?: string[];
   /** 左侧代码首次运行后，右侧才显示的要点 */
@@ -830,6 +868,8 @@ export interface SceneContent {
   stepExec?: StepExecContent;
   recursionTrace?: RecursionTraceContent;
   hanoiTrace?: HanoiTraceContent;
+  /** 第 8 讲星号：代码逐步高亮，右侧演示参数打包与解包 */
+  starFlow?: StarFlowContent;
   typedDemo?: TypedDemoContent;
   exprOrder?: ExprOrderContent;
   syntaxRules?: SyntaxRulesContent;

@@ -8,11 +8,11 @@ const code = (initial: string) => ({
 
 const PINGS = `pings = [42, 18, 25, 31, 95, 22]`;
 
-/** 解包赋值、个数不一致、星号接收不定长、调用处 * 与 ** 展开。 */
+/** 星号语法扩展：赋值收集与容器构造。前面两页是没有星号时个数必须对齐。 */
 export const scenes: DraftScene[] = [
   {
     id: "fn-unpack-assign",
-    title: "解包赋值",
+    title: "普通解包",
     type: "run",
     layout: "split",
     editorSide: "left",
@@ -22,7 +22,8 @@ export const scenes: DraftScene[] = [
         alt: "解包赋值：return len, min, max 返回元组 (6, 18, 95)，按位置交给 n、low、high",
       },
     },
-    code: code(`# return a, b, c 返回元组，调用处可直接解包到多个变量
+    code: code(`# 测速要同时告诉你：测了几次、最快多少、最慢多少。
+# 函数一次返回这三个数，调用处用三个变量接住。
 ${PINGS}
 
 def ping_summary(pings):
@@ -38,13 +39,13 @@ print(high)`),
   },
   {
     id: "fn-unpack-mismatch",
-    title: "解包个数不确定怎么办？",
+    title: "解包个数不一致",
     type: "debug",
     layout: "split",
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 只想要个数和最小值，左边只写两个变量
+    code: code(`# 函数交回 3 个数，左边只准备 2 个变量，多出来的数没有地方放。
 ${PINGS}
 
 def ping_summary(pings):
@@ -68,146 +69,103 @@ print(n, low)`,
     ],
     reveal: {
       title: "左边变量个数必须与元素个数一致",
-      body: "ping_summary 返回 3 个值，左边只有 n 和 low 两个变量，多出的 1 个值没有去处。元素个数不固定时，用下一页的星号接收。",
+      body: "左边只有两个名字，第三个值没有去处。下一页用星号接住剩下的元素。",
     },
     expectedOutput: "6 18",
   },
   {
-    id: "fn-unpack-return",
-    title: "星号接收不定长元素",
+    id: "fn-ext-assign",
+    title: "星号收集剩余元素",
     type: "run",
     layout: "split",
     editorSide: "left",
-    content: {
-      image: {
-        src: "/lesson08/syntax/fn-unpack-return.svg",
-        alt: "星号解包：fastest 取第一个 18，slowest 取最后一个 95，*middle 把中间的全部收成列表",
-      },
-    },
-    code: code(`# 元素个数不固定时，用 *middle 接收中间全部元素
-${PINGS}
-
-def sorted_pings(pings):
-    return tuple(sorted(pings))
-
-fastest, *middle, slowest = sorted_pings(pings)
-print("最快:", fastest)
-print("中间:", middle)
-print("最慢:", slowest)`),
-    expectedOutput: `最快: 18
-中间: [22, 25, 31, 42]
-最慢: 95`,
+    content: { starFlow: { kind: "assign" } },
+    code: code("a, *b, c = [10, 20, 30, 40, 50]\nprint(a, b, c)"),
+    expectedOutput: "10 [20, 30, 40] 50",
   },
   {
-    id: "fn-unpack-call",
-    title: "调用处的 *",
-    type: "run",
-    layout: "split",
-    editorSide: "left",
-    content: {
-      image: {
-        src: "/lesson08/syntax/fn-unpack-call.svg",
-        alt: "调用处的 *：*samples 把列表展开成 4 个位置实参，等价于 ping_span(42, 18, 25, 31)",
-      },
-    },
-    code: code(`# 调用处的 * 把列表元素逐个展开为位置实参
-def ping_span(*ms):
-    return max(ms) - min(ms)
-
-samples = [42, 18, 25, 31]
-print(ping_span(42, 18, 25, 31))
-print(ping_span(*samples))`),
-    expectedOutput: `24
-24`,
-  },
-  {
-    id: "fn-unpack-call-dict",
-    title: "调用处的 **",
-    type: "run",
-    layout: "split",
-    editorSide: "left",
-    editorOnly: true,
-    content: {},
-    code: code(`# 调用处的 ** 把字典的 键: 值 逐个展开为关键字实参 键=值
-def export_image(name, width=1920, fmt="png"):
-    print(f"{name}.{fmt} ({width}px)")
-
-options = {"width": 800, "fmt": "webp"}
-export_image("avatar", width=800, fmt="webp")
-export_image("avatar", **options)`),
-    expectedOutput: `avatar.webp (800px)
-avatar.webp (800px)`,
-  },
-  {
-    id: "fn-unpack-practice",
-    title: "练习：trimmed_avg",
+    id: "fn-star-practice",
+    title: "截尾平均",
     type: "challenge",
     layout: "split",
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 定义 trimmed_avg(pings)
-# 1. 对 pings 排序后，用 fastest, *middle, slowest 解包去掉最快和最慢各一次
-# 2. 返回 middle 的平均值（保留 1 位小数）
-${PINGS}
+    code: code(`# 至少三位评委。去掉一个最高分和一个最低分，再算平均分，保留 1 位小数。
+scores = [88, 76, 90, 84, 70, 92]
 
-def trimmed_avg(pings):
+def final_score(scores):
     pass
 
-print(trimmed_avg(pings))
-print(trimmed_avg([10, 50, 20, 30]))`),
+print(final_score(scores))
+print(final_score([90, 70, 80, 60]))`),
     hints: [
-      { level: 1, text: "fastest, *middle, slowest = sorted(pings)" },
-      { level: 2, text: "return round(sum(middle) / len(middle), 1)" },
+      { level: 1, text: "最低, *有效, 最高 = sorted(scores)。中间不管还剩几个，都在 *有效 里。" },
+      { level: 2, text: "return round(sum(有效) / len(有效), 1)" },
       {
         level: 3,
-        text: `pings = [42, 18, 25, 31, 95, 22]
+        text: `scores = [88, 76, 90, 84, 70, 92]
 
-def trimmed_avg(pings):
-    fastest, *middle, slowest = sorted(pings)
-    return round(sum(middle) / len(middle), 1)
+def final_score(scores):
+    最低, *有效, 最高 = sorted(scores)
+    return round(sum(有效) / len(有效), 1)
 
-print(trimmed_avg(pings))
-print(trimmed_avg([10, 50, 20, 30]))`,
+print(final_score(scores))
+print(final_score([90, 70, 80, 60]))`,
       },
     ],
     reveal: {
-      title: "星号解包适配任意长度的采样列表",
-      body: "6 个样本去极值剩 4 个均值 30.0，4 个样本去极值剩 2 个均值 25.0。",
+      title: "星号接住中间的分数",
+      body: "去掉 70 和 92，剩下 4 个分平均 84.5。去掉 60 和 90，剩下 70 和 80，平均 75.0。",
     },
-    expectedOutput: `30.0
-25.0`,
+    expectedOutput: `84.5
+75.0`,
   },
   {
-    id: "fn-unpack-syntax",
-    title: "语法小结：元组解包",
+    id: "fn-ext-nest",
+    title: "容器构造中的星号",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: { starFlow: { kind: "nest" } },
+    code: code("a = [1, 2, 3]\nb = [4, 5, 6]\n\nprint([a, b])\nprint([*a, *b])"),
+    expectedOutput: "[[1, 2, 3], [4, 5, 6]]\n[1, 2, 3, 4, 5, 6]",
+  },
+  {
+    id: "fn-ext-dict",
+    title: "字典构造中的双星号",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: { starFlow: { kind: "dictmerge" } },
+    code: code("a = {\"color\": \"blue\", \"size\": 16}\nb = {\"size\": 20, \"bold\": True}\n\nprint({**a, **b})"),
+    expectedOutput: "{'color': 'blue', 'size': 20, 'bold': True}",
+  },
+  {
+    id: "fn-ext-quiz",
+    title: "课堂互动",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    content: { starFlow: { kind: "extquiz" } },
+    code: code("a, *b = [10]\nprint(b)"),
+    expectedOutput: "[]",
+  },
+  {
+    id: "fn-ext-syntax",
+    title: "星号语法全景",
     type: "explain",
     layout: "fullscreen",
     content: {
       syntaxMap: {
-        root: "元组解包",
+        root: "星号",
         branches: [
-          {
-            title: "解包赋值",
-            code: `return a, b, c
-n, low, high = f()`,
-            notes: ["返回的是元组", "变量个数与元素个数一致"],
-          },
-          {
-            title: "星号接收",
-            code: `first, *mid, last = f()`,
-            notes: ["*mid 接收中间全部元素", "mid 是列表"],
-          },
-          {
-            title: "调用处的 *",
-            code: `f(*[42, 18, 25])`,
-            notes: ["列表拆成位置实参"],
-          },
-          {
-            title: "调用处的 **",
-            code: `f("avatar", **{"fmt": "webp"})`,
-            notes: ["字典拆成关键字实参"],
-          },
+          { title: "定义 *", code: `def f(*args): ...`, notes: ["位置参数收成元组"] },
+          { title: "定义 **", code: `def f(**kwargs): ...`, notes: ["关键字参数收成字典"] },
+          { title: "调用 *", code: `f(*nums)`, notes: ["展开为位置参数"] },
+          { title: "调用 **", code: `f(**data)`, notes: ["展开为关键字参数"] },
+          { title: "赋值 *", code: `a, *b, c = nums`, notes: ["剩余元素收成列表"] },
+          { title: "构造", code: `[*a, *b]\n{**a, **b}`, notes: ["列表展开元素", "字典合并键值，后写的覆盖"] },
         ],
       },
     },

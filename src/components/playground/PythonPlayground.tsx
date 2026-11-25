@@ -10,6 +10,7 @@ import { EngineStatus } from './EngineStatus';
 import { InputPrompt } from './InputPrompt';
 import { useExecTrace } from '../stage/BranchContestStage';
 import { useStepCursor } from '../stage/StepRunStage';
+import { useStageAdvance } from '../../hooks/useStageAdvance';
 import { PredictPanel } from '../stage/PredictPanel';
 import { RevealPanel } from '../stage/RevealPanel';
 
@@ -21,9 +22,19 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
     null,
   );
 
-  const runEnabled = canRun(scene, state, isReady);
   const trace = useExecTrace();
   const stepLine = useStepCursor(scene.id);
+  const evolutionSpec = scene.content.codeEvolution;
+  const evolutionSteps = evolutionSpec?.steps ?? [];
+  const evolution = useStageAdvance(
+    scene.id,
+    Math.max(0, evolutionSteps.length - 1),
+    evolutionSteps.length > 1,
+  );
+  const evolutionCode = evolutionSteps[evolution.phase];
+  const evolutionLine = evolutionSpec?.focus?.[evolution.phase];
+  const evolutionCaption = evolutionSpec?.captions?.[evolution.phase];
+  const runEnabled = canRun(scene, state, isReady);
   const mode = scene.content.branchContest?.mode ?? scene.content.conditionPath?.mode;
   const tracing = mode === 'trace' || mode === 'lab' || mode === 'extend' || mode === 'walk';
   const hideRun = Boolean(scene.content.playCountsApp || scene.content.playlistFormApp) || (scene.content.branchContest
@@ -103,6 +114,13 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
     };
   }, [handleRun]);
 
+  useEffect(() => {
+    if (evolutionCode == null) return;
+    dispatch({ type: 'UPDATE_CODE', code: evolutionCode, clearOutput: true });
+    // 只在切换演示步骤时替换代码，避免覆盖手动编辑。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, evolution.phase, scene.id]);
+
   if (!scene.code && scene.layout === 'fullscreen') {
     return null;
   }
@@ -137,6 +155,11 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
         <div className={`flex items-center ${hideEditorHeading && !scene.pairedCode ? 'justify-end' : 'justify-between'}`}>
           {scene.pairedCode ? (
             <h3 className="text-xl font-semibold text-text-primary">{scene.pairedCode.peerLabel}</h3>
+          ) : evolutionSteps.length > 1 ? (
+            <p className="text-2xl font-semibold text-text-primary">
+              {evolution.phase + 1} / {evolutionSteps.length}
+              {evolutionCaption ? <span className="ml-4 font-medium text-accent">{evolutionCaption}</span> : null}
+            </p>
           ) : !hideEditorHeading ? (
             <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-text-secondary">
               代码练习区
@@ -146,7 +169,7 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
         </div>
 
         <CodeEditor
-          activeLine={tracing ? trace.line : stepLine}
+          activeLine={tracing ? trace.line : evolutionLine ?? stepLine ?? scene.content.codeFocusLine}
           lineNote={tracing ? trace.note : undefined}
           fontSize={24}
           heightPx={scene.pairedCode ? 520 : inputPrompt ? 280 : undefined}
@@ -174,7 +197,14 @@ export function PythonPlayground({ embedded = false }: { embedded?: boolean }) {
                 {locked ? '运行（先预测）' : state.isRunning ? '运行中…' : '运行'}
               </Button>
               {scene.code.resetToInitial && (
-                <Button variant="secondary" size="lg" onClick={() => dispatch({ type: 'RESET_CODE' })}>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={() => {
+                    evolution.reset();
+                    dispatch({ type: 'RESET_CODE' });
+                  }}
+                >
                   重置
                 </Button>
               )}

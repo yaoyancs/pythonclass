@@ -3,13 +3,11 @@ import { Fragment, useRef, useState } from 'react';
 
 export function SceneSideImage({ image, stacked = false }: { image: SceneImage; stacked?: boolean }) {
   return (
-    <figure className={stacked ? 'mt-4 w-full' : 'w-full max-w-md mx-auto'}>
+    <figure className="w-full">
       <img
         src={image.src}
         alt={image.alt}
-        className={`rounded-3xl bg-classroom-stage shadow-card object-contain ${
-          stacked ? 'max-h-[22rem] w-full' : 'max-h-[26rem] w-full h-auto'
-        }`}
+        className="w-full h-auto rounded-3xl bg-classroom-stage shadow-card object-contain"
       />
       {image.caption && (
         <figcaption className="mt-4 text-center text-lg text-text-secondary">{image.caption}</figcaption>

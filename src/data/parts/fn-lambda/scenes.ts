@@ -14,7 +14,6 @@ export const scenes: DraftScene[] = [
     type: "run",
     layout: "split",
     editorSide: "left",
-    editorOnly: true,
     content: {},
     code: code(`# lambda 会创建函数对象，适合只使用一次的简单函数
 def is_hot(t):

@@ -17,10 +17,11 @@ export const scenes: DraftScene[] = [
     content: {
       image: {
         src: "/lesson08/syntax/fn-call-local.svg",
-        alt: "局部变量：dist 只在 earth_drop 调用期间存在，函数外 print(dist) 报 NameError",
+        alt: "局部名字 dist 只在这次调用里能用。函数返回后，外面不能写 dist；返回的那个数还在",
       },
     },
-    code: code(`# 函数内赋值的局部变量 dist，离开函数后不能直接访问
+    code: code(`# dist 是函数里的名字，外面不能写 dist
+# return 交回的是那个数，不是把名字一起交出去
 def earth_drop(t):
     dist = round(0.5 * 9.8 * t * t, 2)
     return dist
@@ -37,10 +38,10 @@ print(dist)`),
     content: {
       image: {
         src: "/lesson08/syntax/fn-call-read.svg",
-        alt: "全局变量：earth_drop 里只读取 GRAVITY，函数内没有就到函数外找到 9.8",
+        alt: "函数体里没有给 GRAVITY 赋值，读取的才是全局 9.8。只要有赋值，整个函数里的 GRAVITY 都是局部名字",
       },
     },
-    code: code(`# 函数内只读取、不赋值，直接使用全局常量 GRAVITY
+    code: code(`# 函数体里没有 GRAVITY = ...，读取的是全局名字
 GRAVITY = 9.8
 
 def earth_drop(t):
@@ -76,6 +77,51 @@ print(GRAVITY)`),
 9.8`,
   },
   {
+    id: "fn-call-bind",
+    title: "改对象，还是改名字",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    editorOnly: true,
+    content: {
+      codeEvolution: {
+        captions: [
+          "append 改的是同一个列表",
+          "data = ... 只改函数里的名字",
+          "n = n + 1 也只改函数里的名字",
+        ],
+        focus: [2, 2, 2],
+        steps: [
+          `def change(data):
+    data.append(4)
+
+numbers = [1, 2, 3]
+change(numbers)
+print(numbers)`,
+          `def change(data):
+    data = [4, 5, 6]
+
+numbers = [1, 2, 3]
+change(numbers)
+print(numbers)`,
+          `def change(n):
+    n = n + 1
+
+number = 10
+change(number)
+print(number)`,
+        ],
+      },
+    },
+    code: code(`def change(data):
+    data.append(4)
+
+numbers = [1, 2, 3]
+change(numbers)
+print(numbers)`),
+    expectedOutput: "[1, 2, 3, 4]",
+  },
+  {
     id: "fn-call-practice",
     title: "练习",
     type: "challenge",
@@ -83,28 +129,67 @@ print(GRAVITY)`),
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 定义函数，功能： 设定一个限速值，判断车速是否超速（大于限速）
-`),
+    code: code(`# 设计三个函数，模拟视频播放器的进度控制：
+# forward(seconds)：快进指定秒数。
+# backward(seconds)：快退指定秒数。
+# show()：显示当前播放时间，格式为 MM:SS。
+# 视频总时长为 300 秒，初始播放进度为 0 秒。
+# 播放进度不能小于 0，也不能超过视频总时长。
+
+show()
+forward(75)
+show()
+forward(300)
+show()
+backward(30)
+show()
+backward(400)
+show()`),
     hints: [
-      { level: 1, text: "return speed > SPEED_LIMIT。函数内不要给 SPEED_LIMIT 赋值。" },
-      { level: 2, text: "110 未超速返回 False，135 超速返回 True。" },
+      { level: 1, text: "总时长和播放进度写在函数外面。要在函数里改播放进度，先写 global。" },
+      { level: 2, text: "快进、快退后把进度限制在 0 和 300 之间。show 里用进度算出分和秒，再按两位打印。" },
       {
         level: 3,
-        text: `SPEED_LIMIT = 120
+        text: `TOTAL = 300
+progress = 0
 
-def is_overspeed(speed):
-    return speed > SPEED_LIMIT
+def forward(seconds):
+    global progress
+    progress = progress + seconds
+    if progress > TOTAL:
+        progress = TOTAL
 
-print(is_overspeed(110))
-print(is_overspeed(135))`,
+def backward(seconds):
+    global progress
+    progress = progress - seconds
+    if progress < 0:
+        progress = 0
+
+def show():
+    minute = progress // 60
+    second = progress % 60
+    print(f"{minute:02d}:{second:02d}")
+
+show()
+forward(75)
+show()
+forward(300)
+show()
+backward(30)
+show()
+backward(400)
+show()`,
       },
     ],
     reveal: {
-      title: "函数内直接读取全局常量 SPEED_LIMIT",
-      body: "110 得到 False，135 得到 True。",
+      title: "播放进度放在函数外，三个函数共用并修改它",
+      body: "75 秒是 01:15。再快进 300 秒停在 05:00。快退 30 秒是 04:30，再快退 400 秒停在 00:00。",
     },
-    expectedOutput: `False
-True`,
+    expectedOutput: `00:00
+01:15
+05:00
+04:30
+00:00`,
   },
   {
     id: "fn-call-syntax",
@@ -120,14 +205,14 @@ True`,
             code: `def f(t):
     dist = ...
 print(dist)  # 报错`,
-            notes: ["函数内赋值", "函数外不能访问"],
+            notes: ["函数外不能用这个名字", "return 交回的是对象"],
           },
           {
             title: "全局变量",
             code: `GRAVITY = 9.8
 def f(t):
     return GRAVITY * t`,
-            notes: ["函数外定义", "函数内只读取，可以直接用"],
+            notes: ["函数体里没有同名赋值", "有赋值则整个函数都是局部名字"],
           },
           {
             title: "同名赋值",

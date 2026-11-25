@@ -42,6 +42,7 @@ import { PythonInstallStage } from './PythonInstallStage';
 import { PythonVerifyStage } from './PythonVerifyStage';
 import { ReplDemoStage } from './ReplDemoStage';
 import { StepExecStage } from './StepExecStage';
+import { StarFlowStage } from './StarFlowStage';
 import { TypedDemoStage } from './TypedDemoStage';
 import { ExprOrderStage } from './ExprOrderStage';
 import { SyntaxRulesStage } from './SyntaxRulesStage';
@@ -88,6 +89,7 @@ import { LoopDrillStage } from './LoopDrillStage';
 import { LoopDrillFlowsStage } from './LoopDrillFlowsStage';
 import { LoopWrapStage } from './LoopWrapStage';
 import { CodeBeatsStage } from './CodeBeatsStage';
+import { TeachingScriptStage } from './TeachingScriptStage';
 
 export function TeachingStage() {
   const { scene, lesson, state, dispatch } = useSceneEngine();
@@ -100,7 +102,8 @@ export function TeachingStage() {
   }, [scene.id]);
   const isFullscreen = scene.layout === 'fullscreen';
   const dense = Boolean(
-    content.image ||
+    content.teachingScript ||
+      content.image ||
       content.images?.length ||
       content.gallery ||
       content.infoCards ||
@@ -184,6 +187,14 @@ export function TeachingStage() {
     content.machineLang || content.translateStack || (content.historyDialogue && content.digestPipeline),
   );
 
+  if (content.starFlow) {
+    return (
+      <section className="h-full overflow-hidden">
+        <StarFlowStage kind={content.starFlow.kind} />
+      </section>
+    );
+  }
+
   return (
     <section
       className={`grid h-full overflow-hidden ${
@@ -241,6 +252,7 @@ export function TeachingStage() {
           }
         >
           <div className="min-w-0">
+            {content.teachingScript && <TeachingScriptStage script={content.teachingScript} />}
             {stackedImage && content.image && <SceneSideImage image={content.image} stacked />}
             {content.stepRun && scene.code && (
               <StepRunStage sceneId={scene.id} code={scene.code.initial} />

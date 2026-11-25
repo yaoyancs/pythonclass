@@ -46,9 +46,10 @@ export function ClassroomShell() {
     else if (drill) setRightPct(58);
     else if (scene.content.recursionTrace || scene.content.hanoiTrace) setRightPct(50);
     else if (scene.content.flowDiagram || scene.content.stepRun) setRightPct(50);
+    else if (scene.content.starFlow && editorLeft) setRightPct(40);
     else if (scene.content.image && editorLeft) setRightPct(58);
     else if (editorLeft) setRightPct(42);
-  }, [paired, drill, editorLeft, scene.id, scene.content.flowDiagram, scene.content.stepRun, scene.content.recursionTrace, scene.content.hanoiTrace, scene.content.image]);
+  }, [paired, drill, editorLeft, scene.id, scene.content.flowDiagram, scene.content.stepRun, scene.content.recursionTrace, scene.content.hanoiTrace, scene.content.image, scene.content.starFlow]);
 
   const handleSplitterPointerDown = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
     e.preventDefault();

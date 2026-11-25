@@ -14,7 +14,6 @@ export const scenes: DraftScene[] = [
     type: "run",
     layout: "split",
     editorSide: "left",
-    editorOnly: true,
     content: {},
     code: code(`# 能接收函数作为参数的函数，称为高阶函数
 # 上一节自己实现 batch_apply；Python 已经提供了功能相近的 map

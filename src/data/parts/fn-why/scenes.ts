@@ -19,11 +19,6 @@ export const scenes: DraftScene[] = [
         src: "/lesson08/syntax/fn-why-name.svg",
         alt: "len(date)：len 是函数名，括号表示调用，date 是参数；只写 len 得到函数本身",
       },
-      afterRunPoints: [
-        "函数就是一段具有特定功能的代码块",
-        "调用函数就是使用函数",
-        "函数名是函数的标识符",
-      ],
     },
     code: code(`date = "2026-11-24"
 print(len("Python"))
@@ -104,7 +99,7 @@ print(2026, 11, 24, sep="-")`),
     content: {
       image: {
         src: "/lesson08/syntax/fn-why-none.svg",
-        alt: "返回值：len(chars) 的结果 3 存进 count；chars.clear() 没有结果，得到 None",
+        alt: "返回值：len(chars) 得到 3 并存进 count；chars.clear() 的返回值是 None",
       },
     },
     code: code(`# 函数的返回值：函数执行得到的结果
@@ -117,6 +112,118 @@ print(count)
 res = chars.clear()
 print(chars)
 print(res)`),
+  },
+  {
+    id: "fn-why-repeat",
+    title: "同一套规则用在两处",
+    type: "run",
+    layout: "split",
+    editorSide: "left",
+    editorOnly: true,
+    content: {
+      codeEvolution: {
+        captions: [
+          "录入一名同学，统计全班又写一遍",
+          "规则收进 grade，两处各调用一次",
+          "优秀线改成 85，只改函数里",
+        ],
+        focus: [2, 1, 2],
+        steps: [
+          `score = 86
+if score >= 90:
+    level = "优秀"
+elif score >= 80:
+    level = "良好"
+elif score >= 60:
+    level = "及格"
+else:
+    level = "不及格"
+print("录入", score, level)
+
+scores = [86, 58, 92]
+failed = 0
+for score in scores:
+    if score >= 90:
+        level = "优秀"
+    elif score >= 80:
+        level = "良好"
+    elif score >= 60:
+        level = "及格"
+    else:
+        level = "不及格"
+    if level == "不及格":
+        failed = failed + 1
+print("不及格", failed, "人")`,
+          `def grade(score):
+    if score >= 90:
+        level = "优秀"
+    elif score >= 80:
+        level = "良好"
+    elif score >= 60:
+        level = "及格"
+    else:
+        level = "不及格"
+    return level
+
+score = 86
+print("录入", score, grade(score))
+
+scores = [86, 58, 92]
+failed = 0
+for score in scores:
+    if grade(score) == "不及格":
+        failed = failed + 1
+print("不及格", failed, "人")`,
+          `def grade(score):
+    if score >= 85:
+        level = "优秀"
+    elif score >= 80:
+        level = "良好"
+    elif score >= 60:
+        level = "及格"
+    else:
+        level = "不及格"
+    return level
+
+score = 86
+print("录入", score, grade(score))
+
+scores = [86, 58, 92]
+failed = 0
+for score in scores:
+    if grade(score) == "不及格":
+        failed = failed + 1
+print("不及格", failed, "人")`,
+        ],
+      },
+    },
+    code: code(`score = 86
+if score >= 90:
+    level = "优秀"
+elif score >= 80:
+    level = "良好"
+elif score >= 60:
+    level = "及格"
+else:
+    level = "不及格"
+print("录入", score, level)
+
+scores = [86, 58, 92]
+failed = 0
+for score in scores:
+    if score >= 90:
+        level = "优秀"
+    elif score >= 80:
+        level = "良好"
+    elif score >= 60:
+        level = "及格"
+    else:
+        level = "不及格"
+    if level == "不及格":
+        failed = failed + 1
+print("不及格", failed, "人")`),
+    expectedOutput: `录入 86 良好
+不及格 1 人`,
   },
   {
     id: "fn-why-use",
@@ -147,7 +254,7 @@ print(2026, 11, sep="-")`,
             title: "返回值",
             code: `count = len(chars)
 res = chars.clear()`,
-            notes: ["调用得到的结果", "没有结果时得到 None"],
+            notes: ["调用表达式的值就是返回值", "clear() 返回 None"],
           },
         ],
       },

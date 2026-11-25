@@ -14,7 +14,6 @@ export const scenes: DraftScene[] = [
     type: "run",
     layout: "split",
     editorSide: "left",
-    editorOnly: true,
     content: {},
     code: code(`# 先猜一猜：下面两行输出有什么不同？
 print(str.strip)
