@@ -134,18 +134,8 @@ print(numbers)`),
 # backward(progress, seconds)：快退，返回新进度。
 # show(progress)：按 MM:SS 打印进度，不用返回。
 # 总时长 300 秒。进度不能小于 0，也不能超过 300。
-
-TOTAL = 300
-progress = 0
-show(progress)
-progress = forward(progress, 75)
-show(progress)
-progress = forward(progress, 300)
-show(progress)
-progress = backward(progress, 30)
-show(progress)
-progress = backward(progress, 400)
-show(progress)`),
+# 从 0 秒开始，依次显示：快进 75 秒、再快进 300 秒、快退 30 秒、再快退 400 秒。
+# 每次变化前后都显示一次当前进度。`),
     hints: [
       { level: 1, text: "快进、快退算出新进度后 return，不要写 global。调用处用 progress = forward(...) 接住。" },
       { level: 2, text: "返回前把进度限制在 0 和 TOTAL 之间。show 用 // 和 % 得到分和秒，再按两位打印。" },
