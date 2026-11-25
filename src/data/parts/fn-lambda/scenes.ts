@@ -109,33 +109,36 @@ print(sorted(files, key=lambda item: item[1]))`),
   },
   {
     id: "fn-lambda-practice",
-    title: "练习：按气温降序排序",
+    title: "练习：筛城市并改成文字",
     type: "challenge",
     layout: "split",
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 用 sorted 与 lambda，把 cities 按气温（第 2 项）从高到低排序并打印
+    code: code(`# 用 filter 和 lambda 留下气温不低于 30 的城市。
+# 再用 map 和 lambda 把每座城市变成 "城市名 气温"，打印成列表。
 cities = [("济南", 34), ("吐鲁番", 41), ("青岛", 27), ("武汉", 37)]
 
-ranked = sorted(cities, key=lambda item: 0, reverse=True)
-print(ranked)`),
+hot = filter(lambda item: False, cities)
+names = map(lambda item: item, hot)
+print(list(names))`),
     hints: [
-      { level: 1, text: "把 lambda item: 0 改成 lambda item: item[1]。" },
-      { level: 2, text: "reverse=True 已经写好，只需返回每个元组的气温 item[1]。" },
+      { level: 1, text: "filter 的 lambda 判断 item[1] >= 30。青岛 27 会被去掉。" },
+      { level: 2, text: "map 的 lambda 返回 f\"{item[0]} {item[1]}\"。最后用 list 把结果收成列表。" },
       {
         level: 3,
         text: `cities = [("济南", 34), ("吐鲁番", 41), ("青岛", 27), ("武汉", 37)]
 
-ranked = sorted(cities, key=lambda item: item[1], reverse=True)
-print(ranked)`,
+hot = filter(lambda item: item[1] >= 30, cities)
+names = map(lambda item: f"{item[0]} {item[1]}", hot)
+print(list(names))`,
       },
     ],
     reveal: {
-      title: "lambda 适合作为 sorted 的排序依据 key",
-      body: "按 item[1] 降序得到吐鲁番 41、武汉 37、济南 34、青岛 27。",
+      title: "lambda 直接交给 filter 和 map",
+      body: "青岛低于 30，被滤掉。剩下的三座城市变成字符串，顺序与原来一致。",
     },
-    expectedOutput: "[('吐鲁番', 41), ('武汉', 37), ('济南', 34), ('青岛', 27)]",
+    expectedOutput: "['济南 34', '吐鲁番 41', '武汉 37']",
   },
   {
     id: "fn-lambda-syntax",

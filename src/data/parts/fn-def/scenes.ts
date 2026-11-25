@@ -333,16 +333,16 @@ pong`,
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 社交平台通常使用以 # 开头的词语作为话题标签。
-# 定义函数 get_tags(message)，接收一条聊天消息字符串（各词语以空格分隔），
-# 提取其中所有以 # 开头的词语，并以列表形式返回。
+    code: code(`# 定义 get_tags(message)。词与词之间用空格分开，连续空格只算分隔。
+# 整词以 # 开头就是标签；标点若粘在词上，仍算这个词的一部分。
+# 一次返回两个值：标签个数，以及标签列表。没有标签时返回 0 和空列表。
 
 print(get_tags("今天学习 #Python 一起 #编程"))
-print(get_tags("周末去旅行 #生活 #旅行"))
+print(get_tags("周末去旅行  #生活   #旅行"))
 print(get_tags("今天很开心"))`),
     hints: [
-      { level: 1, text: "用 message.split() 按空格分成词语，再判断每个词是否以 # 开头。" },
-      { level: 2, text: "在函数里准备一个空列表，符合条件的词 append 进去，最后 return 这个列表。没有标签时返回空列表。" },
+      { level: 1, text: "message.split() 会按空格切开，并自动跳过连续空格。再用 startswith(\"#\") 判断。" },
+      { level: 2, text: "先把标签放进列表，最后 return len(tags), tags。没有标签时这个列表是空的，个数是 0。" },
       {
         level: 3,
         text: `def get_tags(message):
@@ -350,20 +350,20 @@ print(get_tags("今天很开心"))`),
     for word in message.split():
         if word.startswith("#"):
             tags.append(word)
-    return tags
+    return len(tags), tags
 
 print(get_tags("今天学习 #Python 一起 #编程"))
-print(get_tags("周末去旅行 #生活 #旅行"))
+print(get_tags("周末去旅行  #生活   #旅行"))
 print(get_tags("今天很开心"))`,
       },
     ],
     reveal: {
-      title: "按空格拆开消息，收集以 # 开头的词",
-      body: "前两条消息分别得到 ['#Python', '#编程'] 和 ['#生活', '#旅行']，没有标签时返回 []。",
+      title: "一次返回标签个数和标签列表",
+      body: "连续空格不影响拆分。前两条都是 2 个标签，没有标签时返回 0 和空列表。",
     },
-    expectedOutput: `['#Python', '#编程']
-['#生活', '#旅行']
-[]`,
+    expectedOutput: `(2, ['#Python', '#编程'])
+(2, ['#生活', '#旅行'])
+(0, [])`,
   },
   {
     id: "fn-def-syntax",

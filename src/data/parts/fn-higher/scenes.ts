@@ -94,19 +94,21 @@ print(sorted(errors, key=abs))`),
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 定义 hot_temps(raw)
-# 1. 用 map(int, raw) 把字符串温度列表转为整数
-# 2. 用 filter(is_hot, ...) 筛出 >= 35 的高温，转为 list 返回
+    code: code(`# 定义 is_hot(t)：温度不低于 35 时返回 True。
+# 定义 hot_temps(raw)：先用 map 把字符串转成整数，再用 filter 筛出高温，返回列表。
+# 一个高温都没有时，返回空列表。
+
 def is_hot(t):
-    return t >= 35
+    pass
 
 def hot_temps(raw):
     pass
 
-print(hot_temps(["31", "36", "29", "38", "35"]))`),
+print(hot_temps(["31", "36", "29", "38", "35"]))
+print(hot_temps(["20", "33"]))`),
     hints: [
-      { level: 1, text: "先 nums = map(int, raw)，再 return list(filter(is_hot, nums))。" },
-      { level: 2, text: "is_hot 已经定义，直接传给 filter 即可。" },
+      { level: 1, text: "is_hot 要 return t >= 35。hot_temps 里先 map(int, raw)。" },
+      { level: 2, text: "return list(filter(is_hot, nums))。filter 留下的是原来的整数，不是 True/False。" },
       {
         level: 3,
         text: `def is_hot(t):
@@ -116,51 +118,16 @@ def hot_temps(raw):
     nums = map(int, raw)
     return list(filter(is_hot, nums))
 
-print(hot_temps(["31", "36", "29", "38", "35"]))`,
+print(hot_temps(["31", "36", "29", "38", "35"]))
+print(hot_temps(["20", "33"]))`,
       },
     ],
     reveal: {
       title: "map 与 filter 串联完成数据清洗",
-      body: "先转为整数，再筛出 36、38、35。",
+      body: "先变成整数 36、38、35。第二组都低于 35，结果是空列表。",
     },
-    expectedOutput: "[36, 38, 35]",
-  },
-  {
-    id: "fn-higher-sort-practice",
-    title: "练习：按文件大小降序",
-    type: "challenge",
-    layout: "split",
-    editorSide: "left",
-    editorOnly: true,
-    content: {},
-    code: code(`# 定义 get_size(item)，返回文件记录中的大小
-# 再用 sorted 按文件大小从大到小排序
-files = [("report.pdf", 420), ("icon.svg", 12), ("video.mp4", 8600)]
-
-def get_size(item):
-    pass
-
-ranked = sorted(files, key=get_size, reverse=True)
-print(ranked)`),
-    hints: [
-      { level: 1, text: "每条文件记录是 (文件名, 大小)，大小位于下标 1。" },
-      { level: 2, text: "get_size 只负责提供排序依据：return item[1]。" },
-      {
-        level: 3,
-        text: `files = [("report.pdf", 420), ("icon.svg", 12), ("video.mp4", 8600)]
-
-def get_size(item):
-    return item[1]
-
-ranked = sorted(files, key=get_size, reverse=True)
-print(ranked)`,
-      },
-    ],
-    reveal: {
-      title: "key 函数提供排序依据",
-      body: "get_size 返回文件大小，sorted 负责排序；结果中保留的仍是原来的文件记录。下一节会用 lambda 简写这个一次性函数。",
-    },
-    expectedOutput: "[('video.mp4', 8600), ('report.pdf', 420), ('icon.svg', 12)]",
+    expectedOutput: `[36, 38, 35]
+[]`,
   },
   {
     id: "fn-higher-syntax",

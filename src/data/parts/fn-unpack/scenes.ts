@@ -84,42 +84,41 @@ print(n, low)`,
     expectedOutput: "10 [20, 30, 40] 50",
   },
   {
-    id: "fn-star-practice",
-    title: "截尾平均",
+    id: "fn-unpack-practice",
+    title: "拆开日志",
     type: "challenge",
     layout: "split",
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 至少三位评委。去掉一个最高分和一个最低分，再算平均分，保留 1 位小数。
-scores = [88, 76, 90, 84, 70, 92]
+    code: code(`# 日志按时间顺序排成列表，至少有两条。
+# 定义 split_log(lines)，用星号赋值拆成：第一条、中间剩下的每条、最后一条。
+# 中间可以一条都没有。返回这三个结果。
 
-def final_score(scores):
+def split_log(lines):
     pass
 
-print(final_score(scores))
-print(final_score([90, 70, 80, 60]))`),
+print(split_log(["开机", "登录", "浏览", "退出"]))
+print(split_log(["开始", "结束"]))`),
     hints: [
-      { level: 1, text: "最低, *有效, 最高 = sorted(scores)。中间不管还剩几个，都在 *有效 里。" },
-      { level: 2, text: "return round(sum(有效) / len(有效), 1)" },
+      { level: 1, text: "第一条, *中间, 最后一条 = lines。两条日志时，中间是空列表。" },
+      { level: 2, text: "return 这三个名字。星号接住的是列表，不是元组。" },
       {
         level: 3,
-        text: `scores = [88, 76, 90, 84, 70, 92]
+        text: `def split_log(lines):
+    first, *middle, last = lines
+    return first, middle, last
 
-def final_score(scores):
-    最低, *有效, 最高 = sorted(scores)
-    return round(sum(有效) / len(有效), 1)
-
-print(final_score(scores))
-print(final_score([90, 70, 80, 60]))`,
+print(split_log(["开机", "登录", "浏览", "退出"]))
+print(split_log(["开始", "结束"]))`,
       },
     ],
     reveal: {
-      title: "星号接住中间的分数",
-      body: "去掉 70 和 92，剩下 4 个分平均 84.5。去掉 60 和 90，剩下 70 和 80，平均 75.0。",
+      title: "星号接住中间剩下的日志",
+      body: "四条日志的中间是两条。只有首尾两条时，中间是空列表 []，不会报错。",
     },
-    expectedOutput: `84.5
-75.0`,
+    expectedOutput: `('开机', ['登录', '浏览'], '退出')
+('开始', [], '结束')`,
   },
   {
     id: "fn-ext-nest",

@@ -129,61 +129,62 @@ print(numbers)`),
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 设计三个函数，模拟视频播放器的进度控制：
-# forward(seconds)：快进指定秒数。
-# backward(seconds)：快退指定秒数。
-# show()：显示当前播放时间，格式为 MM:SS。
-# 视频总时长为 300 秒，初始播放进度为 0 秒。
-# 播放进度不能小于 0，也不能超过视频总时长。
+    code: code(`# 三个函数都不要改外面的变量，进度由调用处接收返回值。
+# forward(progress, seconds)：快进，返回新进度。
+# backward(progress, seconds)：快退，返回新进度。
+# show(progress)：按 MM:SS 打印进度，不用返回。
+# 总时长 300 秒。进度不能小于 0，也不能超过 300。
 
-show()
-forward(75)
-show()
-forward(300)
-show()
-backward(30)
-show()
-backward(400)
-show()`),
+TOTAL = 300
+progress = 0
+show(progress)
+progress = forward(progress, 75)
+show(progress)
+progress = forward(progress, 300)
+show(progress)
+progress = backward(progress, 30)
+show(progress)
+progress = backward(progress, 400)
+show(progress)`),
     hints: [
-      { level: 1, text: "总时长和播放进度写在函数外面。要在函数里改播放进度，先写 global。" },
-      { level: 2, text: "快进、快退后把进度限制在 0 和 300 之间。show 里用进度算出分和秒，再按两位打印。" },
+      { level: 1, text: "快进、快退算出新进度后 return，不要写 global。调用处用 progress = forward(...) 接住。" },
+      { level: 2, text: "返回前把进度限制在 0 和 TOTAL 之间。show 用 // 和 % 得到分和秒，再按两位打印。" },
       {
         level: 3,
         text: `TOTAL = 300
-progress = 0
 
-def forward(seconds):
-    global progress
+def forward(progress, seconds):
     progress = progress + seconds
     if progress > TOTAL:
         progress = TOTAL
+    return progress
 
-def backward(seconds):
-    global progress
+def backward(progress, seconds):
     progress = progress - seconds
     if progress < 0:
         progress = 0
+    return progress
 
-def show():
+def show(progress):
     minute = progress // 60
     second = progress % 60
     print(f"{minute:02d}:{second:02d}")
 
-show()
-forward(75)
-show()
-forward(300)
-show()
-backward(30)
-show()
-backward(400)
-show()`,
+progress = 0
+show(progress)
+progress = forward(progress, 75)
+show(progress)
+progress = forward(progress, 300)
+show(progress)
+progress = backward(progress, 30)
+show(progress)
+progress = backward(progress, 400)
+show(progress)`,
       },
     ],
     reveal: {
-      title: "播放进度放在函数外，三个函数共用并修改它",
-      body: "75 秒是 01:15。再快进 300 秒停在 05:00。快退 30 秒是 04:30，再快退 400 秒停在 00:00。",
+      title: "新进度用 return 交回调用处",
+      body: "函数里给 progress 赋值只影响这次调用。75 秒是 01:15，再快进停在 05:00，快退 30 秒是 04:30，再快退停在 00:00。",
     },
     expectedOutput: `00:00
 01:15

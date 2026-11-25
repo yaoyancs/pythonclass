@@ -80,17 +80,22 @@ hello-python-world`,
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 定义 batch_apply(items, fn)
-# 对列表 items 中的每一项调用 fn，把结果收集成新列表返回
+    code: code(`# batch_apply(items, fn)：对每一项调用 fn，把结果收成新列表返回。
+# shout(text)：自己定义，把文字变成大写后返回。
+
 def batch_apply(items, fn):
+    pass
+
+def shout(text):
     pass
 
 tags = ["  Python ", " AI", "Web  "]
 print(batch_apply(tags, str.strip))
-print(batch_apply(["a", "bb", "ccc"], len))`),
+print(batch_apply(["a", "bb", "ccc"], len))
+print(batch_apply(["python", "ai"], shout))`),
     hints: [
-      { level: 1, text: "新建空列表 result = []，遍历 items，把 fn(x) 追加进去。" },
-      { level: 2, text: "也可以写成列表推导式 return [fn(x) for x in items]。" },
+      { level: 1, text: "传给 batch_apply 的是函数名，不要加括号。str.strip 和 shout 都这样传。" },
+      { level: 2, text: "遍历 items，把 fn(x) 放进新列表。shout 用 return text.upper()。" },
       {
         level: 3,
         text: `def batch_apply(items, fn):
@@ -99,17 +104,22 @@ print(batch_apply(["a", "bb", "ccc"], len))`),
         result.append(fn(x))
     return result
 
+def shout(text):
+    return text.upper()
+
 tags = ["  Python ", " AI", "Web  "]
 print(batch_apply(tags, str.strip))
-print(batch_apply(["a", "bb", "ccc"], len))`,
+print(batch_apply(["a", "bb", "ccc"], len))
+print(batch_apply(["python", "ai"], shout))`,
       },
     ],
     reveal: {
       title: "同一个 batch_apply，通过换 fn 实现不同批处理",
-      body: "普通参数传入数据，fn 参数传入处理方法。这就是下一节内置高阶函数 map 的核心原理。",
+      body: "str.strip、len 和自己写的 shout 都是传入的处理方法。这就是下一节 map 的核心。",
     },
     expectedOutput: `['Python', 'AI', 'Web']
-[1, 2, 3]`,
+[1, 2, 3]
+['PYTHON', 'AI']`,
   },
   {
     id: "fn-fnarg-syntax",

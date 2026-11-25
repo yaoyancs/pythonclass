@@ -126,14 +126,18 @@ export_image("avatar", fmt="webp")`,
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 定义一个函数，用来生成饮品订单，并打印下面三次调用的返回值。
-# 只说口味 "珍珠"，得到：珍珠 中杯 全糖 冰
-# 口味是 "芋泥"，并且不要冰，得到：芋泥 中杯 全糖 去冰
-# 口味是 "柠檬"，杯子是 "大杯"，糖是 "半糖"，得到：柠檬 大杯 半糖 冰
-# 没写杯子时用中杯，没写糖时用全糖，没说要不要冰时用冰。`),
+    code: code(`# 补全 order。杯子默认 "中杯"，糖默认 "全糖"，ice 默认 True。
+# ice 为 True 时写成「冰」，否则写成「去冰」。返回一行订单文字。
+
+def order(flavor, size="中杯", sugar="全糖", ice=True):
+    pass
+
+print(order("珍珠"))
+print(order("芋泥", ice=False))
+print(order("柠檬", "大杯", "半糖"))`),
     hints: [
-      { level: 1, text: 'ice_text = "冰" if ice else "去冰"' },
-      { level: 2, text: 'return f"{flavor} {size} {sugar} {ice_text}"' },
+      { level: 1, text: "三次调用已经写好。第二次用关键字跳过杯子和糖，只改 ice。" },
+      { level: 2, text: 'ice_text = "冰" if ice else "去冰"，再 return 拼好的那一行。' },
       {
         level: 3,
         text: `def order(flavor, size="中杯", sugar="全糖", ice=True):

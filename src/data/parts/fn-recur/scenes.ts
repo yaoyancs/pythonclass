@@ -125,43 +125,43 @@ print(folder_size(project))`),
   },
   {
     id: "fn-recur-practice",
-    title: "练习：power",
+    title: "练习：reverse",
     type: "challenge",
     layout: "split",
     editorSide: "left",
     editorOnly: true,
     content: {},
-    code: code(`# 用递归定义 power(x, n)，计算 x 的 n 次方（n 为非负整数）
-# 终止条件：n == 0 时返回 1
-# 递推关系：x * power(x, n - 1)
-def power(x, n):
+    code: code(`# 用递归定义 reverse(text)，把字符串倒过来。
+# 空字符串原样返回。否则先倒转后面的部分，再把第一个字接到末尾。
+
+def reverse(text):
     pass
 
-print(power(2, 0))
-print(power(2, 5))
-print(power(3, 4))`),
+print(repr(reverse("")))
+print(reverse("Python"))
+print(reverse("课"))`),
     hints: [
-      { level: 1, text: "先写 if n == 0: return 1。" },
-      { level: 2, text: "否则 return x * power(x, n - 1)。" },
+      { level: 1, text: "if text == \"\": return \"\"。空字符串是终止条件。" },
+      { level: 2, text: "后面的部分是 text[1:]，第一个字是 text[0]。倒转后面的，再接上第一个字。" },
       {
         level: 3,
-        text: `def power(x, n):
-    if n == 0:
-        return 1
-    return x * power(x, n - 1)
+        text: `def reverse(text):
+    if text == "":
+        return ""
+    return reverse(text[1:]) + text[0]
 
-print(power(2, 0))
-print(power(2, 5))
-print(power(3, 4))`,
+print(repr(reverse("")))
+print(reverse("Python"))
+print(reverse("课"))`,
       },
     ],
     reveal: {
-      title: "每次递归将指数 n 减 1，直到 n == 0",
-      body: "2^0 = 1，2^5 = 32，3^4 = 81。",
+      title: "每次拿掉第一个字，字符串更短",
+      body: "空字符串停止。一个字时，后面是空字符串，倒转后仍是这个字。Python 倒过来是 nohtyP。",
     },
-    expectedOutput: `1
-32
-81`,
+    expectedOutput: `''
+nohtyP
+课`,
   },
   {
     id: "fn-recur-flatten",

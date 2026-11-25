@@ -207,9 +207,9 @@ export const offering2026S: Offering = {
       homework: {
         title: "本讲作业",
         items: [
-          "作业1（默认参数、可变参数与星号解包）：编写网络测速统计函数 ping_stats(*ms, trim=True)。若未传入任何延迟值，返回 0, 0.0；若 trim=True 且样本数 >= 3，先排序再用 fastest, *mid, slowest 解包去掉最快和最慢各一次，保留 mid 作为有效样本；否则保留全部样本。返回 (有效样本数, 平均延迟)，平均延迟保留 1 位小数。依次打印 ping_stats()、ping_stats(42, 18, 25, 31, 95, 22)、ping_stats(42, 18, 25, 31, 95, 22, trim=False)。自验：(0, 0.0)；(4, 30.0)；(6, 38.8)。",
+          "作业1（默认参数、可变参数与星号解包）：编写网络测速统计函数 ping_stats(*ms, trim=True)。若未传入任何延迟值，返回 0, 0.0；若 trim=True 且样本数 >= 3，先排序再用 fastest, *mid, slowest 解包去掉最快和最慢各一次，保留 mid 作为有效样本；样本不足 3 个时保留全部。返回 (有效样本数, 平均延迟)，平均延迟保留 1 位小数。依次打印 ping_stats()、ping_stats(18, 25)、ping_stats(42, 18, 25, 31, 95, 22)、ping_stats(42, 18, 25, 31, 95, 22, trim=False)。自验：(0, 0.0)；(2, 21.5)；(4, 30.0)；(6, 38.8)。",
           "作业2（高阶函数与匿名函数）：给定文件列表 files = [(\"report.pdf\", 420), (\"icon.svg\", 12), (\"video.mp4\", 8600), (\"slides.pptx\", 1500), (\"note.txt\", 8)]（单位 KB）。用 filter 和 lambda 筛出体积 >= 100 KB 的文件，再用 sorted 和 lambda 按体积从大到小排序并输出。自验：[('video.mp4', 8600), ('slides.pptx', 1500), ('report.pdf', 420)]。",
-          "作业3（递归）：定义 flatten(items)，把任意层数的嵌套列表拉平成一层列表。要求用递归实现：元素是列表时递归处理，不是列表时直接加入结果。依次打印 flatten([1, [2, 3], [4, [5, [6]]]]) 和 flatten([])。自验：[1, 2, 3, 4, 5, 6]；[]。",
+          "作业3（递归）：定义 contains(items, target)，判断 target 是否出现在任意层嵌套的列表里。某一项等于 target 就返回 True；某一项是列表时递归查找；全部找完没有则返回 False。依次打印 contains([1, [2, 3], [4, [5]]], 5)、contains([1, [2, 3]], 9)、contains([], 1)。自验：True；False；False。",
         ],
       },
       parts: [

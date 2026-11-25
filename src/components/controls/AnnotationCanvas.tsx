@@ -46,6 +46,7 @@ export function AnnotationCanvas({
   const [width, setWidth] = useState(6);
   const [revision, setRevision] = useState(0);
   const [cursor, setCursor] = useState<Point | null>(null);
+  const [minimized, setMinimized] = useState(false);
   const [dock, setDock] = useState({ x: 16, y: 88 });
   const dragRef = useRef<{ ox: number; oy: number; px: number; py: number } | null>(null);
 
@@ -99,6 +100,10 @@ export function AnnotationCanvas({
     canvas.style.height = `${window.innerHeight}px`;
     redraw();
   }, [redraw]);
+
+  useEffect(() => {
+    if (active) setMinimized(false);
+  }, [active]);
 
   useEffect(() => {
     if (!active) return;
@@ -165,7 +170,6 @@ export function AnnotationCanvas({
 
   const clear = () => {
     if (!strokesRef.current.length) return;
-    if (!window.confirm('清空本页全部标注？')) return;
     strokesRef.current = [];
     setRevision((value) => value + 1);
     redraw();
@@ -222,7 +226,18 @@ export function AnnotationCanvas({
         />
       )}
 
-      {active && (
+      {active && minimized && (
+        <button
+          type="button"
+          className="fixed z-[80] rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-card"
+          style={{ right: dock.x, top: dock.y }}
+          onClick={() => setMinimized(false)}
+        >
+          ✎ 画笔
+        </button>
+      )}
+
+      {active && !minimized && (
         <aside
           className="fixed z-[80] w-[15.5rem] rounded-2xl border border-classroom-border bg-white/95 p-2.5 shadow-card backdrop-blur"
           style={{ right: dock.x, top: dock.y }}
@@ -248,7 +263,14 @@ export function AnnotationCanvas({
               dragRef.current = null;
             }}
           >
-            <p className="text-xs text-text-secondary">拖这里挪开工具条 · Esc 退出</p>
+            <p className="text-xs text-text-secondary">拖这里挪开工具条</p>
+            <button
+              type="button"
+              className="rounded-lg px-2 py-0.5 text-xs font-semibold text-text-primary hover:bg-classroom-playground"
+              onClick={() => setMinimized(true)}
+            >
+              最小化
+            </button>
           </div>
 
           <div className="grid grid-cols-2 gap-1.5">
